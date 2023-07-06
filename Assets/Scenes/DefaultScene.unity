@@ -287,16 +287,20 @@ MonoBehaviour:
   meshTransform: {fileID: 482399315}
   meshFilter: {fileID: 482399314}
   meshRenderer: {fileID: 482399313}
-  autoInitialise: 1
   carvingLayers:
     serializedVersion: 2
     m_Bits: 64
   meshSize: {x: 17.8, y: 10}
-  cullContinuousVertices: 0
-  tangentStepDistance: 1
-  edgeSearchIterations: 8
+  maxEdgeSearchIterations: 8
+  edgeSearchMinAngleThreshold: 0.1
+  keepBothEdgeSearchVertices: 1
   projectionOffsetThreshold: 0.5
   angleContinuityThreshold: 20
+  occlusionFractionThreshold: 0.995
+  cullBackFacingVertices: 1
+  cullOccludedVertices: 1
+  cullContinuousVertices: 0
+  cullDegenerateTriangles: 0
 --- !u!23 &482399313
 MeshRenderer:
   m_ObjectHideFlags: 0
