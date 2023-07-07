@@ -296,7 +296,7 @@ MonoBehaviour:
   keepBothEdgeSearchVertices: 1
   projectionOffsetThreshold: 0.5
   angleContinuityThreshold: 20
-  occlusionFractionThreshold: 0.995
+  occlusionFractionThreshold: 0.999
   cullBackFacingVertices: 1
   cullOccludedVertices: 1
   cullContinuousVertices: 0
@@ -814,12 +814,12 @@ GameObject:
   - component: {fileID: 1666275040}
   - component: {fileID: 1666275039}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: SurfaceC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!58 &1666275039
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1064,12 +1064,12 @@ GameObject:
   - component: {fileID: 1899597452}
   - component: {fileID: 1899597451}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: SurfaceC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!58 &1899597451
 CircleCollider2D:
   m_ObjectHideFlags: 0

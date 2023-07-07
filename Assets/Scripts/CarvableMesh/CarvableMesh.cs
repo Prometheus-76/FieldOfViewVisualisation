@@ -38,7 +38,6 @@ public class CarvableMesh : MonoBehaviour
     public bool cullBackFacingVertices = false;
     public bool cullOccludedVertices = false;
     public bool cullContinuousVertices = false;
-    public bool cullDegenerateTriangles = false;
 
     #endregion
 
@@ -47,7 +46,7 @@ public class CarvableMesh : MonoBehaviour
     // PRIVATE
     private bool initialisationFailed = false;
     private Mesh meshInstance = null;
-    private RaycastHit2D[] nonAllocHit;
+    private RaycastHit2D[] nonAllocHits;
 
     // PROPERTIES
     private bool isInitialised
@@ -59,7 +58,7 @@ public class CarvableMesh : MonoBehaviour
             if (meshFilter == null) return false;
             if (meshRenderer == null) return false;
             if (meshInstance == null) return false;
-            if (nonAllocHit == null) return false;
+            if (nonAllocHits == null) return false;
 
             if (meshFilter.mesh != meshInstance) return false;
 
@@ -77,7 +76,7 @@ public class CarvableMesh : MonoBehaviour
     private Vector2 bottomLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / -2f); } }
 
     // DATA STRUCTURES
-    private class EdgePoint
+    private class EdgePoint:IComparable<EdgePoint>
     {
         public Vector2 position;
 
@@ -116,9 +115,25 @@ public class CarvableMesh : MonoBehaviour
 
             this.onSurface = onSurface;
         }
+
+        // Allows list sorting
+        public int CompareTo(EdgePoint other)
+        {
+            // Should this element go before or after (ascending order)
+            if (angle < other.angle) return -1;
+            if (angle > other.angle) return 1;
+
+            // It doesn't matter!
+            return 0;
+        }
     }
 
     #endregion
+
+    private void Start()
+    {
+        //UpdateMesh();
+    }
 
     private void LateUpdate()
     {
@@ -133,7 +148,7 @@ public class CarvableMesh : MonoBehaviour
         if (meshRenderer == null) meshRenderer = GetComponent<MeshRenderer>();
 
         // Reserve memory for cheaper raycasting
-        nonAllocHit = new RaycastHit2D[1];
+        nonAllocHits = new RaycastHit2D[2];
 
         // Clear any existing mesh data, or create the mesh instance
         if (meshInstance != null)
@@ -263,17 +278,52 @@ public class CarvableMesh : MonoBehaviour
         return angle;
     }
 
-    EdgePoint RaycastToEdge(Vector2 castThroughPoint)
+    EdgePoint RaycastToEdge(Vector2 localCastThroughPoint)
     {
-        // Find the end point of the raycast
-        Vector2 pointOnEdge = ClampPointToQuad(castThroughPoint, true);
-        Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHit, carvingLayers);
+        // Find the furthest end point of the raycast
+        Vector2 pointOnEdge = ClampPointToQuad(localCastThroughPoint, true);
+        Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers);
 
-        bool didRayHit = (nonAllocHit[0].collider != null);
+        bool didRayHit = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers) > 0;
 
         // Info about where the ray landed, whether on geometry or the border of the quad
-        Vector2 hitPoint = didRayHit ? meshTransform.InverseTransformPoint(nonAllocHit[0].point) : pointOnEdge;
-        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHit[0].normal) : -DetermineQuadrant(pointOnEdge);
+        Vector2 hitPoint = didRayHit ? meshTransform.InverseTransformPoint(nonAllocHits[0].point) : pointOnEdge;
+        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[0].normal) : -DetermineQuadrant(pointOnEdge);
+
+        return new EdgePoint(hitPoint, hitNormal, VectorTo360Angle(pointOnEdge.x, pointOnEdge.y), didRayHit);
+    }
+
+    EdgePoint FindPointBehind(Vector2 localCastThroughPoint)
+    {
+        // Find the furthest end point of the raycast
+        Vector2 pointOnEdge = ClampPointToQuad(localCastThroughPoint, true);
+        int hits = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers);
+        int behindHitIndex = -1;
+        Vector2 worldCastThroughPoint = meshTransform.TransformPoint(localCastThroughPoint);
+
+        // Check each hit
+        for (int i = 0; i < hits; i++)
+        {
+            // Did we hit an object?
+            if (nonAllocHits[i].collider != null)
+            {
+                // Was it the cast through point?
+                if (Vector2.Distance(worldCastThroughPoint, nonAllocHits[i].point) < 0.01f)
+                {
+                    continue;
+                }
+            }
+
+            // We hit something behind!
+            behindHitIndex = i;
+            break;
+        }
+
+        bool didRayHit = (behindHitIndex != -1);
+
+        // Info about where the ray landed, whether on geometry or the border of the quad
+        Vector2 hitPoint = didRayHit ? meshTransform.InverseTransformPoint(nonAllocHits[behindHitIndex].point) : pointOnEdge;
+        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[behindHitIndex].normal) : -DetermineQuadrant(pointOnEdge);
 
         return new EdgePoint(hitPoint, hitNormal, VectorTo360Angle(pointOnEdge.x, pointOnEdge.y), didRayHit);
     }
@@ -316,11 +366,69 @@ public class CarvableMesh : MonoBehaviour
         return true;
     }
 
+    void BinarySortedListInsertion(List<EdgePoint> edgePoints, EdgePoint point)
+    {
+
+    }
+
     List<EdgePoint> GetColliderVertices(Collider2D collider)
     {
-        List<EdgePoint> colliderVertices = new List<EdgePoint>();
+        List<Vector2> vertices;
 
-        return colliderVertices;
+        switch (collider)
+        {
+            case BoxCollider2D:
+                vertices = GetBoxVertices(collider as BoxCollider2D);
+                break;
+            default:
+                // This collider type is not supported!
+                return null;
+        }
+
+        List<EdgePoint> colliderEdgePoints = new List<EdgePoint>();
+
+        // For each vertex in collider-space
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            // Find point data
+            int nextIndex = (i + 1) % vertices.Count;
+            int previousIndex = (i - 1 >= 0) ? (i - 1) : (vertices.Count - 1);
+            Vector2 previousNormal = TangentToNormal((vertices[i] - vertices[previousIndex]));
+            Vector2 nextNormal = TangentToNormal((vertices[nextIndex] - vertices[i]));
+            float angleToPoint = VectorTo360Angle(vertices[i].x, vertices[i].y);
+
+            // Create EdgePoint for it
+            EdgePoint edgePoint = new EdgePoint(vertices[i], previousNormal, nextNormal, angleToPoint, true);
+            colliderEdgePoints.Add(edgePoint);
+        }
+
+        return colliderEdgePoints;
+    }
+
+    List<Vector2> GetBoxVertices(BoxCollider2D boxCollider)
+    {
+        List<Vector2> boxVertices = new List<Vector2>(4);
+
+        Vector2 halfTotalSize = boxCollider.size / 2f;
+        Transform colliderTransform = boxCollider.transform;
+
+        // Find points relative to the collider
+        boxVertices.Add(new Vector2(-halfTotalSize.x, halfTotalSize.y));
+        boxVertices.Add(new Vector2(halfTotalSize.x, halfTotalSize.y));
+        boxVertices.Add(new Vector2(halfTotalSize.x, -halfTotalSize.y));
+        boxVertices.Add(new Vector2(-halfTotalSize.x, -halfTotalSize.y));
+
+        // Convert points relative to mesh
+        for (int i = 0; i < boxVertices.Count; i++)
+        {
+            // To world-space
+            boxVertices[i] = colliderTransform.TransformPoint(boxVertices[i]);
+
+            // To mesh-space
+            boxVertices[i] = meshTransform.InverseTransformPoint(boxVertices[i]);
+        }
+
+        return boxVertices;
     }
 
     bool IsPointFrontFacing(EdgePoint localPoint)
@@ -344,18 +452,26 @@ public class CarvableMesh : MonoBehaviour
         Vector2 worldPoint = meshTransform.TransformPoint(localPoint.position);
 
         // Linecast out to the point, if we make it >99.99% of the way there, the point is not occluded
-        Physics2D.LinecastNonAlloc(worldOrigin, worldPoint, nonAllocHit, carvingLayers);
+        if (Physics2D.LinecastNonAlloc(worldOrigin, worldPoint, nonAllocHits, carvingLayers) > 0)
+        {
+            // The point is occluded if we hit something before the fraction threshold
+            return (nonAllocHits[0].fraction < occlusionFractionThreshold);
+        }
 
-        // The point is occluded if we hit something before the fraction threshold
-        return (nonAllocHit[0].collider != null && nonAllocHit[0].fraction < occlusionFractionThreshold);
+        return false;
     }
 
-    bool IsPointOnEdge(EdgePoint localPoint)
+    int FindPointEdgeStatus(EdgePoint localPoint)
     {
         Vector2 pointToOrigin = Vector2.zero - localPoint.position;
 
-        // The point is considered an "edge point" when it has exactly one front-facing and one back-facing edge
-        return (Vector2.Dot(localPoint.previousNormal, pointToOrigin) <= 0f) != (Vector2.Dot(localPoint.nextNormal, pointToOrigin) <= 0f);
+        // The point is considered "on edge" when it has exactly one front-facing and one back-facing edge
+        bool previousBackFacing = (Vector2.Dot(localPoint.previousNormal, pointToOrigin) <= 0f);
+        bool nextBackFacing = (Vector2.Dot(localPoint.nextNormal, pointToOrigin) <= 0f);
+
+        if (previousBackFacing && nextBackFacing == false) return -1;
+        else if (previousBackFacing == false && nextBackFacing) return 1;
+        else return 0;
     }
 
     Vector2 NormalToTangent(Vector2 normal)
@@ -372,9 +488,9 @@ public class CarvableMesh : MonoBehaviour
     {
         List<EdgePoint> edgePoints = CalculateShapeProjectionVertices();
 
-        edgePoints = FindProjectedEdgeVertices(edgePoints);
+        FindProjectedEdgeVertices(edgePoints);
 
-        edgePoints = FindGeometryIntersectionVertices(edgePoints);
+        FindGeometryIntersectionVertices(edgePoints);
 
         return edgePoints;
     }
@@ -423,20 +539,75 @@ public class CarvableMesh : MonoBehaviour
         EdgePoint bottomRightPoint = new EdgePoint(bottomRight, Vector2.up, Vector2.left, VectorTo360Angle(bottomRight.x, bottomRight.y), false);
         if (IsPointOccluded(bottomRightPoint) == false) edgePoints.Add(bottomRightPoint);
 
-        // Sort by angle value now
-        // ...
+        // Sort by angle value now, using the CompareTo() method implemented in EdgePoint
+        edgePoints.Sort();
 
         return edgePoints;
     }
 
-    List<EdgePoint> FindProjectedEdgeVertices(List<EdgePoint> edgePoints)
+    void FindProjectedEdgeVertices(List<EdgePoint> edgePoints)
     {
-        return edgePoints;
+        // Sweep around vertices in ascending angle order
+        for (int i = 0; i < edgePoints.Count; i++)
+        {
+            // For all edge vertices...
+            int edgePointStatus = FindPointEdgeStatus(edgePoints[i]);
+            if (edgePointStatus != 0)
+            {
+                // Cast through them to find a point behind
+                EdgePoint edgeDropoffPoint = FindPointBehind(edgePoints[i].position);
+
+                // Does this point go before or after in the list?
+                bool insertAfter = (edgePointStatus == 1);
+
+                // Find insertion index
+                int insertionIndex = insertAfter ? (i + 1) : i;
+
+                // Mark EdgePoints as degenerate
+                edgePoints[i].isDegenerate = true;
+                edgeDropoffPoint.isDegenerate = true;
+
+                // Update normals to fake continuity
+                if (insertAfter)
+                {
+                    // This edge is at the end of the object
+                    Vector2 edgeNormal = TangentToNormal(edgeDropoffPoint.position - edgePoints[i].position);
+                    edgePoints[i].nextNormal = edgeNormal;
+                    edgeDropoffPoint.previousNormal = edgeNormal;
+                }
+                else
+                {
+                    // This edge is at the start of the object
+                    Vector2 edgeNormal = TangentToNormal(edgePoints[i].position - edgeDropoffPoint.position);
+                    edgePoints[i].previousNormal = edgeNormal;
+                    edgeDropoffPoint.nextNormal = edgeNormal;
+                }
+
+                // Insert the dropoff point, and ensure we skip it, as we know it isn't a vertex point
+                edgePoints.Insert(insertionIndex, edgeDropoffPoint);
+                i += 1;
+            }
+        }
     }
 
-    List<EdgePoint> FindGeometryIntersectionVertices(List<EdgePoint> edgePoints)
+    void FindGeometryIntersectionVertices(List<EdgePoint> edgePoints)
     {
-        return edgePoints;
+        // Sweep around vertices in ascending angle order
+        for (int i = 0; i < edgePoints.Count; i++)
+        {
+            int nextIndex = (i % edgePoints.Count);
+
+            // If two consecutive points are not continuous, we need to find an edge between them
+            if (AreEdgePointsContinuous(edgePoints[i], edgePoints[nextIndex]) == false)
+            {
+                Debug.DrawLine(meshTransform.TransformPoint(edgePoints[i].position), meshTransform.TransformPoint(edgePoints[nextIndex].position), Color.red);
+                //FindEdge(edgePoints[i], edgePoints[nextIndex]);
+            }
+            else
+            {
+                Debug.DrawLine(meshTransform.TransformPoint(edgePoints[i].position), meshTransform.TransformPoint(edgePoints[nextIndex].position), Color.green);
+            }
+        }
     }
 
     Vector3[] BuildVertexArray(List<EdgePoint> edgePoints)
@@ -478,16 +649,20 @@ public class CarvableMesh : MonoBehaviour
     int[] FormTriangles(Vector3[] vertices)
     {
         int triangleIndexCount = (vertices.Length - 1) * 3;
+
         int[] triangles = new int[triangleIndexCount];
 
         // Setup triangle winding order
         for (int i = 0; i < triangleIndexCount - 2; i += 3)
         {
+            int firstIndex = (i < triangleIndexCount - 3) ? (i / 3) + 2 : 1;
+            int secondIndex = (i / 3) + 1;
+
             // First edge vertex (loops back around to share first edge vertex for last triangle)
-            triangles[i] = (i < triangleIndexCount - 3) ? (i / 3) + 2 : 1;
+            triangles[i] = firstIndex;
 
             // Second edge vertex
-            triangles[i + 1] = (i / 3) + 1;
+            triangles[i + 1] = secondIndex;
 
             // Center
             triangles[i + 2] = 0;
