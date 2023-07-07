@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering;
 
 public class CarvableMesh : MonoBehaviour
@@ -20,9 +21,8 @@ public class CarvableMesh : MonoBehaviour
     [Header("Edge Search Fidelity")]
     [Range(0, 32)] 
     public int maxEdgeSearchIterations = 8;
-    [Range(0, 32)]
+    [Range(0.001f, 10f)]
     public float edgeSearchMinAngleThreshold = 0.1f;
-    public bool keepBothEdgeSearchVertices = false;
 
     [Header("Continuity Definition")]
     [Min(0.01f)] 
@@ -67,13 +67,13 @@ public class CarvableMesh : MonoBehaviour
         }
     }
 
-    private Vector2 topLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / 2f); } }
-
     private Vector2 topRight { get { return new Vector2(meshSize.x / 2f, meshSize.y / 2f); } }
 
-    private Vector2 bottomRight { get { return new Vector2(meshSize.x / 2f, meshSize.y / -2f); } }
+    private Vector2 topLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / 2f); } }
 
     private Vector2 bottomLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / -2f); } }
+
+    private Vector2 bottomRight { get { return new Vector2(meshSize.x / 2f, meshSize.y / -2f); } }
 
     // DATA STRUCTURES
     private class EdgePoint:IComparable<EdgePoint>
@@ -363,12 +363,80 @@ public class CarvableMesh : MonoBehaviour
 
     bool AreEdgePointsContinuous(EdgePoint minEdge, EdgePoint maxEdge)
     {
+        // If the angle between the surface normals is too large, then we treat them as non-continuous
+        if (Vector2.Angle(minEdge.nextNormal, maxEdge.previousNormal) > angleContinuityThreshold) return false;
+
+        // Project points onto surface tangents of each other
+        Vector2 projectedAOnTangentB = (Vector2)Vector3.ProjectOnPlane(minEdge.position - maxEdge.position, maxEdge.previousNormal) + maxEdge.position;
+        Vector2 projectedBOnTangentA = (Vector2)Vector3.ProjectOnPlane(maxEdge.position - minEdge.position, minEdge.nextNormal) + minEdge.position;
+
+        // Find maximum discrepancy between the point position and where it would need to be for perfect continuity
+        float maxContinuityOffset = Mathf.Max(Vector2.Distance(minEdge.position, projectedAOnTangentB), Vector2.Distance(maxEdge.position, projectedBOnTangentA));
+
+        if (maxContinuityOffset > projectionOffsetThreshold) return false;
+
+        // All conditions met, the points are continuous
         return true;
     }
 
-    void BinarySortedListInsertion(List<EdgePoint> edgePoints, EdgePoint point)
+    int BinarySortedListInsertion(List<EdgePoint> edgePoints, EdgePoint point)
     {
+        if (edgePoints.Count == 0)
+        {
+            edgePoints.Add(point);
+            return 0;
+        }
 
+        int minIndex = 0;
+        int maxIndex = edgePoints.Count - 1;
+
+        // If the point we are adding is a new min or max of the dataset
+        if (point.angle >= edgePoints[maxIndex].angle)
+        {
+            edgePoints.Add(point);
+            return edgePoints.Count - 1;
+        }
+        else if (point.angle < edgePoints[minIndex].angle)
+        {
+            edgePoints.Insert(0, point);
+            return 0;
+        }
+
+        // The point we are adding lies somewhere in the middle of the dataset
+        while (true)
+        {
+            // Find half-way between min and max
+            int midpointIndex = minIndex + ((maxIndex - minIndex) / 2);
+            EdgePoint midpointElement = edgePoints[midpointIndex];
+
+            // Points have collapsed (ie. the search is over)
+            if (maxIndex == minIndex + 1)
+            {
+                edgePoints.Insert(maxIndex, point);
+                return maxIndex;
+            }
+
+            // Exact match, we can just add the point here
+            if (point.angle == midpointElement.angle)
+            {
+                edgePoints.Insert(midpointIndex, point);
+                return midpointIndex;
+            }
+
+            // Raise min index
+            if (point.angle > midpointElement.angle)
+            {
+                minIndex = midpointIndex;
+                continue;
+            }
+
+            // Lower max index
+            if (point.angle < midpointElement.angle)
+            {
+                maxIndex = midpointIndex;
+                continue;
+            }
+        }
     }
 
     List<EdgePoint> GetColliderVertices(Collider2D collider)
@@ -595,17 +663,26 @@ public class CarvableMesh : MonoBehaviour
         // Sweep around vertices in ascending angle order
         for (int i = 0; i < edgePoints.Count; i++)
         {
-            int nextIndex = (i % edgePoints.Count);
+            int nextIndex = ((i + 1) % edgePoints.Count);
 
             // If two consecutive points are not continuous, we need to find an edge between them
             if (AreEdgePointsContinuous(edgePoints[i], edgePoints[nextIndex]) == false)
             {
-                Debug.DrawLine(meshTransform.TransformPoint(edgePoints[i].position), meshTransform.TransformPoint(edgePoints[nextIndex].position), Color.red);
-                //FindEdge(edgePoints[i], edgePoints[nextIndex]);
-            }
-            else
-            {
-                Debug.DrawLine(meshTransform.TransformPoint(edgePoints[i].position), meshTransform.TransformPoint(edgePoints[nextIndex].position), Color.green);
+                // Search for a set of vertices that approximate the geometric intersection causing the discontinuity
+                Tuple<EdgePoint, EdgePoint> detailPoints = FindEdge(edgePoints[i], edgePoints[nextIndex]);
+
+                int insertionIndex1 = -1;
+                int insertionIndex2 = -1;
+                if (detailPoints.Item1 != edgePoints[i]) insertionIndex1 = BinarySortedListInsertion(edgePoints, detailPoints.Item1); // The minEdge is a different point to what it started as, insert into list
+                if (detailPoints.Item2 != edgePoints[nextIndex]) insertionIndex2 = BinarySortedListInsertion(edgePoints, detailPoints.Item2); // The maxEdge is a different point to what it started as, insert into list
+                if (insertionIndex2 <= insertionIndex1) insertionIndex1 += 1;
+
+                // Update normals and stuff
+                edgePoints[insertionIndex1].previousNormal = edgePoints[insertionIndex1 - 1 >= 0 ? insertionIndex1 - 1 : edgePoints.Count - 1].nextNormal;
+                edgePoints[insertionIndex1].nextNormal = edgePoints[insertionIndex2].previousNormal;
+
+                // Ensure we skip to checking the max detail point next
+                i = (Mathf.Max(i, insertionIndex1, insertionIndex2 - 1));
             }
         }
     }
