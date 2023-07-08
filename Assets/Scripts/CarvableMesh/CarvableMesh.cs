@@ -19,7 +19,7 @@ public class CarvableMesh : MonoBehaviour
     public Vector2 meshSize = Vector2.zero;
 
     [Header("Edge Search Fidelity")]
-    [Range(0, 32)] 
+    [Range(1, 32)] 
     public int maxEdgeSearchIterations = 8;
     [Range(0.001f, 10f)]
     public float edgeSearchMinAngleThreshold = 0.1f;
@@ -132,12 +132,14 @@ public class CarvableMesh : MonoBehaviour
 
     private void Start()
     {
-        //UpdateMesh();
+        UpdateMesh();
     }
 
-    private void LateUpdate()
+    private void Update()
     {
-        UpdateMesh();
+        //UpdateMesh();
+
+        //meshTransform.parent.position = new Vector2((Mathf.Sin(Time.time * 1f) - 0.5f) * 3f, (Mathf.Cos(Time.time * 1f) - 0.5f) * 3f);
     }
 
     public void Initialise()
@@ -462,7 +464,7 @@ public class CarvableMesh : MonoBehaviour
             int nextIndex = (i + 1) % vertices.Count;
             int previousIndex = (i - 1 >= 0) ? (i - 1) : (vertices.Count - 1);
             Vector2 previousNormal = TangentToNormal((vertices[i] - vertices[previousIndex]));
-            Vector2 nextNormal = TangentToNormal((vertices[nextIndex] - vertices[i]));
+            Vector2 nextNormal = TangentToNormal(vertices[nextIndex] - vertices[i]);
             float angleToPoint = VectorTo360Angle(vertices[i].x, vertices[i].y);
 
             // Create EdgePoint for it
@@ -660,29 +662,67 @@ public class CarvableMesh : MonoBehaviour
 
     void FindGeometryIntersectionVertices(List<EdgePoint> edgePoints)
     {
-        // Sweep around vertices in ascending angle order
-        for (int i = 0; i < edgePoints.Count; i++)
+        int currentIndex = 0;
+        EdgePoint startingElement = edgePoints[0];
+
+        // The bounds of the search, which narrow over time
+        EdgePoint minEdge = null;
+        EdgePoint maxEdge = null;
+
+        // Sweep around vertices in ascending angle order until startingElement is continuous with the one that comes before it
+        while (true)
         {
-            int nextIndex = ((i + 1) % edgePoints.Count);
+            int nextIndex = ((currentIndex + 1) % edgePoints.Count);
+
+            minEdge = edgePoints[currentIndex];
+            maxEdge = edgePoints[nextIndex];
 
             // If two consecutive points are not continuous, we need to find an edge between them
-            if (AreEdgePointsContinuous(edgePoints[i], edgePoints[nextIndex]) == false)
+            if (AreEdgePointsContinuous(minEdge, maxEdge) == false)
             {
                 // Search for a set of vertices that approximate the geometric intersection causing the discontinuity
-                Tuple<EdgePoint, EdgePoint> detailPoints = FindEdge(edgePoints[i], edgePoints[nextIndex]);
+                Tuple<EdgePoint, EdgePoint> detailPoints = FindEdge(minEdge, maxEdge);
 
-                int insertionIndex1 = -1;
-                int insertionIndex2 = -1;
-                if (detailPoints.Item1 != edgePoints[i]) insertionIndex1 = BinarySortedListInsertion(edgePoints, detailPoints.Item1); // The minEdge is a different point to what it started as, insert into list
-                if (detailPoints.Item2 != edgePoints[nextIndex]) insertionIndex2 = BinarySortedListInsertion(edgePoints, detailPoints.Item2); // The maxEdge is a different point to what it started as, insert into list
-                if (insertionIndex2 <= insertionIndex1) insertionIndex1 += 1;
+                int minInsertionIndex = currentIndex;
+                if (detailPoints.Item1 != minEdge)
+                {
+                    minInsertionIndex = BinarySortedListInsertion(edgePoints, detailPoints.Item1);
+                }
 
-                // Update normals and stuff
-                edgePoints[insertionIndex1].previousNormal = edgePoints[insertionIndex1 - 1 >= 0 ? insertionIndex1 - 1 : edgePoints.Count - 1].nextNormal;
-                edgePoints[insertionIndex1].nextNormal = edgePoints[insertionIndex2].previousNormal;
+                int maxInsertionIndex = nextIndex;
+                if (detailPoints.Item2 != maxEdge)
+                {
+                    maxInsertionIndex = BinarySortedListInsertion(edgePoints, detailPoints.Item2); 
+                }
+
+                if (minInsertionIndex > maxInsertionIndex) minInsertionIndex += 1;
+
+                // Update normals between inserted points
+                edgePoints[minInsertionIndex].previousNormal = edgePoints[minInsertionIndex - 1 >= 0 ? minInsertionIndex - 1 : edgePoints.Count - 1].nextNormal;
+                edgePoints[minInsertionIndex].nextNormal = TangentToNormal(edgePoints[maxInsertionIndex].position - edgePoints[minInsertionIndex].position);
+                edgePoints[maxInsertionIndex].previousNormal = edgePoints[minInsertionIndex].nextNormal;
+
+                if (edgePoints.Count > 200)
+                {
+                    Debug.LogWarning("Mesh Point Overload!");
+                    Debug.Log("Camera position: (" + meshTransform.parent.position.x.ToString("F20") + ", " + meshTransform.parent.position.y.ToString("F20") + ")");
+                    Debug.Log("Vertex position A: " + edgePoints[minInsertionIndex].position);
+                    Debug.Log("Vertex position B: " + edgePoints[maxInsertionIndex].position);
+                    Debug.DrawLine(meshTransform.parent.position, meshTransform.TransformPoint(edgePoints[minInsertionIndex].position), Color.red, 10f);
+                    Debug.DrawLine(meshTransform.parent.position, meshTransform.TransformPoint(edgePoints[maxInsertionIndex].position), Color.green, 10f);
+                    break; // No crash pls
+                }
 
                 // Ensure we skip to checking the max detail point next
-                i = (Mathf.Max(i, insertionIndex1, insertionIndex2 - 1));
+                currentIndex = maxInsertionIndex;
+            }
+            else
+            {
+                // We've completed a full loop around the point set
+                if (edgePoints[nextIndex] == startingElement) break;
+
+                // Check the next one
+                currentIndex = nextIndex;
             }
         }
     }
