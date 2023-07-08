@@ -84,7 +84,7 @@ public partial class CarvableMesh : MonoBehaviour
         else
         {
             meshInstance = new Mesh();
-            meshInstance.name = "ProceduralMesh";
+            meshInstance.name = gameObject.name;
         }
 
         // Ensure mesh is assigned to filter
