@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering;
@@ -122,33 +123,18 @@ public class CarvableMesh : MonoBehaviour
             // It doesn't matter!
             return 0;
         }
-
-        public bool EqualData(EdgePoint other)
-        {
-            // Compare their data, not their instance
-            if (position != other.position) return false;
-            if (previousNormal != other.previousNormal) return false;
-            if (nextNormal != other.nextNormal) return false;
-            if (angle != other.angle) return false;
-            if (onSurface != other.onSurface) return false;
-            if (isDegenerate != other.isDegenerate) return false;
-
-            return true;
-        }
     }
 
     #endregion
 
     private void Start()
     {
-        UpdateMesh();
+        //UpdateMesh();
     }
 
     private void Update()
     {
         UpdateMesh();
-
-        //meshTransform.parent.position = new Vector2((Mathf.Sin(Time.time * 1f) - 0.5f) * 3f, (Mathf.Cos(Time.time * 1f) - 0.5f) * 3f);
     }
 
     public void Initialise()
@@ -289,11 +275,18 @@ public class CarvableMesh : MonoBehaviour
         return angle;
     }
 
+    Vector2 AngleToVector(float angleDegrees)
+    {
+        float angleRadians = angleDegrees * Mathf.Deg2Rad;
+
+        Vector2 direction = new Vector2(Mathf.Cos(angleRadians), Mathf.Sin(angleRadians));
+        return direction;
+    }
+
     EdgePoint RaycastToEdge(Vector2 localCastThroughPoint)
     {
-        // Find the furthest end point of the raycast
+        // Find the furthest end point of the raycast in local-space
         Vector2 pointOnEdge = ClampPointToQuad(localCastThroughPoint, true);
-        Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers);
 
         bool didRayHit = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers) > 0;
 
@@ -308,7 +301,9 @@ public class CarvableMesh : MonoBehaviour
     {
         // Find the furthest end point of the raycast
         Vector2 pointOnEdge = ClampPointToQuad(localCastThroughPoint, true);
+
         int hits = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers);
+
         int behindHitIndex = -1;
         Vector2 worldCastThroughPoint = meshTransform.TransformPoint(localCastThroughPoint);
 
@@ -341,6 +336,7 @@ public class CarvableMesh : MonoBehaviour
 
     Tuple<EdgePoint, EdgePoint> FindEdge(EdgePoint startEdge, EdgePoint endEdge)
     {
+        // Ensure we make new instances so we don't write directly to the list
         EdgePoint minEdge = new EdgePoint(startEdge.position, startEdge.previousNormal, startEdge.nextNormal, startEdge.angle, startEdge.onSurface);
         EdgePoint maxEdge = new EdgePoint(endEdge.position, endEdge.previousNormal, endEdge.nextNormal, endEdge.angle, endEdge.onSurface);
 
@@ -350,19 +346,17 @@ public class CarvableMesh : MonoBehaviour
         // Complete several iterations to solve the edge constraint
         for (int i = 0; i < maxEdgeSearchIterations; i++)
         {
-            // Fire ray half-way between min and max
-            Vector2 midpoint = (minEdge.position + maxEdge.position) / 2f;
+            // Angular delta between minEdge and maxEdge
+            float minToMaxAngle = Mathf.DeltaAngle(minEdge.angle, maxEdge.angle);
+            if (minToMaxAngle < 0f) minToMaxAngle += 360f; // Ensure clock-wise distance between angles
 
-            // Project midpoint onto both tangents and cast through whichever is closer
-            // Used to resolve case in which minEdge, maxEdge and desired EdgePoint form a triangle which encapsulates the mesh origin
-            // This would normally cause the ray to fire backwards from the mesh origin
-            Vector2 midpointA = FindPointOnLine(midpoint, NormalToTangent(minEdge.nextNormal), minEdge.position);
-            Vector2 midpointB = FindPointOnLine(midpoint, NormalToTangent(maxEdge.previousNormal), maxEdge.position);
-            midpoint = (midpoint - midpointA).sqrMagnitude <= (midpoint - midpointB).sqrMagnitude ? midpointA : midpointB;
+            // Clock-wise angular lerp to find midpoint
+            float midpointAngle = (minToMaxAngle / 2f) + minEdge.angle;
+            Vector2 midpoint = AngleToVector(midpointAngle);
 
-
+            // Cast through the midpoint
             EdgePoint midEdgePoint = RaycastToEdge(midpoint);
-            midEdgePoint.angle = VectorTo360Angle(midpoint.x, midpoint.y);
+            midEdgePoint.angle = midpointAngle;
 
             // Based on continuity with previousEdgePoint, save ray hit data to min or max
             if (AreEdgePointsContinuous(minEdge, midEdgePoint))
@@ -441,7 +435,7 @@ public class CarvableMesh : MonoBehaviour
                 return maxIndex;
             }
 
-            // Exact match, we can just add the point here
+            // Exact match
             if (point.angle == midpointElement.angle)
             {
                 edgePoints.Insert(midpointIndex, point);
@@ -480,7 +474,7 @@ public class CarvableMesh : MonoBehaviour
 
         List<EdgePoint> colliderEdgePoints = new List<EdgePoint>();
 
-        // For each vertex in collider-space
+        // For each vertex in local-space
         for (int i = 0; i < vertices.Count; i++)
         {
             // Find point data
@@ -701,8 +695,8 @@ public class CarvableMesh : MonoBehaviour
         EdgePoint startingElement = edgePoints[0];
 
         // The bounds of the search, which narrow over time
-        EdgePoint minEdge = null;
-        EdgePoint maxEdge = null;
+        EdgePoint minEdge;
+        EdgePoint maxEdge;
 
         // Sweep around vertices in ascending angle order until startingElement is continuous with the one that comes before it
         while (true)
@@ -718,18 +712,14 @@ public class CarvableMesh : MonoBehaviour
                 // Search for a set of vertices that approximate the geometric intersection causing the discontinuity
                 Tuple<EdgePoint, EdgePoint> detailPoints = FindEdge(minEdge, maxEdge);
 
-                //DrawToPoint(minEdge.position, Color.red, 1f);
-                //DrawToPoint(maxEdge.position, Color.red, 1f);
-                //yield return new WaitForSeconds(1f);
-
                 int minInsertionIndex = currentIndex;
-                if (detailPoints.Item1 != minEdge)
+                if (detailPoints.Item1 != minEdge && detailPoints.Item1.position != minEdge.position)
                 {
                     minInsertionIndex = BinaryListInsertion(edgePoints, detailPoints.Item1);
                 }
 
                 int maxInsertionIndex = nextIndex;
-                if (detailPoints.Item2 != maxEdge)
+                if (detailPoints.Item2 != maxEdge && detailPoints.Item2.position != maxEdge.position)
                 {
                     maxInsertionIndex = BinaryListInsertion(edgePoints, detailPoints.Item2); 
                 }
@@ -740,10 +730,6 @@ public class CarvableMesh : MonoBehaviour
                 detailPoints.Item1.previousNormal = edgePoints[minInsertionIndex - 1 >= 0 ? minInsertionIndex - 1 : edgePoints.Count - 1].nextNormal;
                 detailPoints.Item1.nextNormal = TangentToNormal(detailPoints.Item2.position - detailPoints.Item1.position);
                 detailPoints.Item2.previousNormal = detailPoints.Item1.nextNormal;
-
-                //DrawToPoint(detailPoints.Item1.position, Color.blue, 1f);
-                //DrawToPoint(detailPoints.Item2.position, Color.blue, 1f);
-                //yield return new WaitForSeconds(1f);
 
                 // Probably more than we'd like to be dealing with
                 if (edgePoints.Count > 1000)
@@ -763,10 +749,6 @@ public class CarvableMesh : MonoBehaviour
             }
             else
             {
-                //DrawToPoint(minEdge.position, Color.green, 1f);
-                //DrawToPoint(maxEdge.position, Color.green, 1f);
-                //yield return new WaitForSeconds(1f);
-
                 // We've completed a full loop around the point set
                 if (edgePoints[nextIndex] == startingElement) break;
 
@@ -868,13 +850,12 @@ public class CarvableMesh : MonoBehaviour
         Gizmos.DrawLine(bottomLeft, topLeft);
     }
 
-    void DrawToPoint(Vector2 point, Color color, float? time = null)
+    void DrawToPoint(Vector2 point, Color color, float time)
     {
         // World-space position of the endpoint
         Vector2 worldSpacePoint = meshTransform.TransformPoint(point);
 
         // Draw the line
-        if (time != null) Debug.DrawLine(meshTransform.position, worldSpacePoint, color, time.Value);
-        else Debug.DrawLine(meshTransform.position, worldSpacePoint, color);
+        Debug.DrawLine(meshTransform.position, worldSpacePoint, color, time);
     }
 }
