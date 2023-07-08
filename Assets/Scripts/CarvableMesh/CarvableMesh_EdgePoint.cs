@@ -5,7 +5,8 @@ using UnityEngine;
 
 public partial class CarvableMesh
 {
-    // DATA STRUCTURES
+    #region Data Structures
+
     private class EdgePoint : IComparable<EdgePoint>
     {
         public Vector2 position;
@@ -58,7 +59,7 @@ public partial class CarvableMesh
         }
     }
 
-    #region Private Methods
+    #endregion
 
     private bool IsPointFrontFacing(EdgePoint localPoint)
     {
@@ -123,7 +124,4 @@ public partial class CarvableMesh
         // All conditions met, the points are continuous
         return true;
     }
-
-
-    #endregion
 }

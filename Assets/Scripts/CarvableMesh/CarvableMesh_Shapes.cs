@@ -4,9 +4,6 @@ using UnityEngine;
 
 public partial class CarvableMesh
 {
-    #region Private Methods
-
-    // Need to add more shapes
     private List<EdgePoint> GetColliderVertices(Collider2D collider)
     {
         List<Vector2> vertices;
@@ -66,6 +63,4 @@ public partial class CarvableMesh
 
         return boxVertices;
     }
-
-    #endregion
 }

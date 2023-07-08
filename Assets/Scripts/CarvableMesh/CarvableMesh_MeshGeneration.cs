@@ -4,8 +4,6 @@ using UnityEngine;
 
 public partial class CarvableMesh
 {
-    #region Private Methods 
-
     private Vector3[] CreateVertices(List<EdgePoint> edgePoints)
     {
         if (cullContinuousVertices)
@@ -80,6 +78,4 @@ public partial class CarvableMesh
 
         return UVs;
     }
-
-    #endregion
 }
