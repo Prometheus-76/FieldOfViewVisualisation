@@ -1594,7 +1594,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   averageFpsText: {fileID: 558193952}
   averageFrameTimeText: {fileID: 849455195}
-  updateInterval: 0.3333333
+  updateInterval: 0.4
 --- !u!1 &1539771161
 GameObject:
   m_ObjectHideFlags: 0

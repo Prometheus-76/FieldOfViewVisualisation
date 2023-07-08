@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class DebugUI : MonoBehaviour
 {
@@ -36,8 +37,9 @@ public class DebugUI : MonoBehaviour
 
     void UpdateUI(float timeSinceUpdate)
     {
-        averageFpsText.text = "FPS (average): " + (framesSinceLastUpdate / timeSinceUpdate).ToString("F0");
-        averageFrameTimeText.text = "FRAME TIME (average): " + ((timeSinceUpdate / framesSinceLastUpdate) * 1000f).ToString("F2") + "ms";
+        float fpsAverage = (framesSinceLastUpdate / timeSinceUpdate);
+        averageFpsText.text = "FPS (average): " + fpsAverage.ToString("F0");
+        averageFrameTimeText.text = "FRAME TIME (average): " + (fpsAverage * 0.001f).ToString("F2") + "ms";
 
         // Reset data
         framesSinceLastUpdate = 0;
