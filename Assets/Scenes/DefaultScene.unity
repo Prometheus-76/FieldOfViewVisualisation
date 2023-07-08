@@ -291,8 +291,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   meshSize: {x: 17.8, y: 10}
-  maxEdgeSearchIterations: 16
-  edgeSearchMinAngleThreshold: 1
+  maxEdgeSearchIterations: 8
+  edgeSearchMinAngleThreshold: 0.1
   projectionOffsetThreshold: 0.1
   angleContinuityThreshold: 5
   cullBackFacingVertices: 1
