@@ -160,6 +160,7 @@ public partial class CarvableMesh : MonoBehaviour
         for (int c = 0; c < collidersInRange.Length; c++)
         {
             List<EdgePoint> colliderVertices = GetColliderVertices(collidersInRange[c]);
+            if (colliderVertices == null) continue; // Unsupported collider type
 
             // For each point in the shape...
             for (int v = 0; v < colliderVertices.Count; v++)
