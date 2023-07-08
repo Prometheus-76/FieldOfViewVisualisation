@@ -292,10 +292,9 @@ MonoBehaviour:
     m_Bits: 64
   meshSize: {x: 17.8, y: 10}
   maxEdgeSearchIterations: 32
-  edgeSearchMinAngleThreshold: 0.001
+  edgeSearchMinAngleThreshold: 0.1
   projectionOffsetThreshold: 0.1
   angleContinuityThreshold: 5
-  occlusionFractionThreshold: 0.999
   cullBackFacingVertices: 1
   cullOccludedVertices: 1
   cullContinuousVertices: 1
@@ -880,7 +879,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1549064283}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.73, y: -1.57, z: -10}
+  m_LocalPosition: {x: -7.48, y: -0.1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

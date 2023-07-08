@@ -30,10 +30,6 @@ public class CarvableMesh : MonoBehaviour
     [Range(0.1f,180f)]
     public float angleContinuityThreshold = 5f;
 
-    [Header("Geometry")]
-    [Range(0f, 1f)]
-    public float occlusionFractionThreshold = 0.995f;
-
     [Header("Optimisation")]
     public bool cullBackFacingVertices = false;
     public bool cullOccludedVertices = false;
@@ -44,7 +40,7 @@ public class CarvableMesh : MonoBehaviour
     #region Members
 
     // PRIVATE
-    private bool initialisationFailed = false;
+    private bool meshFailed = false;
     private Mesh meshInstance = null;
     private RaycastHit2D[] nonAllocHits;
 
@@ -126,6 +122,19 @@ public class CarvableMesh : MonoBehaviour
             // It doesn't matter!
             return 0;
         }
+
+        public bool EqualData(EdgePoint other)
+        {
+            // Compare their data, not their instance
+            if (position != other.position) return false;
+            if (previousNormal != other.previousNormal) return false;
+            if (nextNormal != other.nextNormal) return false;
+            if (angle != other.angle) return false;
+            if (onSurface != other.onSurface) return false;
+            if (isDegenerate != other.isDegenerate) return false;
+
+            return true;
+        }
     }
 
     #endregion
@@ -137,7 +146,7 @@ public class CarvableMesh : MonoBehaviour
 
     private void Update()
     {
-        //UpdateMesh();
+        UpdateMesh();
 
         //meshTransform.parent.position = new Vector2((Mathf.Sin(Time.time * 1f) - 0.5f) * 3f, (Mathf.Cos(Time.time * 1f) - 0.5f) * 3f);
     }
@@ -167,12 +176,12 @@ public class CarvableMesh : MonoBehaviour
         if (meshFilter != null) meshFilter.mesh = meshInstance;
 
         // If everything worked the way we expected, allow the mesh to operate
-        if (isInitialised) initialisationFailed = false;
+        if (isInitialised) meshFailed = false;
     }
 
     public void UpdateMesh()
     {
-        if (initialisationFailed) return;
+        if (meshFailed) return;
 
         // Attempt to ensure things are initialised
         if (isInitialised == false)
@@ -184,7 +193,7 @@ public class CarvableMesh : MonoBehaviour
             {
                 Debug.Log("CarvableMesh initialisation failed: " + "\"" + gameObject.name + "\"");
 
-                initialisationFailed = true;
+                meshFailed = true;
                 return;
             }
         }
@@ -332,14 +341,26 @@ public class CarvableMesh : MonoBehaviour
 
     Tuple<EdgePoint, EdgePoint> FindEdge(EdgePoint startEdge, EdgePoint endEdge)
     {
-        EdgePoint minEdge = new EdgePoint(startEdge.position, startEdge.nextNormal, startEdge.angle, startEdge.onSurface);
-        EdgePoint maxEdge = new EdgePoint(endEdge.position, endEdge.previousNormal, endEdge.angle, endEdge.onSurface);
+        EdgePoint minEdge = new EdgePoint(startEdge.position, startEdge.previousNormal, startEdge.nextNormal, startEdge.angle, startEdge.onSurface);
+        EdgePoint maxEdge = new EdgePoint(endEdge.position, endEdge.previousNormal, endEdge.nextNormal, endEdge.angle, endEdge.onSurface);
+
+        bool minUpdated = false;
+        bool maxUpdated = false;
 
         // Complete several iterations to solve the edge constraint
         for (int i = 0; i < maxEdgeSearchIterations; i++)
         {
             // Fire ray half-way between min and max
             Vector2 midpoint = (minEdge.position + maxEdge.position) / 2f;
+
+            // Project midpoint onto both tangents and cast through whichever is closer
+            // Used to resolve case in which minEdge, maxEdge and desired EdgePoint form a triangle which encapsulates the mesh origin
+            // This would normally cause the ray to fire backwards from the mesh origin
+            Vector2 midpointA = FindPointOnLine(midpoint, NormalToTangent(minEdge.nextNormal), minEdge.position);
+            Vector2 midpointB = FindPointOnLine(midpoint, NormalToTangent(maxEdge.previousNormal), maxEdge.position);
+            midpoint = (midpoint - midpointA).sqrMagnitude <= (midpoint - midpointB).sqrMagnitude ? midpointA : midpointB;
+
+
             EdgePoint midEdgePoint = RaycastToEdge(midpoint);
             midEdgePoint.angle = VectorTo360Angle(midpoint.x, midpoint.y);
 
@@ -348,11 +369,13 @@ public class CarvableMesh : MonoBehaviour
             {
                 // Raise minEdge to maximum continuous value with previousEdgePoint (ie. close to the edge, but not over)
                 minEdge = midEdgePoint;
+                minUpdated = true;
             }
             else
             {
                 // Lower maxEdge to minimum non-continuous value with previousEdgePoint (ie. just over the edge)
                 maxEdge = midEdgePoint;
+                maxUpdated = true;
             }
 
             // This is close enough for us to be satisfied, early out to save on performance
@@ -360,7 +383,7 @@ public class CarvableMesh : MonoBehaviour
         }
 
         // Return both edges in order
-        return new Tuple<EdgePoint, EdgePoint>(minEdge, maxEdge);
+        return new Tuple<EdgePoint, EdgePoint>(minUpdated ? minEdge : startEdge, maxUpdated ? maxEdge : endEdge);
     }
 
     bool AreEdgePointsContinuous(EdgePoint minEdge, EdgePoint maxEdge)
@@ -369,19 +392,19 @@ public class CarvableMesh : MonoBehaviour
         if (Vector2.Angle(minEdge.nextNormal, maxEdge.previousNormal) > angleContinuityThreshold) return false;
 
         // Project points onto surface tangents of each other
-        Vector2 projectedAOnTangentB = (Vector2)Vector3.ProjectOnPlane(minEdge.position - maxEdge.position, maxEdge.previousNormal) + maxEdge.position;
-        Vector2 projectedBOnTangentA = (Vector2)Vector3.ProjectOnPlane(maxEdge.position - minEdge.position, minEdge.nextNormal) + minEdge.position;
+        Vector2 projectedAOnTangentB = FindPointOnLine(minEdge.position, NormalToTangent(maxEdge.previousNormal), maxEdge.position);
+        Vector2 projectedBOnTangentA = FindPointOnLine(maxEdge.position, NormalToTangent(minEdge.nextNormal), minEdge.position);
 
         // Find maximum discrepancy between the point position and where it would need to be for perfect continuity
-        float maxContinuityOffset = Mathf.Max(Vector2.Distance(minEdge.position, projectedAOnTangentB), Vector2.Distance(maxEdge.position, projectedBOnTangentA));
+        float maxContinuityOffset = Mathf.Max((minEdge.position - projectedAOnTangentB).sqrMagnitude, (maxEdge.position - projectedBOnTangentA).sqrMagnitude);
 
-        if (maxContinuityOffset > projectionOffsetThreshold) return false;
+        if (maxContinuityOffset > (projectionOffsetThreshold * projectionOffsetThreshold)) return false;
 
         // All conditions met, the points are continuous
         return true;
     }
 
-    int BinarySortedListInsertion(List<EdgePoint> edgePoints, EdgePoint point)
+    int BinaryListInsertion(List<EdgePoint> edgePoints, EdgePoint point)
     {
         if (edgePoints.Count == 0)
         {
@@ -515,7 +538,7 @@ public class CarvableMesh : MonoBehaviour
         return false;
     }
 
-    bool IsPointOccluded(EdgePoint localPoint)
+    bool IsPointOccluded(EdgePoint localPoint, Collider2D expectedCollider)
     {
         // Get points in world-space
         Vector2 worldOrigin = meshTransform.position;
@@ -524,8 +547,11 @@ public class CarvableMesh : MonoBehaviour
         // Linecast out to the point, if we make it >99.99% of the way there, the point is not occluded
         if (Physics2D.LinecastNonAlloc(worldOrigin, worldPoint, nonAllocHits, carvingLayers) > 0)
         {
-            // The point is occluded if we hit something before the fraction threshold
-            return (nonAllocHits[0].fraction < occlusionFractionThreshold);
+            // We hit something unexpected, the object is occluded
+            if (nonAllocHits[0].collider != expectedCollider) return true;
+
+            // We must have hit something expected, was it closer than we'd expect?
+            return (nonAllocHits[0].fraction <= 0.999f);
         }
 
         return false;
@@ -552,6 +578,15 @@ public class CarvableMesh : MonoBehaviour
     Vector2 TangentToNormal(Vector2 tangent)
     {
         return new Vector2(-tangent.y, tangent.x);
+    }
+
+    Vector2 FindPointOnLine(Vector2 point, Vector2 tangent, Vector2 tangentPoint)
+    {
+        // Distance from the tangentPoint to the projected point on the tangent
+        float projectionLength = Vector2.Dot(point - tangentPoint, tangent) / tangent.magnitude;
+
+        // Convert to vector offset from tangent point
+        return (projectionLength * tangent.normalized) + tangentPoint;
     }
 
     List<EdgePoint> ConstructMeshPoints()
@@ -586,7 +621,7 @@ public class CarvableMesh : MonoBehaviour
                     if (cullBackFacingVertices == false || IsPointFrontFacing(colliderVertices[v]))
                     {
                         // Is this in-range, front-facing point occluded by other geometry?
-                        if (cullOccludedVertices == false || IsPointOccluded(colliderVertices[v]) == false)
+                        if (cullOccludedVertices == false || IsPointOccluded(colliderVertices[v], collidersInRange[c]) == false)
                         {
                             // This point is valid!
                             edgePoints.Add(colliderVertices[v]);
@@ -598,16 +633,16 @@ public class CarvableMesh : MonoBehaviour
 
         // Add mesh corners, if they're not occluded
         EdgePoint topRightPoint = new EdgePoint(topRight, Vector2.left, Vector2.down, VectorTo360Angle(topRight.x, topRight.y), false);
-        if (IsPointOccluded(topRightPoint) == false) edgePoints.Add(topRightPoint);
+        if (IsPointOccluded(topRightPoint, null) == false) edgePoints.Add(topRightPoint);
 
         EdgePoint topLeftPoint = new EdgePoint(topLeft, Vector2.down, Vector2.right, VectorTo360Angle(topLeft.x, topLeft.y), false);
-        if (IsPointOccluded(topLeftPoint) == false) edgePoints.Add(topLeftPoint);
+        if (IsPointOccluded(topLeftPoint, null) == false) edgePoints.Add(topLeftPoint);
 
         EdgePoint bottomLeftPoint = new EdgePoint(bottomLeft, Vector2.right, Vector2.up, VectorTo360Angle(bottomLeft.x, bottomLeft.y), false);
-        if (IsPointOccluded(bottomLeftPoint) == false) edgePoints.Add(bottomLeftPoint);
+        if (IsPointOccluded(bottomLeftPoint, null) == false) edgePoints.Add(bottomLeftPoint);
 
         EdgePoint bottomRightPoint = new EdgePoint(bottomRight, Vector2.up, Vector2.left, VectorTo360Angle(bottomRight.x, bottomRight.y), false);
-        if (IsPointOccluded(bottomRightPoint) == false) edgePoints.Add(bottomRightPoint);
+        if (IsPointOccluded(bottomRightPoint, null) == false) edgePoints.Add(bottomRightPoint);
 
         // Sort by angle value now, using the CompareTo() method implemented in EdgePoint
         edgePoints.Sort();
@@ -672,7 +707,7 @@ public class CarvableMesh : MonoBehaviour
         // Sweep around vertices in ascending angle order until startingElement is continuous with the one that comes before it
         while (true)
         {
-            int nextIndex = ((currentIndex + 1) % edgePoints.Count);
+            int nextIndex = (currentIndex + 1) % edgePoints.Count;
 
             minEdge = edgePoints[currentIndex];
             maxEdge = edgePoints[nextIndex];
@@ -683,26 +718,35 @@ public class CarvableMesh : MonoBehaviour
                 // Search for a set of vertices that approximate the geometric intersection causing the discontinuity
                 Tuple<EdgePoint, EdgePoint> detailPoints = FindEdge(minEdge, maxEdge);
 
+                //DrawToPoint(minEdge.position, Color.red, 1f);
+                //DrawToPoint(maxEdge.position, Color.red, 1f);
+                //yield return new WaitForSeconds(1f);
+
                 int minInsertionIndex = currentIndex;
                 if (detailPoints.Item1 != minEdge)
                 {
-                    minInsertionIndex = BinarySortedListInsertion(edgePoints, detailPoints.Item1);
+                    minInsertionIndex = BinaryListInsertion(edgePoints, detailPoints.Item1);
                 }
 
                 int maxInsertionIndex = nextIndex;
                 if (detailPoints.Item2 != maxEdge)
                 {
-                    maxInsertionIndex = BinarySortedListInsertion(edgePoints, detailPoints.Item2); 
+                    maxInsertionIndex = BinaryListInsertion(edgePoints, detailPoints.Item2); 
                 }
 
                 if (minInsertionIndex > maxInsertionIndex) minInsertionIndex += 1;
 
                 // Update normals between inserted points
-                edgePoints[minInsertionIndex].previousNormal = edgePoints[minInsertionIndex - 1 >= 0 ? minInsertionIndex - 1 : edgePoints.Count - 1].nextNormal;
-                edgePoints[minInsertionIndex].nextNormal = TangentToNormal(edgePoints[maxInsertionIndex].position - edgePoints[minInsertionIndex].position);
-                edgePoints[maxInsertionIndex].previousNormal = edgePoints[minInsertionIndex].nextNormal;
+                detailPoints.Item1.previousNormal = edgePoints[minInsertionIndex - 1 >= 0 ? minInsertionIndex - 1 : edgePoints.Count - 1].nextNormal;
+                detailPoints.Item1.nextNormal = TangentToNormal(detailPoints.Item2.position - detailPoints.Item1.position);
+                detailPoints.Item2.previousNormal = detailPoints.Item1.nextNormal;
 
-                if (edgePoints.Count > 200)
+                //DrawToPoint(detailPoints.Item1.position, Color.blue, 1f);
+                //DrawToPoint(detailPoints.Item2.position, Color.blue, 1f);
+                //yield return new WaitForSeconds(1f);
+
+                // Probably more than we'd like to be dealing with
+                if (edgePoints.Count > 1000)
                 {
                     Debug.LogWarning("Mesh Point Overload!");
                     Debug.Log("Camera position: (" + meshTransform.parent.position.x.ToString("F20") + ", " + meshTransform.parent.position.y.ToString("F20") + ")");
@@ -710,6 +754,7 @@ public class CarvableMesh : MonoBehaviour
                     Debug.Log("Vertex position B: " + edgePoints[maxInsertionIndex].position);
                     Debug.DrawLine(meshTransform.parent.position, meshTransform.TransformPoint(edgePoints[minInsertionIndex].position), Color.red, 10f);
                     Debug.DrawLine(meshTransform.parent.position, meshTransform.TransformPoint(edgePoints[maxInsertionIndex].position), Color.green, 10f);
+                    meshFailed = true;
                     break; // No crash pls
                 }
 
@@ -718,6 +763,10 @@ public class CarvableMesh : MonoBehaviour
             }
             else
             {
+                //DrawToPoint(minEdge.position, Color.green, 1f);
+                //DrawToPoint(maxEdge.position, Color.green, 1f);
+                //yield return new WaitForSeconds(1f);
+
                 // We've completed a full loop around the point set
                 if (edgePoints[nextIndex] == startingElement) break;
 
@@ -817,5 +866,15 @@ public class CarvableMesh : MonoBehaviour
         Gizmos.DrawLine(topRight, bottomRight);
         Gizmos.DrawLine(bottomRight, bottomLeft);
         Gizmos.DrawLine(bottomLeft, topLeft);
+    }
+
+    void DrawToPoint(Vector2 point, Color color, float? time = null)
+    {
+        // World-space position of the endpoint
+        Vector2 worldSpacePoint = meshTransform.TransformPoint(point);
+
+        // Draw the line
+        if (time != null) Debug.DrawLine(meshTransform.position, worldSpacePoint, color, time.Value);
+        else Debug.DrawLine(meshTransform.position, worldSpacePoint, color);
     }
 }
