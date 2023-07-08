@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 226189847}
   - component: {fileID: 226189846}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -266,7 +266,7 @@ GameObject:
   - component: {fileID: 482399313}
   - component: {fileID: 482399312}
   m_Layer: 0
-  m_Name: MeshEmitter
+  m_Name: VisionMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -295,8 +295,6 @@ MonoBehaviour:
   edgeSearchMinAngleThreshold: 0.1
   projectionOffsetThreshold: 0.1
   angleContinuityThreshold: 5
-  cullBackFacingVertices: 1
-  cullOccludedVertices: 1
   cullContinuousVertices: 0
 --- !u!23 &482399313
 MeshRenderer:
@@ -375,7 +373,7 @@ GameObject:
   - component: {fileID: 814477552}
   - component: {fileID: 814477551}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -505,7 +503,7 @@ GameObject:
   - component: {fileID: 822992336}
   - component: {fileID: 822992335}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -635,7 +633,7 @@ GameObject:
   - component: {fileID: 827418668}
   - component: {fileID: 827418667}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -943,7 +941,7 @@ GameObject:
   - component: {fileID: 1666275040}
   - component: {fileID: 1666275039}
   m_Layer: 6
-  m_Name: SurfaceC
+  m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1063,7 +1061,7 @@ GameObject:
   - component: {fileID: 1812449974}
   - component: {fileID: 1812449973}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1193,7 +1191,7 @@ GameObject:
   - component: {fileID: 1899597452}
   - component: {fileID: 1899597451}
   m_Layer: 6
-  m_Name: SurfaceC
+  m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1313,7 +1311,7 @@ GameObject:
   - component: {fileID: 1912616146}
   - component: {fileID: 1912616145}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1443,7 +1441,7 @@ GameObject:
   - component: {fileID: 2061669599}
   - component: {fileID: 2061669598}
   m_Layer: 6
-  m_Name: Surface
+  m_Name: Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
