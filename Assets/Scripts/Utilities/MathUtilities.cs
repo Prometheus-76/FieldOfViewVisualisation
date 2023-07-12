@@ -4,30 +4,30 @@ using UnityEngine;
 
 public static class MathUtilities
 {
-    public static bool IsPointInQuad(Vector2 localPoint, Vector2 quadSize)
+    public static bool IsPointInQuad(Vector2 localPoint, Vector2 halfQuadSize)
     {
-        return (Mathf.Abs(localPoint.x) <= quadSize.x / 2f && Mathf.Abs(localPoint.y) <= quadSize.y / 2f);
+        return (Mathf.Abs(localPoint.x) <= halfQuadSize.x && Mathf.Abs(localPoint.y) <= halfQuadSize.y);
     }
 
-    public static Vector2 ClampPointToQuad(Vector2 localPoint, Vector2 quadSize, bool edgeOnly)
+    public static Vector2 ClampPointToQuad(Vector2 localPoint, Vector2 halfQuadSize, bool edgeOnly)
     {
         Vector2 localOutputVector = Vector2.zero;
 
         // If the point lies outside the bounds of the quad, or we want to project onto it
-        if (edgeOnly || IsPointInQuad(localPoint, quadSize) == false)
+        if (edgeOnly || IsPointInQuad(localPoint, halfQuadSize) == false)
         {
             // Determine side of intersection / projection
-            if (Mathf.Abs(localPoint.x) * quadSize.y <= Mathf.Abs(localPoint.y) * quadSize.x)
+            if (Mathf.Abs(localPoint.x) * halfQuadSize.y <= Mathf.Abs(localPoint.y) * halfQuadSize.x)
             {
                 // Intersection with top or bottom side of quad
-                localOutputVector.x = (quadSize.y / 2f) * (localPoint.x / Mathf.Abs(localPoint.y));
-                localOutputVector.y = Mathf.Sign(localPoint.y) * (quadSize.y / 2f);
+                localOutputVector.x = halfQuadSize.y * (localPoint.x / Mathf.Abs(localPoint.y));
+                localOutputVector.y = Mathf.Sign(localPoint.y) * halfQuadSize.y;
             }
             else
             {
                 // Intersection with left or right side of quad
-                localOutputVector.x = Mathf.Sign(localPoint.x) * (quadSize.x / 2f);
-                localOutputVector.y = quadSize.x / 2f * (localPoint.y / Mathf.Abs(localPoint.x));
+                localOutputVector.x = Mathf.Sign(localPoint.x) * halfQuadSize.x;
+                localOutputVector.y = halfQuadSize.x * (localPoint.y / Mathf.Abs(localPoint.x));
             }
         }
         else
@@ -39,9 +39,9 @@ public static class MathUtilities
         return localOutputVector;
     }
 
-    public static Vector2 DetermineQuadrant(Vector2 localPoint, Vector2 quadSize)
+    public static Vector2 DetermineQuadrant(Vector2 localPoint, Vector2 halfQuadSize)
     {
-        if (Mathf.Abs(localPoint.x) * quadSize.y <= Mathf.Abs(localPoint.y) * quadSize.x)
+        if (Mathf.Abs(localPoint.x) * halfQuadSize.y <= Mathf.Abs(localPoint.y) * halfQuadSize.x)
         {
             // Vertical quadrant
             if (localPoint.y > 0f) return Vector2.up;

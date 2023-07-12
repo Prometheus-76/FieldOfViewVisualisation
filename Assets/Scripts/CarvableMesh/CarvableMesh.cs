@@ -15,7 +15,7 @@ public partial class CarvableMesh : MonoBehaviour
 
     [Header("Configuration")]
     public LayerMask carvingLayers = 0;
-    public Vector2 meshSize = Vector2.zero;
+    public Vector2 halfMeshSize = Vector2.zero;
 
     [Header("Edge Search Fidelity")]
     [Range(1, 32)] 
@@ -31,6 +31,7 @@ public partial class CarvableMesh : MonoBehaviour
 
     [Header("Optimisation")]
     public bool cullContinuousVertices = false;
+    public bool generateTextureCoordinates = false;
 
     #endregion
 
@@ -58,10 +59,10 @@ public partial class CarvableMesh : MonoBehaviour
         }
     }
 
-    private Vector2 topRight { get { return new Vector2(meshSize.x / 2f, meshSize.y / 2f); } }
-    private Vector2 topLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / 2f); } }
-    private Vector2 bottomLeft { get { return new Vector2(meshSize.x / -2f, meshSize.y / -2f); } }
-    private Vector2 bottomRight { get { return new Vector2(meshSize.x / 2f, meshSize.y / -2f); } }
+    private Vector2 topRight { get { return new Vector2(halfMeshSize.x, halfMeshSize.y); } }
+    private Vector2 topLeft { get { return new Vector2(-halfMeshSize.x, halfMeshSize.y); } }
+    private Vector2 bottomLeft { get { return new Vector2(-halfMeshSize.x, -halfMeshSize.y); } }
+    private Vector2 bottomRight { get { return new Vector2(halfMeshSize.x, -halfMeshSize.y); } }
 
     #region Public Methods
 
@@ -140,12 +141,16 @@ public partial class CarvableMesh : MonoBehaviour
 
         // Generate mesh from EdgePoint list
         Vector3[] vertices = CreateVertices(edgePoints);
-        int[] triangles = FormTriangles(vertices);
-        Vector2[] UVs = CalculateUVs(vertices);
-
         meshInstance.vertices = vertices;
+
+        int[] triangles = FormTriangles(vertices);
         meshInstance.triangles = triangles;
-        meshInstance.uv = UVs;
+
+        if (generateTextureCoordinates)
+        {
+            Vector2[] UVs = CalculateUVs(vertices);
+            meshInstance.uv = UVs;
+        }
     }
 
     #endregion
@@ -154,7 +159,7 @@ public partial class CarvableMesh : MonoBehaviour
     {
         List<EdgePoint> edgePoints = new List<EdgePoint>();
 
-        Collider2D[] collidersInRange = Physics2D.OverlapBoxAll(meshTransform.position, meshSize * meshTransform.lossyScale, meshTransform.eulerAngles.z);
+        Collider2D[] collidersInRange = Physics2D.OverlapBoxAll(meshTransform.position, halfMeshSize * 2f * meshTransform.lossyScale, meshTransform.eulerAngles.z);
 
         // Create a clock-wise winding of points that encompass each collider in range
         for (int c = 0; c < collidersInRange.Length; c++)
@@ -170,7 +175,7 @@ public partial class CarvableMesh : MonoBehaviour
                 if (IsPointFrontFacing(colliderVertices[v]))
                 {
                     // Is this front-facing point in range?
-                    if (MathUtilities.IsPointInQuad(colliderVertices[v].position, meshSize))
+                    if (MathUtilities.IsPointInQuad(colliderVertices[v].position, halfMeshSize))
                     {
                         // Is this in-range, front-facing point occluded by other geometry?
                         if (IsPointOccluded(colliderVertices[v], collidersInRange[c]) == false)
@@ -311,13 +316,13 @@ public partial class CarvableMesh : MonoBehaviour
     private EdgePoint RaycastToEdge(Vector2 localPoint)
     {
         // Find the furthest end point of the raycast in local-space
-        Vector2 pointOnEdge = MathUtilities.ClampPointToQuad(localPoint, meshSize, true);
+        Vector2 pointOnEdge = MathUtilities.ClampPointToQuad(localPoint, halfMeshSize, true);
 
         bool didRayHit = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers) > 0;
 
         // Info about where the ray landed, whether on geometry or the border of the quad
         Vector2 hitPoint = didRayHit ? meshTransform.InverseTransformPoint(nonAllocHits[0].point) : pointOnEdge;
-        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[0].normal) : MathUtilities.DetermineQuadrant(pointOnEdge, meshSize) * -1f;
+        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[0].normal) : MathUtilities.DetermineQuadrant(pointOnEdge, halfMeshSize) * -1f;
 
         return new EdgePoint(hitPoint, hitNormal, MathUtilities.VectorTo360Angle(pointOnEdge.x, pointOnEdge.y), didRayHit);
     }
@@ -325,7 +330,7 @@ public partial class CarvableMesh : MonoBehaviour
     private EdgePoint FindPointBehind(Vector2 localPoint)
     {
         // Find the furthest end point of the raycast
-        Vector2 pointOnEdge = MathUtilities.ClampPointToQuad(localPoint, meshSize, true);
+        Vector2 pointOnEdge = MathUtilities.ClampPointToQuad(localPoint, halfMeshSize, true);
 
         int hits = Physics2D.LinecastNonAlloc(meshTransform.position, meshTransform.TransformPoint(pointOnEdge), nonAllocHits, carvingLayers);
 
@@ -354,7 +359,7 @@ public partial class CarvableMesh : MonoBehaviour
 
         // Info about where the ray landed, whether on geometry or the border of the quad
         Vector2 hitPoint = didRayHit ? meshTransform.InverseTransformPoint(nonAllocHits[behindHitIndex].point) : pointOnEdge;
-        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[behindHitIndex].normal) : MathUtilities.DetermineQuadrant(pointOnEdge, meshSize) * -1f;
+        Vector2 hitNormal = didRayHit ? meshTransform.InverseTransformDirection(nonAllocHits[behindHitIndex].normal) : MathUtilities.DetermineQuadrant(pointOnEdge, halfMeshSize) * -1f;
 
         return new EdgePoint(hitPoint, hitNormal, MathUtilities.VectorTo360Angle(pointOnEdge.x, pointOnEdge.y), didRayHit);
     }

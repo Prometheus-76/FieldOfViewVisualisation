@@ -11,11 +11,11 @@ TagManager:
   - 
   - Water
   - UI
+  - RenderingMask
+  - InsideMask
+  - OutsideMask
   - Surface
-  - 
-  - 
-  - 
-  - 
+  - Paint
   - 
   - 
   - 

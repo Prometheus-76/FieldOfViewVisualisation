@@ -66,8 +66,7 @@ public partial class CarvableMesh
     {
         Vector2[] UVs = new Vector2[vertices.Length];
 
-        Vector2 inverseMeshSize = new Vector2(1f / meshSize.x, 1f / meshSize.y);
-        Vector2 halfMeshSize = meshSize / 2f;
+        Vector2 inverseMeshSize = new Vector2(1f / (halfMeshSize.x * 2f), 1f / (halfMeshSize.y * 2f));
 
         // Setup mesh UVs
         for (int i = 0; i < vertices.Length; i++)
