@@ -15,11 +15,13 @@ public class RenderingEnvironment : MonoBehaviour
     public Transform maskForegroundTransform;
     public MeshFilter maskForegroundFilter;
     public MeshRenderer maskForegroundRenderer;
+    public MaskedMaterial foregroundMaterial;
 
     [Header("Mask Background")]
     public Transform maskBackgroundTransform;
     public MeshFilter maskBackgroundFilter;
     public MeshRenderer maskBackgroundRenderer;
+    public MaskedMaterial backgroundMaterial;
 
     // PRIVATE
     private float previousCameraSize;
@@ -38,22 +40,16 @@ public class RenderingEnvironment : MonoBehaviour
         // Lock transforms
         ConstrainEnvironmentTransforms();
 
-        // Find screen size
-        Vector2 halfBoundsSize = CalculateHalfScreenBounds();
-
         // Configure bounds
         InitialiseBoundsMeshes();
-        UpdateBoundsMeshes(halfBoundsSize);
 
         // Configure mask
         renderingMaskScript.Initialise();
-        renderingMaskScript.halfMeshSize = halfBoundsSize;
+        renderingMaskScript.halfMeshSize = CalculateHalfScreenBounds();
 
-        renderingMaskScript.UpdateMesh();
-
-        // Update mask bounds mesh materials
-        SetForegroundMaterial(maskForegroundRenderer.material);
-        SetBackgroundMaterial(maskBackgroundRenderer.material);
+        // Update mask materials
+        SetForegroundMaterial(foregroundMaterial);
+        SetBackgroundMaterial(backgroundMaterial);
     }
 
     // LateUpdate is called at the end of every frame
@@ -68,6 +64,10 @@ public class RenderingEnvironment : MonoBehaviour
 
         // Update bounds meshes when the camera changes size
         if (mainCamera.orthographicSize != previousCameraSize) UpdateBoundsMeshes(halfBoundsSize);
+
+        // Update bounds material tiling
+        UpdateForegroundTiling();
+        UpdateBackgroundTiling();
 
         // Regenerate rendering mask
         renderingMaskScript.halfMeshSize = halfBoundsSize;
@@ -87,6 +87,7 @@ public class RenderingEnvironment : MonoBehaviour
     void InitialiseBoundsMeshes()
     {
         maskBoundsMesh = new Mesh();
+        maskBoundsMesh.name = "MaskBounds";
 
         maskBoundsVertices = new Vector3[4];
         maskBoundsTriangles = new int[6];
@@ -159,23 +160,22 @@ public class RenderingEnvironment : MonoBehaviour
         maskBackgroundTransform.localScale = Vector3.one;
     }
 
-    public void SetForegroundMaterial(Material foregroundMaterial)
+    public void SetForegroundMaterial(MaskedMaterial newMaterial)
     {
-        foregroundMaterialInstance = new Material(foregroundMaterial);
-
-        UpdateForegroundTiling();
+        foregroundMaterial = newMaterial;
+        foregroundMaterialInstance = new Material(newMaterial.material);
     }
 
-    public void SetBackgroundMaterial(Material backgroundMaterial)
+    public void SetBackgroundMaterial(MaskedMaterial newMaterial)
     {
-        backgroundMaterialInstance = new Material(backgroundMaterial);
-
-        UpdateBackgroundTiling();
+        backgroundMaterial = newMaterial;
+        backgroundMaterialInstance = new Material(newMaterial.material);
     }
 
     void UpdateForegroundTiling()
     {
-        // WIP - SET MATERIAL INSTANCE TILING BASED ON BOUNDS SIZE
+        // WIP - SET MATERIAL INSTANCE TILING BASED ON BOUNDS SIZE AND SCALE
+        // WIP - SET MATERIAL INSTANCE OFFSET BASED ON PARALLAX STRENGTH AND CAMERA POSITION
 
         maskForegroundRenderer.material = foregroundMaterialInstance;
     }
@@ -183,6 +183,7 @@ public class RenderingEnvironment : MonoBehaviour
     void UpdateBackgroundTiling()
     {
         // WIP - SET MATERIAL INSTANCE TILING BASED ON BOUNDS SIZE
+        // WIP - SET MATERIAL INSTANCE OFFSET BASED ON PARALLAX STRENGTH AND CAMERA POSITION
 
         maskBackgroundRenderer.material = backgroundMaterialInstance;
     }

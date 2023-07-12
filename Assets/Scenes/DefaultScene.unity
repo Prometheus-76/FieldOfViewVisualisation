@@ -1072,7 +1072,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 763894715}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1099,8 +1099,12 @@ MonoBehaviour:
   renderingMaskScript: {fileID: 482399312}
   maskForegroundTransform: {fileID: 390242525}
   maskForegroundFilter: {fileID: 390242527}
+  maskForegroundRenderer: {fileID: 390242526}
+  foregroundMaterial: {fileID: 11400000, guid: 312120483ad69d34fbc61d9633ec0629, type: 2}
   maskBackgroundTransform: {fileID: 2010995546}
   maskBackgroundFilter: {fileID: 2010995548}
+  maskBackgroundRenderer: {fileID: 2010995547}
+  backgroundMaterial: {fileID: 11400000, guid: f0ea15e0043b507449f5638d9d260141, type: 2}
 --- !u!1 &814477550
 GameObject:
   m_ObjectHideFlags: 0
