@@ -5,23 +5,30 @@ using UnityEngine;
 public class RenderingEnvironment : MonoBehaviour
 {
     [Header("Camera")]
-    public Camera mainCamera;
+    public Camera sceneCamera;
+    public Transform sceneCameraTransform;
 
     [Header("Rendering Mask")]
-    public Transform renderingMaskTransform;
     public CarvableMesh renderingMaskScript;
-
-    [Header("Mask Foreground")]
-    public Transform maskForegroundTransform;
-    public MeshFilter maskForegroundFilter;
-    public MeshRenderer maskForegroundRenderer;
-    public MaskedMaterial foregroundMaterial;
+    public Transform renderingMaskTransform;
 
     [Header("Mask Background")]
+    public MaskedMaterial backgroundMaterial;
     public Transform maskBackgroundTransform;
     public MeshFilter maskBackgroundFilter;
     public MeshRenderer maskBackgroundRenderer;
-    public MaskedMaterial backgroundMaterial;
+
+    [Header("Mask Foreground")]
+    public MaskedMaterial foregroundMaterial;
+    public Transform maskForegroundTransform;
+    public MeshFilter maskForegroundFilter;
+    public MeshRenderer maskForegroundRenderer;
+
+    [Header("Other Configuration")]
+    [Range(0, 5000)]
+    public int backgroundRenderQueue = 0;
+    [Range(0, 5000)]
+    public int foregroundRenderQueue = 2000;
 
     // PRIVATE
     private float previousCameraSize;
@@ -31,8 +38,8 @@ public class RenderingEnvironment : MonoBehaviour
     private int[] maskBoundsTriangles;
     private Vector2[] maskBoundsUVs;
 
-    private Material foregroundMaterialInstance = null;
     private Material backgroundMaterialInstance = null;
+    private Material foregroundMaterialInstance = null;
 
     // Start is called before the first frame update
     void Start()
@@ -48,8 +55,8 @@ public class RenderingEnvironment : MonoBehaviour
         renderingMaskScript.halfMeshSize = CalculateHalfScreenBounds();
 
         // Update mask materials
-        SetForegroundMaterial(foregroundMaterial);
         SetBackgroundMaterial(backgroundMaterial);
+        SetForegroundMaterial(foregroundMaterial);
     }
 
     // LateUpdate is called at the end of every frame
@@ -63,11 +70,11 @@ public class RenderingEnvironment : MonoBehaviour
         renderingMaskScript.halfMeshSize = halfBoundsSize;
 
         // Update bounds meshes when the camera changes size
-        if (mainCamera.orthographicSize != previousCameraSize) UpdateBoundsMeshes(halfBoundsSize);
+        if (sceneCamera.orthographicSize != previousCameraSize) UpdateBoundsMeshes(halfBoundsSize);
 
-        // Update bounds material tiling
-        UpdateForegroundTiling();
-        UpdateBackgroundTiling();
+        // Update bounds materials
+        UpdateBackground();
+        UpdateForeground();
 
         // Regenerate rendering mask
         renderingMaskScript.halfMeshSize = halfBoundsSize;
@@ -78,8 +85,8 @@ public class RenderingEnvironment : MonoBehaviour
     {
         float aspectRatio = (float)Screen.width / Screen.height;
 
-        float halfScreenWidth = aspectRatio * mainCamera.orthographicSize;
-        float halfScreenHeight = mainCamera.orthographicSize;
+        float halfScreenWidth = aspectRatio * sceneCamera.orthographicSize;
+        float halfScreenHeight = sceneCamera.orthographicSize;
 
         return new Vector2(halfScreenWidth, halfScreenHeight);
     }
@@ -137,54 +144,102 @@ public class RenderingEnvironment : MonoBehaviour
         maskBoundsMesh.vertices = maskBoundsVertices;
 
         // Apply updated mesh to filters
-        maskForegroundFilter.mesh = maskBoundsMesh;
         maskBackgroundFilter.mesh = maskBoundsMesh;
+        maskForegroundFilter.mesh = maskBoundsMesh;
 
         // Update camera size to match
-        previousCameraSize = mainCamera.orthographicSize;
+        previousCameraSize = sceneCamera.orthographicSize;
     }
 
     void ConstrainEnvironmentTransforms()
     {
         // Lock local transforms of rendering mask and bounds meshes
         renderingMaskTransform.localPosition = Vector3.zero;
-        maskForegroundTransform.localPosition = Vector3.zero;
         maskBackgroundTransform.localPosition = Vector3.zero;
+        maskForegroundTransform.localPosition = Vector3.zero;
 
         renderingMaskTransform.localRotation = Quaternion.identity;
-        maskForegroundTransform.localRotation = Quaternion.identity;
         maskBackgroundTransform.localRotation = Quaternion.identity;
+        maskForegroundTransform.localRotation = Quaternion.identity;
 
         renderingMaskTransform.localScale = Vector3.one;
-        maskForegroundTransform.localScale = Vector3.one;
         maskBackgroundTransform.localScale = Vector3.one;
-    }
-
-    public void SetForegroundMaterial(MaskedMaterial newMaterial)
-    {
-        foregroundMaterial = newMaterial;
-        foregroundMaterialInstance = new Material(newMaterial.material);
+        maskForegroundTransform.localScale = Vector3.one;
     }
 
     public void SetBackgroundMaterial(MaskedMaterial newMaterial)
     {
         backgroundMaterial = newMaterial;
         backgroundMaterialInstance = new Material(newMaterial.material);
+
+        backgroundMaterialInstance.renderQueue = backgroundRenderQueue;
+        backgroundMaterialInstance.name = newMaterial.material.name + " (Instance)";
     }
 
-    void UpdateForegroundTiling()
+    public void SetForegroundMaterial(MaskedMaterial newMaterial)
     {
-        // WIP - SET MATERIAL INSTANCE TILING BASED ON BOUNDS SIZE AND SCALE
-        // WIP - SET MATERIAL INSTANCE OFFSET BASED ON PARALLAX STRENGTH AND CAMERA POSITION
+        foregroundMaterial = newMaterial;
+        foregroundMaterialInstance = new Material(newMaterial.material);
 
-        maskForegroundRenderer.material = foregroundMaterialInstance;
+        foregroundMaterialInstance.renderQueue = foregroundRenderQueue;
+        foregroundMaterialInstance.name = newMaterial.material.name + " (Instance)";
     }
 
-    void UpdateBackgroundTiling()
+    void UpdateBackground()
     {
-        // WIP - SET MATERIAL INSTANCE TILING BASED ON BOUNDS SIZE
-        // WIP - SET MATERIAL INSTANCE OFFSET BASED ON PARALLAX STRENGTH AND CAMERA POSITION
+        // Set tiling based on scale value and camera size
+        if (backgroundMaterialInstance.HasProperty(backgroundMaterial.tilingPropertyReference))
+        {
+            Vector2 baseTiling = backgroundMaterial.scaleWithCameraSize ? (CalculateHalfScreenBounds() * 2f) : Vector2.one;
+            Vector2 scaledTiling = baseTiling * backgroundMaterial.scale;
 
+            backgroundMaterialInstance.SetVector(backgroundMaterial.tilingPropertyReference, scaledTiling);
+        }
+
+        // Set offset based on parallax value and camera position
+        if (backgroundMaterialInstance.HasProperty(backgroundMaterial.offsetPropertyReference))
+        {
+            Vector2 parallaxOffset = sceneCameraTransform.position * backgroundMaterial.parallaxStrength * 0.5f;
+
+            backgroundMaterialInstance.SetVector(backgroundMaterial.offsetPropertyReference, parallaxOffset);
+        }
+
+        // Ensure render queue is updated
+        if (backgroundMaterialInstance.renderQueue != backgroundRenderQueue)
+        {
+            backgroundMaterialInstance.renderQueue = backgroundRenderQueue;
+        }
+
+        // Assign updated material
         maskBackgroundRenderer.material = backgroundMaterialInstance;
+    }
+
+    void UpdateForeground()
+    {
+        // Set tiling based on scale value and camera size
+        if (foregroundMaterialInstance.HasProperty(foregroundMaterial.tilingPropertyReference))
+        {
+            Vector2 baseTiling = foregroundMaterial.scaleWithCameraSize ? (CalculateHalfScreenBounds() * 2f) : Vector2.one;
+            Vector2 scaledTiling = baseTiling * foregroundMaterial.scale;
+
+            foregroundMaterialInstance.SetVector(foregroundMaterial.tilingPropertyReference, scaledTiling);
+        }
+
+        // Set offset based on parallax value and camera position
+        if (foregroundMaterialInstance.HasProperty(foregroundMaterial.offsetPropertyReference))
+        {
+            Vector2 parallaxOffset = sceneCameraTransform.position * foregroundMaterial.parallaxStrength * 0.5f;
+
+            foregroundMaterialInstance.SetVector(foregroundMaterial.offsetPropertyReference, parallaxOffset);
+        }
+
+        // Ensure render queue is updated
+        if (foregroundMaterialInstance.renderQueue != foregroundRenderQueue)
+        {
+            foregroundMaterialInstance.renderQueue = foregroundRenderQueue;
+        }
+
+        // Assign updated material
+        maskForegroundRenderer.material = foregroundMaterialInstance;
     }
 }

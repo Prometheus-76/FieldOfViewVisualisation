@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7617e68b1a73e440ad1b99febd873f1, type: 3}
   m_Name: ForegroundMaterial
   m_EditorClassIdentifier: 
-  material: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
-  scale: 1
-  parallaxStrength: 0
+  material: {fileID: 2100000, guid: 8a5b5ee7247748f45ba923570559afde, type: 2}
+  tilingPropertyReference: _Tiling
+  offsetPropertyReference: _Offset
+  scale: 0.5
+  scaleWithCameraSize: 1
+  parallaxStrength: 0.3

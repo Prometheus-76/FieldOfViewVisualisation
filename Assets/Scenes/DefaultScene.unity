@@ -435,7 +435,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 390242524}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -979,8 +979,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 3003121664
-  m_fontColor: {r: 0, g: 0, b: 0, a: 0.7019608}
+    rgba: 3875536895
+  m_fontColor: {r: 1, g: 1, b: 1, a: 0.9019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1094,17 +1094,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c27d4ddba9ac0b147b15e8664846dfe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 1549064285}
-  renderingMaskTransform: {fileID: 482399315}
+  sceneCamera: {fileID: 1549064285}
+  sceneCameraTransform: {fileID: 1549064286}
   renderingMaskScript: {fileID: 482399312}
-  maskForegroundTransform: {fileID: 390242525}
-  maskForegroundFilter: {fileID: 390242527}
-  maskForegroundRenderer: {fileID: 390242526}
-  foregroundMaterial: {fileID: 11400000, guid: 312120483ad69d34fbc61d9633ec0629, type: 2}
+  renderingMaskTransform: {fileID: 482399315}
+  backgroundMaterial: {fileID: 11400000, guid: f0ea15e0043b507449f5638d9d260141, type: 2}
   maskBackgroundTransform: {fileID: 2010995546}
   maskBackgroundFilter: {fileID: 2010995548}
   maskBackgroundRenderer: {fileID: 2010995547}
-  backgroundMaterial: {fileID: 11400000, guid: f0ea15e0043b507449f5638d9d260141, type: 2}
+  foregroundMaterial: {fileID: 11400000, guid: 312120483ad69d34fbc61d9633ec0629, type: 2}
+  maskForegroundTransform: {fileID: 390242525}
+  maskForegroundFilter: {fileID: 390242527}
+  maskForegroundRenderer: {fileID: 390242526}
+  backgroundRenderQueue: 0
+  foregroundRenderQueue: 2000
 --- !u!1 &814477550
 GameObject:
   m_ObjectHideFlags: 0
@@ -1562,8 +1565,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 3003121664
-  m_fontColor: {r: 0, g: 0, b: 0, a: 0.7019608}
+    rgba: 3875536895
+  m_fontColor: {r: 1, g: 1, b: 1, a: 0.9019608}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2047,7 +2050,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.95, g: 0.95, b: 0.95, a: 1}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -2687,7 +2690,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2010995545}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
