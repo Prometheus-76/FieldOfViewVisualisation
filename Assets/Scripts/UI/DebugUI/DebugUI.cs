@@ -39,7 +39,7 @@ public class DebugUI : MonoBehaviour
     {
         float fpsAverage = (framesSinceLastUpdate / timeSinceUpdate);
         averageFpsText.text = "FPS (average): " + fpsAverage.ToString("F0");
-        averageFrameTimeText.text = "FRAME TIME (average): " + (fpsAverage * 0.001f).ToString("F2") + "ms";
+        averageFrameTimeText.text = "FRAME TIME (average): " + (1000f / Mathf.Max(fpsAverage, 1)).ToString("F2") + "ms";
 
         // Reset data
         framesSinceLastUpdate = 0;
