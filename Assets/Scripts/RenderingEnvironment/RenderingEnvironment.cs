@@ -6,29 +6,22 @@ public class RenderingEnvironment : MonoBehaviour
 {
     [Header("Camera")]
     public Camera sceneCamera;
-    public Transform sceneCameraTransform;
 
     [Header("Rendering Mask")]
     public CarvableMesh renderingMaskScript;
     public Transform renderingMaskTransform;
 
     [Header("Mask Background")]
-    public MaskedMaterial backgroundMaterial;
+    public Material backgroundMaterial;
     public Transform maskBackgroundTransform;
     public MeshFilter maskBackgroundFilter;
     public MeshRenderer maskBackgroundRenderer;
 
     [Header("Mask Foreground")]
-    public MaskedMaterial foregroundMaterial;
+    public Material foregroundMaterial;
     public Transform maskForegroundTransform;
     public MeshFilter maskForegroundFilter;
     public MeshRenderer maskForegroundRenderer;
-
-    [Header("Other Configuration")]
-    [Range(0, 5000)]
-    public int backgroundRenderQueue = 0;
-    [Range(0, 5000)]
-    public int foregroundRenderQueue = 2000;
 
     // PRIVATE
     private float previousCameraSize;
@@ -71,10 +64,6 @@ public class RenderingEnvironment : MonoBehaviour
 
         // Update bounds meshes when the camera changes size
         if (sceneCamera.orthographicSize != previousCameraSize) UpdateBoundsMeshes(halfBoundsSize);
-
-        // Update bounds materials
-        UpdateBackground();
-        UpdateForeground();
 
         // Regenerate rendering mask
         renderingMaskScript.halfMeshSize = halfBoundsSize;
@@ -167,79 +156,21 @@ public class RenderingEnvironment : MonoBehaviour
         maskForegroundTransform.localScale = Vector3.one;
     }
 
-    public void SetBackgroundMaterial(MaskedMaterial newMaterial)
+    public void SetBackgroundMaterial(Material newMaterial)
     {
         backgroundMaterial = newMaterial;
-        backgroundMaterialInstance = new Material(newMaterial.material);
+        backgroundMaterialInstance = new Material(newMaterial);
 
-        backgroundMaterialInstance.renderQueue = backgroundRenderQueue;
-        backgroundMaterialInstance.name = newMaterial.material.name + " (Instance)";
-    }
-
-    public void SetForegroundMaterial(MaskedMaterial newMaterial)
-    {
-        foregroundMaterial = newMaterial;
-        foregroundMaterialInstance = new Material(newMaterial.material);
-
-        foregroundMaterialInstance.renderQueue = foregroundRenderQueue;
-        foregroundMaterialInstance.name = newMaterial.material.name + " (Instance)";
-    }
-
-    void UpdateBackground()
-    {
-        // Set tiling based on scale value and camera size
-        if (backgroundMaterialInstance.HasProperty(backgroundMaterial.tilingPropertyReference))
-        {
-            Vector2 baseTiling = backgroundMaterial.scaleWithCameraSize ? (CalculateHalfScreenBounds() * 2f) : Vector2.one;
-            Vector2 scaledTiling = baseTiling * backgroundMaterial.scale;
-
-            backgroundMaterialInstance.SetVector(backgroundMaterial.tilingPropertyReference, scaledTiling);
-        }
-
-        // Set offset based on parallax value and camera position
-        if (backgroundMaterialInstance.HasProperty(backgroundMaterial.offsetPropertyReference))
-        {
-            Vector2 parallaxOffset = sceneCameraTransform.position * backgroundMaterial.parallaxStrength * 0.5f;
-
-            backgroundMaterialInstance.SetVector(backgroundMaterial.offsetPropertyReference, parallaxOffset);
-        }
-
-        // Ensure render queue is updated
-        if (backgroundMaterialInstance.renderQueue != backgroundRenderQueue)
-        {
-            backgroundMaterialInstance.renderQueue = backgroundRenderQueue;
-        }
-
-        // Assign updated material
+        backgroundMaterialInstance.name = newMaterial.name + " (Instance)";
         maskBackgroundRenderer.material = backgroundMaterialInstance;
     }
 
-    void UpdateForeground()
+    public void SetForegroundMaterial(Material newMaterial)
     {
-        // Set tiling based on scale value and camera size
-        if (foregroundMaterialInstance.HasProperty(foregroundMaterial.tilingPropertyReference))
-        {
-            Vector2 baseTiling = foregroundMaterial.scaleWithCameraSize ? (CalculateHalfScreenBounds() * 2f) : Vector2.one;
-            Vector2 scaledTiling = baseTiling * foregroundMaterial.scale;
+        foregroundMaterial = newMaterial;
+        foregroundMaterialInstance = new Material(newMaterial);
 
-            foregroundMaterialInstance.SetVector(foregroundMaterial.tilingPropertyReference, scaledTiling);
-        }
-
-        // Set offset based on parallax value and camera position
-        if (foregroundMaterialInstance.HasProperty(foregroundMaterial.offsetPropertyReference))
-        {
-            Vector2 parallaxOffset = sceneCameraTransform.position * foregroundMaterial.parallaxStrength * 0.5f;
-
-            foregroundMaterialInstance.SetVector(foregroundMaterial.offsetPropertyReference, parallaxOffset);
-        }
-
-        // Ensure render queue is updated
-        if (foregroundMaterialInstance.renderQueue != foregroundRenderQueue)
-        {
-            foregroundMaterialInstance.renderQueue = foregroundRenderQueue;
-        }
-
-        // Assign updated material
+        foregroundMaterialInstance.name = newMaterial.name + " (Instance)";
         maskForegroundRenderer.material = foregroundMaterialInstance;
     }
 }
