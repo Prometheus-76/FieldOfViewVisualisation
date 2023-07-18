@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Unity.VisualScripting;
 
 public class DebugUI : MonoBehaviour
 {
     [Header("Components")]
     public TextMeshProUGUI averageFpsText;
     public TextMeshProUGUI averageFrameTimeText;
+    public TextMeshProUGUI controlSchemeText;
 
     [Header("Configuration")]
     [Min(0f)]
@@ -23,19 +23,21 @@ public class DebugUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Update every N seconds
+        // Update periodic UI every N seconds
         updateTimer += Time.unscaledDeltaTime;
         if(updateTimer >= updateInterval)
         {
-            UpdateUI(updateTimer);
+            UpdatePeriodicUI(updateTimer);
             updateTimer = 0f;
         }
+
+        UpdateContinuousUI();
 
         // Track data across frames
         framesSinceLastUpdate += 1;
     }
 
-    void UpdateUI(float timeSinceUpdate)
+    void UpdatePeriodicUI(float timeSinceUpdate)
     {
         float fpsAverage = (framesSinceLastUpdate / timeSinceUpdate);
         averageFpsText.text = "FPS (average): " + fpsAverage.ToString("F0");
@@ -43,5 +45,10 @@ public class DebugUI : MonoBehaviour
 
         // Reset data
         framesSinceLastUpdate = 0;
+    }
+
+    void UpdateContinuousUI()
+    {
+        controlSchemeText.text = "CONTROL SCHEME (last used): " + InputManager.GetControlScheme();
     }
 }
