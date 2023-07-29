@@ -1996,6 +1996,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerRigidbody: {fileID: 1098244963}
   playerCollider: {fileID: 1098244964}
+  movementSpeed: 6
+  movementAcceleration: 14
 --- !u!50 &1098244963
 Rigidbody2D:
   serializedVersion: 4
@@ -2010,7 +2012,7 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -2206,7 +2208,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1211014894}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.5, y: -10, z: -10}
+  m_LocalPosition: {x: -17, y: -8.25, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2230,7 +2232,7 @@ MonoBehaviour:
   cameraTransform: {fileID: 1549064286}
   playerTransform: {fileID: 1098244961}
   renderingEnvironment: {fileID: 763894717}
-  followDelay: 0.4
+  followDelay: 0.2
   depthOffset: 10
 --- !u!1 &1225108141
 GameObject:

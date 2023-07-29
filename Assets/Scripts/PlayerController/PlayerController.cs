@@ -8,6 +8,10 @@ public class PlayerController : MonoBehaviour
     public Rigidbody2D playerRigidbody;
     public CircleCollider2D playerCollider;
 
+    [Header("Configuration")]
+    public float movementSpeed;
+    public float movementAcceleration;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,8 +19,15 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        Vector2 currentVelocity = playerRigidbody.velocity;
+        Vector2 targetVelocity = InputManager.GetMovementDirection() * movementSpeed;
+        Vector2 velocityDifference = (targetVelocity - currentVelocity);
+
+        Vector2 appliedAcceleration = velocityDifference * movementAcceleration;
+        appliedAcceleration = Vector2.ClampMagnitude(appliedAcceleration, velocityDifference.magnitude / Time.fixedDeltaTime);
+
+        playerRigidbody.AddForce(appliedAcceleration, ForceMode2D.Force);
     }
 }

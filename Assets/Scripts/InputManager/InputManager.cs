@@ -98,7 +98,7 @@ public static class InputManager
         // Deadzone for control sticks
         if (currentControlScheme == ControlScheme.Controller) actionValue = DeadzoneRemap(actionValue);
 
-        return actionValue.normalized;
+        return actionValue;
     }
 
     public static Vector2 GetAimDirection(Vector2 playerScreenPosition)
