@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -32,16 +34,19 @@ public partial class CarvableMesh : MonoBehaviour
     [Header("Optimisation")]
     public bool cullContinuousVertices = false;
     public bool generateTextureCoordinates = false;
+    public bool detailedCurves = false;
+    public bool storePerimeter = false;
 
     #endregion
 
     // PRIVATE
     private bool meshFailed = false;
     private Mesh meshInstance = null;
-    private RaycastHit2D[] nonAllocHits;
+    private RaycastHit2D[] nonAllocHits = null;
+    private Vector2[] ccwPerimeter = null;
 
     // PROPERTIES
-    private bool isInitialised
+    public bool isInitialised
     {
         get
         {
@@ -59,10 +64,10 @@ public partial class CarvableMesh : MonoBehaviour
         }
     }
 
-    private Vector2 topRight { get { return new Vector2(halfMeshSize.x, halfMeshSize.y); } }
-    private Vector2 topLeft { get { return new Vector2(-halfMeshSize.x, halfMeshSize.y); } }
-    private Vector2 bottomLeft { get { return new Vector2(-halfMeshSize.x, -halfMeshSize.y); } }
-    private Vector2 bottomRight { get { return new Vector2(halfMeshSize.x, -halfMeshSize.y); } }
+    public Vector2 topRight { get { return new Vector2(halfMeshSize.x, halfMeshSize.y); } }
+    public Vector2 topLeft { get { return new Vector2(-halfMeshSize.x, halfMeshSize.y); } }
+    public Vector2 bottomLeft { get { return new Vector2(-halfMeshSize.x, -halfMeshSize.y); } }
+    public Vector2 bottomRight { get { return new Vector2(halfMeshSize.x, -halfMeshSize.y); } }
 
     #region Public Methods
 
@@ -151,6 +156,22 @@ public partial class CarvableMesh : MonoBehaviour
             Vector2[] UVs = CalculateUVs(vertices);
             meshInstance.uv = UVs;
         }
+    }
+
+    public Vector2[] GetPerimeter(bool returnCopy)
+    {
+        if (storePerimeter == false || isInitialised == false)
+        {
+            return null;
+        }
+
+        // Ensure we return the data we expect
+        if (ccwPerimeter != null && ccwPerimeter.Length == 0)
+        {
+            return null;
+        }
+
+        return returnCopy ? ccwPerimeter.Clone() as Vector2[] : ccwPerimeter;
     }
 
     #endregion

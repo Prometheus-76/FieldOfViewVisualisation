@@ -8,7 +8,7 @@ float4 InverseMaskDimensions;
 float MaskClipThreshold;
 
 // Internal
-SamplerState samplerImageTexture;
+SamplerState samplerMaskTexture;
  
 // Output
 RWStructuredBuffer<int> ResultBuffer;
@@ -29,16 +29,17 @@ void AtomicComparisonAdd(uint3 id : SV_DispatchThreadID)
     
     // We could look up 1:1 into this texture if we wanted to using the pixel coordinates (ie. whole pixels, not uvs), it would be faster but less accurate
     float4 maskColour = MaskTexture[id.xy];
-    //float4 maskColour = MaskTexture.SampleLevel(samplerImageTexture, uv, 0);
-    float4 imageColour = ImageTexture.SampleLevel(samplerImageTexture, uv, 0);
+    //float4 maskColour = MaskTexture.SampleLevel(samplerMaskTexture, uv, 0);
+    
+    float4 imageColour = ImageTexture.SampleLevel(samplerMaskTexture, uv, 0);
     
     // The image exists in this pixel, now we check if the mask exists too
-    if (imageColour.a > 0.0f)
+    if (imageColour.r > 0.0f)
     {
         // How many pixels exist in the base image?
         InterlockedAdd(ResultBuffer[0], 1);
         
-        if (maskColour.r >= MaskClipThreshold)
+        if (maskColour.r > MaskClipThreshold)
         {
             // How many pixels exist in overlap between the base image and the mask?
             InterlockedAdd(ResultBuffer[1], 1);

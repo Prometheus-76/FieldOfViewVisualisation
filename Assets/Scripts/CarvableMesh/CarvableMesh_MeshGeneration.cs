@@ -26,6 +26,8 @@ public partial class CarvableMesh
             }
         }
 
+        if (storePerimeter) ccwPerimeter = new Vector2[edgePoints.Count];
+
         Vector3[] vertices = new Vector3[edgePoints.Count + 1];
 
         // First point must be in the center to have line of sight to all other points in the mesh
@@ -34,6 +36,8 @@ public partial class CarvableMesh
         // We only care about the positions of the points now
         for (int i = 0; i < edgePoints.Count; i++)
         {
+            if (storePerimeter) ccwPerimeter[i] = edgePoints[i].position;
+
             vertices[i + 1] = edgePoints[i].position;
         }
 

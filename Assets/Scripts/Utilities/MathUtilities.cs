@@ -94,4 +94,41 @@ public static class MathUtilities
         // Convert to vector offset from tangent point
         return (projectionLength * tangent.normalized) + tangentPoint;
     }
+
+    public static int NextHighestPowerOf2(int input)
+    {
+        // Positive values only
+        input = Mathf.Max(input, 1);
+
+        // Effectively makes this >= rather than just >
+        input -= 1;
+
+        input |= input >> 1;
+        input |= input >> 2;
+        input |= input >> 4;
+        input |= input >> 8;
+        input |= input >> 16; // 32-bit
+
+        input += 1;
+
+        return input;
+    }
+
+    public enum PowerOf2
+    {
+        _1,
+        _2,
+        _4,
+        _8,
+        _16,
+        _32,
+        _64,
+        _128,
+        _256,
+        _512,
+        _1024,
+        _2048,
+        _4096,
+        _8192
+    }
 }
