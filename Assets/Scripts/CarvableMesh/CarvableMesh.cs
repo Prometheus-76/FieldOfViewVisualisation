@@ -46,6 +46,7 @@ public partial class CarvableMesh : MonoBehaviour
     private Vector2[] ccwPerimeter = null;
 
     // PROPERTIES
+    public bool isReset { get; private set; } = true;
     public bool isInitialised
     {
         get
@@ -120,21 +121,8 @@ public partial class CarvableMesh : MonoBehaviour
             }
         }
 
-        // Require all components to update mesh
-        if (meshTransform == null) return;
-        if (meshFilter == null) return;
-        if (meshRenderer == null) return;
-
-        // Ensure mesh is assigned
-        if (meshInstance == null)
-        {
-            meshInstance = new Mesh();
-            meshInstance.name = "ProceduralMesh";
-
-            meshFilter.mesh = meshInstance;
-        }
-
-        meshInstance.Clear();
+        // Reset previous mesh data
+        ResetMesh();
 
         // Check if the center of the mesh is inside a carvable object, causing all geometry to be occluded
         if (Physics2D.OverlapPoint(meshTransform.position, carvingLayers) != null) return;
@@ -156,6 +144,19 @@ public partial class CarvableMesh : MonoBehaviour
             Vector2[] UVs = CalculateUVs(vertices);
             meshInstance.uv = UVs;
         }
+
+        isReset = false;
+    }
+
+    public void ResetMesh()
+    {
+        if (isReset) return;
+
+        // Wipe all mesh data, without needing to be reinitialized
+        meshInstance.Clear();
+        ccwPerimeter = null;
+
+        isReset = true;
     }
 
     public Vector2[] GetPerimeter(bool returnCopy)
