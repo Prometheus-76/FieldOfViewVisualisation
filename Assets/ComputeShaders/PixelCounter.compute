@@ -3,12 +3,13 @@
  
 // Input
 Texture2D<float4> ImageTexture;
-Texture2D<float4> MaskTexture;
+Texture2D<float1> PaintMaskTexture;
+Texture2D<float1> GeometryMaskTexture;
 float4 InverseMaskDimensions;
 float MaskClipThreshold;
 
 // Internal
-SamplerState samplerMaskTexture;
+SamplerState samplerPaintMaskTexture;
  
 // Output
 RWStructuredBuffer<int> ResultBuffer;
@@ -27,22 +28,25 @@ void AtomicComparisonAdd(uint3 id : SV_DispatchThreadID)
     // id.xy are the pixel coordinates in the mask texture for this call
     float2 uv = id.xy * InverseMaskDimensions.xy;
     
-    // We could look up 1:1 into this texture if we wanted to using the pixel coordinates (ie. whole pixels, not uvs), it would be faster but less accurate
-    float4 maskColour = MaskTexture[id.xy];
-    //float4 maskColour = MaskTexture.SampleLevel(samplerMaskTexture, uv, 0);
+    float1 paintMaskColour = PaintMaskTexture[id.xy];
+    float1 geometryMaskColour = GeometryMaskTexture[id.xy];
+    float4 imageColour = ImageTexture.SampleLevel(samplerPaintMaskTexture, uv, 0);
     
-    float4 imageColour = ImageTexture.SampleLevel(samplerMaskTexture, uv, 0);
-    
-    // The image exists in this pixel, now we check if the mask exists too
+    // This pixel in the texture is non-transparent
     if (imageColour.r > 0.0f)
     {
-        // How many pixels exist in the base image?
-        InterlockedAdd(ResultBuffer[0], 1);
-        
-        if (maskColour.r > MaskClipThreshold)
+        // This pixel in the image is also on the mesh
+        if (geometryMaskColour.r > 0.0f)
         {
-            // How many pixels exist in overlap between the base image and the mask?
-            InterlockedAdd(ResultBuffer[1], 1);
+            // How many visible pixels exist in the base image?
+            InterlockedAdd(ResultBuffer[0], 1);
+        
+            // The mask is strong enough here for this pixel to be considered erased
+            if (paintMaskColour.r > MaskClipThreshold)
+            {
+                // Add it to the other total
+                InterlockedAdd(ResultBuffer[1], 1);
+            }            
         }
     }
 }

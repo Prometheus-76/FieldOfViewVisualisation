@@ -1703,14 +1703,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1024376021}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -14.62, y: -12.77, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: -0.31639406, w: 0.9486279}
+  m_LocalPosition: {x: -16.89, y: -8.33, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 963744411}
   m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -36.89}
 --- !u!114 &1024376024
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1724,13 +1724,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   paintTexture: {fileID: 2800000, guid: 641a48e3d5b1cb2428d78d2291ff135d, type: 3}
-  brushTexture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
-  brushBlendMaterial: {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  geometryMaskMaterial: {fileID: 2100000, guid: 281c790aa963d604cb85bc45da335c39, type: 2}
   paintMesh: {fileID: 1024376025}
   pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
+  surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
   maskClipThreshold: 0.99
   maskPixelDensity: 25
   maskResolutionCap: 10
+  primaryEraseMask: {fileID: 0}
+  secondaryEraseMask: {fileID: 0}
+  geometryMask: {fileID: 0}
 --- !u!114 &1024376025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1778,7 +1781,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 139282f7bc350f241a9ad744ca94e59f, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
