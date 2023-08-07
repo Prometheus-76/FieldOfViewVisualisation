@@ -1,9 +1,11 @@
 #pragma kernel Initialise
-#pragma kernel AtomicComparisonAdd
+#pragma kernel ComputePixelCounts
  
 // Input
 Texture2D<float4> ImageTexture;
 Texture2D<float1> PaintMaskTexture;
+Texture2D<float1> GeometryMaskTexture;
+
 float4 InverseMaskDimensions;
 float MaskClipThreshold;
 
@@ -22,25 +24,29 @@ void Initialise(uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(8, 8, 1)]
-void AtomicComparisonAdd(uint3 id : SV_DispatchThreadID)
+void ComputePixelCounts(uint3 id : SV_DispatchThreadID)
 {
     // id.xy are the pixel coordinates in the mask texture, doing this converts to uv space
     float2 uv = id.xy * InverseMaskDimensions.xy;
     
-    float1 paintMaskColour = PaintMaskTexture[id.xy];
-    float4 imageColour = ImageTexture.SampleLevel(samplerPaintMaskTexture, uv, 0);
-    
-    // This pixel in the texture is non-transparent
-    if (imageColour.a > 0.0f)
+    // This pixel is on the geometry
+    float1 geometryMaskColour = GeometryMaskTexture[id.xy];
+    if (geometryMaskColour.r > 0.0f)
     {
-        // How many visible pixels exist in the base image?
-        InterlockedAdd(ResultBuffer[0], 1);
-        
-        // The mask is strong enough here for this pixel to be considered erased
-        if (paintMaskColour.r > MaskClipThreshold)
+        // This pixel is visible on the paint texture
+        float4 imageColour = ImageTexture.SampleLevel(samplerPaintMaskTexture, uv, 0);
+        if (imageColour.a > 0.0f)
         {
-            // Add it to the other total
-            InterlockedAdd(ResultBuffer[1], 1);
+            // Add it to the visible total
+            InterlockedAdd(ResultBuffer[0], 1);
+        
+            // This pixel is above the "erase threshold"
+            float1 paintMaskColour = PaintMaskTexture[id.xy];
+            if (paintMaskColour.r > MaskClipThreshold)
+            {
+                // Add it to the erased total
+                InterlockedAdd(ResultBuffer[1], 1);
+            }
         }
     }
 }

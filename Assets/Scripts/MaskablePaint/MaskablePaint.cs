@@ -257,23 +257,24 @@ public class MaskablePaint : MonoBehaviour
         
         // Get function handles in the compute shader, and create a buffer for the execution batches
         int kernalInitialise = pixelCounter.FindKernel("Initialise");
-        int kernalAtomicComparisonAdd = pixelCounter.FindKernel("AtomicComparisonAdd");
+        int kernalComputePixelCounts = pixelCounter.FindKernel("ComputePixelCounts");
 
         // Send data to the compute shader
-        pixelCounter.SetTexture(kernalAtomicComparisonAdd, "ImageTexture", paintMaterialTexture);
-        pixelCounter.SetTexture(kernalAtomicComparisonAdd, "PaintMaskTexture", primaryEraseMask);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "ImageTexture", paintMaterialTexture);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", primaryEraseMask);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "GeometryMaskTexture", geometryMask);
 
         pixelCounter.SetFloat("MaskClipThreshold", maskClipMinThreshold);
 
         Vector4 inverseMaskDimensions = new Vector4(1f / primaryEraseMask.width, 1f / primaryEraseMask.height, 0f, 0f);
         pixelCounter.SetVector("InverseMaskDimensions", inverseMaskDimensions);
 
-        pixelCounter.SetBuffer(kernalAtomicComparisonAdd, "ResultBuffer", computeBuffer);
+        pixelCounter.SetBuffer(kernalComputePixelCounts, "ResultBuffer", computeBuffer);
         pixelCounter.SetBuffer(kernalInitialise, "ResultBuffer", computeBuffer);
 
         // Call all batches of the compute shader
         pixelCounter.Dispatch(kernalInitialise, 1, 1, 1);
-        pixelCounter.Dispatch(kernalAtomicComparisonAdd, primaryEraseMask.width / 8, primaryEraseMask.height / 8, 1);
+        pixelCounter.Dispatch(kernalComputePixelCounts, primaryEraseMask.width / 8, primaryEraseMask.height / 8, 1);
 
         // Submit a request for the results
         dataRequest = AsyncGPUReadback.Request(computeBuffer);
