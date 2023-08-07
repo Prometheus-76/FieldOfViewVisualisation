@@ -2,7 +2,7 @@
 #pragma kernel ComputePixelCounts
  
 // Input
-Texture2D<float4> ImageTexture;
+Texture2D<float4> PaintTexture;
 Texture2D<float1> PaintMaskTexture;
 Texture2D<float1> GeometryMaskTexture;
 
@@ -34,7 +34,7 @@ void ComputePixelCounts(uint3 id : SV_DispatchThreadID)
     if (geometryMaskColour.r > 0.0f)
     {
         // This pixel is visible on the paint texture
-        float4 imageColour = ImageTexture.SampleLevel(samplerPaintMaskTexture, uv, 0);
+        float4 imageColour = PaintTexture.SampleLevel(samplerPaintMaskTexture, uv, 0);
         if (imageColour.a > 0.0f)
         {
             // Add it to the visible total

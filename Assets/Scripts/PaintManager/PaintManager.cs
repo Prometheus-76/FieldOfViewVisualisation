@@ -5,21 +5,61 @@ using UnityEngine.Rendering;
 
 public class PaintManager : MonoBehaviour
 {
+    #region Inspector
+
+    [Header("Brush config (PLACEHOLDER)")]
+    public float bInnerRadius;
+    public float bOuterRadius;
+    public Texture2D bTexture;
+    public float bTextureStrength;
+    public float bTextureScale;
+
     [Header("Configuration")]
     public GameObject paintPrefab;
-    public List<Material> paintMaterials;
+
+    [Header("Material Properties")]
+    public string paintMaskProperty;
+    public string eraseThresholdProperty;
+    public string paintTextureProperty;
+    public string paintColourProperty;
+
+    [Header("Mask Fidelity")]
+    [Min(1)]
+    public int maskPixelDensity = 32;
+    public MathUtilities.PowerOf2 maskResolutionCap = MathUtilities.PowerOf2._1024;
+
+    [Header("Variations")]
+    public List<Texture2D> paintTextures;
     public List<Color> paintColours;
 
-    [Header("Performance / Stability")]
+    [Header("Object Pooling")]
     [Range(0, 100)]
     public int initialPaintReserve = 0;
     public bool preventDuplicateReturns = false;
+
+    [Header("Shaders")]
+    public ComputeShader pixelCounter;
+    public Shader surfacePainter;
+    public Shader geometryStencil;
+    public Shader maskExtension;
+    public Shader maskablePaint;
+
+    #endregion
+
+    // PROPERTIES
+    public const float ERASE_THRESHOLD = 0.99f;
+
+    public int paintMaskID { get; private set; } = -1;
+    public int eraseThresholdID { get; private set; } = -1;
+    public int paintTextureID { get; private set; } = -1;
+    public int paintColourID { get; private set; } = -1;
 
     // PRIVATE
     private LinkedList<MaskablePaint> availablePaint;
     private List<MaskablePaint> allPaint;
 
     private CommandBuffer commandBuffer = null;
+
     private float totalRemoved = 0f;
 
     private void Start()
@@ -37,7 +77,7 @@ public class PaintManager : MonoBehaviour
     private void Update()
     {
         Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
-        EraseFromAll(cursorWorldPos, 0.5f, 0.2f, 0.5f);
+        EraseFromAll(cursorWorldPos, bInnerRadius, bOuterRadius, bTexture, bTextureStrength, bTextureScale);
 
         totalRemoved += allPaint[0].ComputeRemovalDelta();
     }
@@ -50,6 +90,12 @@ public class PaintManager : MonoBehaviour
 
         commandBuffer = new CommandBuffer();
 
+        // Save material property IDs (better performance)
+        paintMaskID = Shader.PropertyToID(paintMaskProperty);
+        eraseThresholdID = Shader.PropertyToID(eraseThresholdProperty);
+        paintTextureID = Shader.PropertyToID(paintTextureProperty);
+        paintColourID = Shader.PropertyToID(paintColourProperty);
+
         // Create initial pool size
         for (int i = 0; i < initialPaintReserve; i++)
         {
@@ -58,7 +104,7 @@ public class PaintManager : MonoBehaviour
     }
 
     // Erase at a position in the world from all paint objects below the brush
-    public void EraseFromAll(Vector2 brushPosition, float brushRadius, float brushHardness, float brushStrength)
+    public void EraseFromAll(Vector2 brushPosition, float brushInnerRadius, float brushOuterRadius, Texture2D brushTexture, float brushTextureStrength, float brushTextureScale)
     {
         // Broad -> narrow phase to find all applicable paint objects, erase them as we go
         int eraseCount = 0;
@@ -73,7 +119,7 @@ public class PaintManager : MonoBehaviour
                     // Check if brush radius overlaps with shape perimeter as well?
                     if (true)
                     {
-                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushRadius, brushHardness, brushStrength);
+                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushInnerRadius, brushOuterRadius, brushTexture, brushTextureStrength, brushTextureScale);
                         eraseCount += 1;
                     }
                 }
@@ -133,7 +179,7 @@ public class PaintManager : MonoBehaviour
         paintObject.SetActive(false);
 
         // Initialise this paint
-        paintComponent.Initialise(paintMaterials[0], "_MainTex", "_Color");
+        paintComponent.Initialise(this, paintTextures[0], paintColours[0]);
 
         return paintComponent;
     }

@@ -24,9 +24,11 @@ Shader "Custom/SurfacePainter"
             float4 _MainTex_ST;
 
             float2 _BrushPosition;
-            float _BrushRadius;
-            float _BrushHardness;
-            float _BrushStrength;
+            float _BrushInnerRadius;
+            float _BrushOuterRadius;
+            sampler2D _BrushTexture;
+            float _BrushTextureStrength;
+            float _BrushTextureScale;
 
             struct appdata
             {
@@ -41,10 +43,21 @@ Shader "Custom/SurfacePainter"
                 float4 worldPos : TEXCOORD1;
             };
 
-            float evaluateBrush(float2 position, float2 center, float radius, float hardness)
+            float inverselerp(float from, float to, float t)
+            {
+                return (t - from) / (to - from);
+            }
+
+            float evaluateBrush(float2 position, float2 center, float innerRadius, float outerRadius)
             {
                 float distanceFromBrushCenter = distance(center, position);
-                return 1.0f - smoothstep(radius * hardness, radius, distanceFromBrushCenter);
+                float baseBrush = 1.0f - clamp(inverselerp(innerRadius, outerRadius, distanceFromBrushCenter), 0.0f, 1.0f);
+                
+                // Apply texture to brush
+                float2 textureUV = frac(position * _BrushTextureScale);
+                float texturedBrush = clamp((baseBrush * tex2D(_BrushTexture, textureUV) * _BrushTextureStrength) + baseBrush, 0.0f, 1.0f);
+    
+                return texturedBrush;
             }
 
             v2f vert (appdata v)
@@ -64,11 +77,10 @@ Shader "Custom/SurfacePainter"
                 float4 existingColour = tex2D(_MainTex, i.uv);
     
                 // Determine pixel brightness based on proximity to brush, and brush settings
-                float baseBrush = evaluateBrush(i.worldPos.xy, _BrushPosition, _BrushRadius, _BrushHardness);
-                float edge = baseBrush * _BrushStrength;
+                float baseBrush = evaluateBrush(i.worldPos.xy, _BrushPosition, _BrushInnerRadius, _BrushOuterRadius);
     
                 // Blend brush with the existing mask
-                return lerp(existingColour, float4(1, 0, 0, 0), edge);
+                return max(existingColour, baseBrush);
             }
 
             ENDCG

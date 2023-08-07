@@ -12,18 +12,6 @@ public class MaskablePaint : MonoBehaviour
     public CarvableMesh carvableMesh;
     public MeshRenderer paintMeshRenderer;
 
-    [Header("Shaders")]
-    public ComputeShader pixelCounter;
-    public Shader surfacePainter;
-    public Shader geometryStencil;
-
-    [Header("Configuration")]
-    [Range(0f, 0.99f)]
-    public float maskClipMinThreshold = 0.99f;
-    [Min(1)]
-    public int maskPixelDensity = 32;
-    public MathUtilities.PowerOf2 maskResolutionCap = MathUtilities.PowerOf2._1024;
-
     #endregion
 
     // PROPERTIES
@@ -39,6 +27,7 @@ public class MaskablePaint : MonoBehaviour
             if (secondaryEraseMask == null) return false;
             if (maskPaintingMaterial == null) return false;
             if (maskStencilMaterial == null) return false;
+            if (maskExtensionMaterial == null) return false;
             if (paintMaterialInstance == null) return false;
             if (carvableMesh.isInitialised == false) return false;
 
@@ -52,38 +41,73 @@ public class MaskablePaint : MonoBehaviour
 
     private RenderTexture primaryEraseMask = null;
     private RenderTexture secondaryEraseMask = null;
-    public RenderTexture geometryMask = null;
+    private RenderTexture outputEraseMask = null;
+    private RenderTexture geometryMask = null;
     private Material maskPaintingMaterial = null;
     private Material maskStencilMaterial = null;
+    private Material maskExtensionMaterial = null;
 
+    private ComputeShader pixelCounter = null;
     private Material paintMaterialInstance = null;
+    private Color paintColour = Color.clear;
+    private Texture paintTexture = null;
 
-    private Color paintMaterialColour = Color.clear;
-    private Texture paintMaterialTexture = null;
-    private int paintColourID = -1;
+    private int paintMaskID = -1;
+    private int eraseThresholdID = -1;
     private int paintTextureID = -1;
+    private int paintColourID = -1;
 
     // Set up the paint object, we should only need to do this once
-    public void Initialise(Material newMaterial, string colourPropertyName, string texturePropertyName)
+    public void Initialise(PaintManager paintManager, Texture2D newTexture, Color newColour)
     {
         removalPercent = 0f;
 
+        pixelCounter = paintManager.pixelCounter;
+
         // How high should the resolution of our masks be?
-        int resolution = maskPixelDensity * Mathf.CeilToInt(carvableMesh.halfMeshSize.x + carvableMesh.halfMeshSize.y);
-        resolution = Mathf.Min(1 << (int)maskResolutionCap, MathUtilities.NextHighestPowerOf2(resolution));
+        int resolution = paintManager.maskPixelDensity * Mathf.CeilToInt(carvableMesh.halfMeshSize.x + carvableMesh.halfMeshSize.y);
+        resolution = Mathf.Min(1 << (int)paintManager.maskResolutionCap, MathUtilities.NextHighestPowerOf2(resolution));
 
         // Setup the RenderTexture masks
         primaryEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
         primaryEraseMask.name = "PrimaryEraseMask";
+        primaryEraseMask.filterMode = FilterMode.Bilinear;
+
         secondaryEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
         secondaryEraseMask.name = "SecondaryEraseMask";
+        secondaryEraseMask.filterMode = FilterMode.Bilinear;
+
+        outputEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
+        outputEraseMask.name = "OutputEraseMask";
+        outputEraseMask.filterMode = FilterMode.Bilinear;
+
         geometryMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
         geometryMask.name = "GeometryMask";
+        geometryMask.filterMode = FilterMode.Point;
+
         ClearMasks();
 
-        maskPaintingMaterial = new Material(surfacePainter);
-        maskStencilMaterial = new Material(geometryStencil);
-        SetMaterial(newMaterial, colourPropertyName, texturePropertyName);
+        // Set material instances
+        maskPaintingMaterial = new Material(paintManager.surfacePainter);
+        maskStencilMaterial = new Material(paintManager.geometryStencil);
+        maskExtensionMaterial = new Material(paintManager.maskExtension);
+
+        paintMaterialInstance = new Material(paintManager.maskablePaint);
+
+        // Get the shader variable hooks
+        paintMaskID = paintManager.paintMaskID;
+        eraseThresholdID = paintManager.eraseThresholdID;
+        paintTextureID = paintManager.paintTextureID;
+        paintColourID = paintManager.paintColourID;
+
+        paintMaterialInstance.SetTexture(paintMaskID, outputEraseMask);
+        paintMaterialInstance.SetFloat(eraseThresholdID, PaintManager.ERASE_THRESHOLD);
+
+        // Apply new material
+        paintMeshRenderer.material = paintMaterialInstance;
+
+        SetTexture(newTexture);
+        SetColour(newColour);
 
         // Initialise the carvable mesh
         carvableMesh.Initialise();
@@ -122,27 +146,35 @@ public class MaskablePaint : MonoBehaviour
     }
 
     // Submits paint erase instructions at a given position
-    public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushRadius, float brushHardness, float brushStrength)
+    public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushInnerRadius, float brushOuterRadius, Texture2D brushTexture, float brushTextureStrength, float brushTextureScale)
     {
         // If paint is ready to use
         if (isInitialised)
         {
+            if (brushOuterRadius <= brushInnerRadius) brushOuterRadius = brushInnerRadius + 0.01f;
+
             // Configure the brush
             maskPaintingMaterial.SetVector("_BrushPosition", brushPosition);
-            maskPaintingMaterial.SetFloat("_BrushRadius", brushRadius);
-            maskPaintingMaterial.SetFloat("_BrushHardness", brushHardness);
-            maskPaintingMaterial.SetFloat("_BrushStrength", brushStrength);
+            maskPaintingMaterial.SetFloat("_BrushInnerRadius", brushInnerRadius);
+            maskPaintingMaterial.SetFloat("_BrushOuterRadius", brushOuterRadius);
+            maskPaintingMaterial.SetTexture("_BrushTexture", brushTexture);
+            maskPaintingMaterial.SetFloat("_BrushTextureStrength", brushTextureStrength);
+            maskPaintingMaterial.SetFloat("_BrushTextureScale", brushTextureScale);
 
-            // Give it the previous canvas
-            maskPaintingMaterial.SetTexture("_MainTex", secondaryEraseMask);
+            maskPaintingMaterial.SetTexture("_MainTex", primaryEraseMask);
 
-            // Draw (previous canvas + paint this frame) onto the current canvas
-            commandBuffer.SetRenderTarget(primaryEraseMask);
+            // Combine the primary mask and the brush onto the secondary mask
+            commandBuffer.SetRenderTarget(secondaryEraseMask);
             commandBuffer.DrawRenderer(carvableMesh.meshRenderer, maskPaintingMaterial, 0);
 
-            // Make the current canvas the new previous
-            commandBuffer.SetRenderTarget(secondaryEraseMask);
-            commandBuffer.Blit(primaryEraseMask, secondaryEraseMask);
+            // Copy the combined brush and mask back onto the primary mask
+            commandBuffer.SetRenderTarget(primaryEraseMask);
+            commandBuffer.Blit(secondaryEraseMask, primaryEraseMask);
+
+            // Extend the mask by one pixel to account for the rasterizer cutting it off around the edges of the carved mesh
+            commandBuffer.SetRenderTarget(outputEraseMask);
+            maskExtensionMaterial.SetTexture("_MainTex", primaryEraseMask);
+            commandBuffer.Blit(secondaryEraseMask, outputEraseMask, maskExtensionMaterial);
         }
     }
 
@@ -177,37 +209,30 @@ public class MaskablePaint : MonoBehaviour
     }
 
     // Sets a new material for this paint object (and resets it)
-    public void SetMaterial(Material newMaterial, string texturePropertyName, string colourPropertyName)
+    public void SetTexture(Texture2D newTexture)
     {
         ResetPaint();
 
-        // Get the shader variable hooks
-        paintTextureID = Shader.PropertyToID(texturePropertyName);
-        paintColourID = Shader.PropertyToID(colourPropertyName);
-
-        // Create a new instance of this material
-        paintMaterialInstance = Instantiate(newMaterial);
-        paintMaterialTexture = newMaterial.GetTexture(paintTextureID);
-
-        if (paintMaterialColour != Color.clear)
-        {
-            SetColour(paintMaterialColour);
-        }
-
-        // Apply new material
-        paintMeshRenderer.material = paintMaterialInstance;
+        paintTexture = newTexture;
+        paintMaterialInstance.SetTexture(paintTextureID, newTexture);
     }
 
     // Set the colour of the material of this paint object
     public void SetColour(Color newColour)
     {
-        paintMaterialColour = newColour;
+        paintColour = newColour;
 
         // If there is a material instantiated already, assign the colour
         if (paintMaterialInstance != null)
         {
-            paintMaterialInstance.SetColor(paintColourID, paintMaterialColour);
+            paintMaterialInstance.SetColor(paintColourID, paintColour);
         }
+    }
+
+    // Get the current paint colour
+    public Color GetColour()
+    {
+        return paintColour;
     }
 
     // Bake the shape of the mesh into the geometry mask texture
@@ -238,6 +263,9 @@ public class MaskablePaint : MonoBehaviour
         setupBuffer.SetRenderTarget(secondaryEraseMask);
         setupBuffer.ClearRenderTarget(true, true, Color.clear);
 
+        setupBuffer.SetRenderTarget(outputEraseMask);
+        setupBuffer.ClearRenderTarget(true, true, Color.clear);
+
         setupBuffer.SetRenderTarget(geometryMask);
         setupBuffer.ClearRenderTarget(true, true, Color.clear);
 
@@ -260,11 +288,11 @@ public class MaskablePaint : MonoBehaviour
         int kernalComputePixelCounts = pixelCounter.FindKernel("ComputePixelCounts");
 
         // Send data to the compute shader
-        pixelCounter.SetTexture(kernalComputePixelCounts, "ImageTexture", paintMaterialTexture);
-        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", primaryEraseMask);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintTexture", paintTexture);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", outputEraseMask);
         pixelCounter.SetTexture(kernalComputePixelCounts, "GeometryMaskTexture", geometryMask);
 
-        pixelCounter.SetFloat("MaskClipThreshold", maskClipMinThreshold);
+        pixelCounter.SetFloat("MaskClipThreshold", PaintManager.ERASE_THRESHOLD);
 
         Vector4 inverseMaskDimensions = new Vector4(1f / primaryEraseMask.width, 1f / primaryEraseMask.height, 0f, 0f);
         pixelCounter.SetVector("InverseMaskDimensions", inverseMaskDimensions);

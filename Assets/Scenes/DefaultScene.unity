@@ -1688,13 +1688,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2adf1e65b23234f90025dfb3835d6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bInnerRadius: 0.3
+  bOuterRadius: 0.7
+  bTexture: {fileID: 2800000, guid: dde73061f2a58774c9039fb1f81b0103, type: 3}
+  bTextureStrength: 1
+  bTextureScale: 0.3
   paintPrefab: {fileID: 2390514906075326480, guid: 813489622b1203245bfaafc140834d82, type: 3}
-  paintMaterials:
-  - {fileID: 2100000, guid: e92399372b6bb61409d7b3224bfefb09, type: 2}
+  paintMaskProperty: _PaintMask
+  eraseThresholdProperty: _EraseThreshold
+  paintTextureProperty: _PaintTexture
+  paintColourProperty: _PaintColour
+  maskPixelDensity: 32
+  maskResolutionCap: 10
+  paintTextures:
+  - {fileID: 2800000, guid: 641a48e3d5b1cb2428d78d2291ff135d, type: 3}
   paintColours:
-  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0.65, g: 1, b: 0.3, a: 1}
   initialPaintReserve: 1
   preventDuplicateReturns: 0
+  pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
+  surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
+  geometryStencil: {fileID: 4800000, guid: 9ad33e0edaecf414ebf334fa62c3ffdc, type: 3}
+  maskExtension: {fileID: 4800000, guid: 1bb7a4892a1e02249b14d04427c0ceb0, type: 3}
+  maskablePaint: {fileID: -6465566751694194690, guid: d76336d9ef3e1b143991ea63a627c070, type: 3}
 --- !u!1 &1064724377
 GameObject:
   m_ObjectHideFlags: 0

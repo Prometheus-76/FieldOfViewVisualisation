@@ -33,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3649551186947770027
 MeshFilter:
@@ -103,7 +103,7 @@ MonoBehaviour:
   carvingLayers:
     serializedVersion: 2
     m_Bits: 512
-  halfMeshSize: {x: 3, y: 3}
+  halfMeshSize: {x: 5, y: 5}
   maxEdgeSearchIterations: 8
   edgeSearchMinAngleThreshold: 0.1
   projectionOffsetThreshold: 0.25
@@ -129,7 +129,7 @@ MonoBehaviour:
   pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
   surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
   geometryStencil: {fileID: 4800000, guid: 9ad33e0edaecf414ebf334fa62c3ffdc, type: 3}
-  maskClipMinThreshold: 0.99
+  maskExtension: {fileID: 4800000, guid: 1bb7a4892a1e02249b14d04427c0ceb0, type: 3}
+  eraseThreshold: 0.7
   maskPixelDensity: 25
-  maskResolutionCap: 10
-  geometryMask: {fileID: 0}
+  maskResolutionCap: 9
