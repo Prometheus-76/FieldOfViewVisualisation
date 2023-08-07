@@ -29,6 +29,8 @@ public class PaintManager : MonoBehaviour
         MaskablePaint paint = ExtractFromPool();
         paint.gameObject.SetActive(true);
         paint.transform.parent = null;
+        paint.transform.position = new Vector2(6, -3);
+        paint.transform.rotation = Quaternion.Euler(0f, 0f, -42);
         paint.Splatter();
     }
 
@@ -71,7 +73,7 @@ public class PaintManager : MonoBehaviour
                     // Check if brush radius overlaps with shape perimeter as well?
                     if (true)
                     {
-                        allPaint[i].SubmitEraseCommand(commandBuffer, brushPosition, brushRadius, brushHardness, brushStrength);
+                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushRadius, brushHardness, brushStrength);
                         eraseCount += 1;
                     }
                 }

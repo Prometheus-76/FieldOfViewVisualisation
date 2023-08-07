@@ -15,6 +15,7 @@ public class MaskablePaint : MonoBehaviour
     [Header("Shaders")]
     public ComputeShader pixelCounter;
     public Shader surfacePainter;
+    public Shader geometryStencil;
 
     [Header("Configuration")]
     [Range(0f, 0.99f)]
@@ -37,6 +38,7 @@ public class MaskablePaint : MonoBehaviour
             if (primaryEraseMask == null) return false;
             if (secondaryEraseMask == null) return false;
             if (maskPaintingMaterial == null) return false;
+            if (maskStencilMaterial == null) return false;
             if (paintMaterialInstance == null) return false;
             if (carvableMesh.isInitialised == false) return false;
 
@@ -50,7 +52,10 @@ public class MaskablePaint : MonoBehaviour
 
     private RenderTexture primaryEraseMask = null;
     private RenderTexture secondaryEraseMask = null;
+    public RenderTexture geometryMask = null;
     private Material maskPaintingMaterial = null;
+    private Material maskStencilMaterial = null;
+
     private Material paintMaterialInstance = null;
 
     private Color paintMaterialColour = Color.clear;
@@ -72,9 +77,12 @@ public class MaskablePaint : MonoBehaviour
         primaryEraseMask.name = "PrimaryEraseMask";
         secondaryEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
         secondaryEraseMask.name = "SecondaryEraseMask";
-        ClearEraseMasks();
+        geometryMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
+        geometryMask.name = "GeometryMask";
+        ClearMasks();
 
         maskPaintingMaterial = new Material(surfacePainter);
+        maskStencilMaterial = new Material(geometryStencil);
         SetMaterial(newMaterial, colourPropertyName, texturePropertyName);
 
         // Initialise the carvable mesh
@@ -91,6 +99,9 @@ public class MaskablePaint : MonoBehaviour
         // Regenerate the mesh shape
         carvableMesh.UpdateMesh();
 
+        // Bake the geometry mask
+        BakeGeometryMask();
+
         isReset = false;
     }
 
@@ -102,7 +113,7 @@ public class MaskablePaint : MonoBehaviour
         // Reset previous erase data
         previousErasedPixels = 0;
         removalPercent = 0f;
-        ClearEraseMasks();
+        ClearMasks();
 
         // Ignore pending GPU jobs
         removalInProgress = false;
@@ -111,7 +122,7 @@ public class MaskablePaint : MonoBehaviour
     }
 
     // Submits paint erase instructions at a given position
-    public void SubmitEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushRadius, float brushHardness, float brushStrength)
+    public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushRadius, float brushHardness, float brushStrength)
     {
         // If paint is ready to use
         if (isInitialised)
@@ -199,8 +210,23 @@ public class MaskablePaint : MonoBehaviour
         }
     }
 
+    // Bake the shape of the mesh into the geometry mask texture
+    private void BakeGeometryMask()
+    {
+        // Create a command buffer to execute GPU tasks
+        CommandBuffer bakeBuffer = new CommandBuffer();
+
+        // Draw (previous canvas + paint this frame) onto the current canvas
+        bakeBuffer.SetRenderTarget(geometryMask);
+        bakeBuffer.DrawRenderer(carvableMesh.meshRenderer, maskStencilMaterial, 0);
+
+        // Execute commands and then clear the buffer
+        Graphics.ExecuteCommandBuffer(bakeBuffer);
+        bakeBuffer.Clear();
+    }
+
     // Clear the rendering masks
-    private void ClearEraseMasks()
+    private void ClearMasks()
     {
         // Create a command buffer to execute GPU tasks
         CommandBuffer setupBuffer = new CommandBuffer();
@@ -210,6 +236,9 @@ public class MaskablePaint : MonoBehaviour
         setupBuffer.ClearRenderTarget(true, true, Color.clear);
 
         setupBuffer.SetRenderTarget(secondaryEraseMask);
+        setupBuffer.ClearRenderTarget(true, true, Color.clear);
+
+        setupBuffer.SetRenderTarget(geometryMask);
         setupBuffer.ClearRenderTarget(true, true, Color.clear);
 
         // Execute commands and then clear the buffer

@@ -128,8 +128,8 @@ MonoBehaviour:
   paintMeshRenderer: {fileID: 8445272382757875965}
   pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
   surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
+  geometryStencil: {fileID: 4800000, guid: 9ad33e0edaecf414ebf334fa62c3ffdc, type: 3}
   maskClipMinThreshold: 0.99
   maskPixelDensity: 25
   maskResolutionCap: 10
-  primaryEraseMask: {fileID: 0}
-  secondaryEraseMask: {fileID: 0}
+  geometryMask: {fileID: 0}

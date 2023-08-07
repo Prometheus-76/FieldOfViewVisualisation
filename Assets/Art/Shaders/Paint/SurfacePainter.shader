@@ -7,7 +7,9 @@ Shader "Custom/SurfacePainter"
 
     SubShader
     {
-        Cull Off ZWrite Off ZTest Off
+        Cull Off 
+        ZWrite Off 
+        ZTest Off
 
         Pass
         {
