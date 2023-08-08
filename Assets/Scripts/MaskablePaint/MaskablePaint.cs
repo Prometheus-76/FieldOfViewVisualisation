@@ -36,7 +36,7 @@ public class MaskablePaint : MonoBehaviour
     }
 
     // PRIVATE
-    private float previousErasedPixels = 0;
+    private int previousErasedPixels = 0;
     private AsyncGPUReadbackRequest dataRequest;
 
     private RenderTexture primaryEraseMask = null;
@@ -145,6 +145,33 @@ public class MaskablePaint : MonoBehaviour
         isReset = true;
     }
 
+    // Sets a new material for this paint object (and resets it)
+    public void SetTexture(Texture2D newTexture)
+    {
+        ResetPaint();
+
+        paintTexture = newTexture;
+        paintMaterialInstance.SetTexture(paintTextureID, newTexture);
+    }
+
+    // Set the colour of the material of this paint object
+    public void SetColour(Color newColour)
+    {
+        paintColour = newColour;
+
+        // If there is a material instantiated already, assign the colour
+        if (paintMaterialInstance != null)
+        {
+            paintMaterialInstance.SetColor(paintColourID, paintColour);
+        }
+    }
+
+    // Get the current paint colour
+    public Color GetColour()
+    {
+        return paintColour;
+    }
+
     // Submits paint erase instructions at a given position
     public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushInnerRadius, float brushOuterRadius, Texture2D brushTexture, float brushTextureStrength, float brushTextureScale)
     {
@@ -198,41 +225,57 @@ public class MaskablePaint : MonoBehaviour
                 removalPercent = Mathf.Clamp01((float)currentErasedPixels / totalErasablePixels);
 
                 // How many pixels have been removed since last checking?
-                float removalDelta = Mathf.Max(0, currentErasedPixels - previousErasedPixels);
+                int removalDelta = Mathf.Max(0, currentErasedPixels - previousErasedPixels);
                 previousErasedPixels = currentErasedPixels;
 
-                return removalDelta;
+                // Convert from pixel count -> world space area
+                float texelArea = outputEraseMask.texelSize.x * outputEraseMask.texelSize.y; // texelSize = (1 / textureResolution)
+
+                Vector2 meshDimensions = carvableMesh.halfMeshSize * 2f * carvableMesh.transform.lossyScale;
+                float meshArea = meshDimensions.x * meshDimensions.y;
+
+                return (removalDelta * texelArea * meshArea);
             }
         }
 
         return 0f;
     }
 
-    // Sets a new material for this paint object (and resets it)
-    public void SetTexture(Texture2D newTexture)
+    // Sends a request to the GPU to compare the mask/s to the paint texture
+    private void RequestMaskAnalysis()
     {
-        ResetPaint();
+        // Don't submit another request while one is currently pending
+        if (removalInProgress) return;
+        removalInProgress = true;
 
-        paintTexture = newTexture;
-        paintMaterialInstance.SetTexture(paintTextureID, newTexture);
-    }
+        ComputeBuffer computeBuffer = new ComputeBuffer(2, sizeof(int));
+        
+        // Get function handles in the compute shader, and create a buffer for the execution batches
+        int kernalInitialise = pixelCounter.FindKernel("Initialise");
+        int kernalComputePixelCounts = pixelCounter.FindKernel("ComputePixelCounts");
 
-    // Set the colour of the material of this paint object
-    public void SetColour(Color newColour)
-    {
-        paintColour = newColour;
+        // Send data to the compute shader
+        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintTexture", paintTexture);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", outputEraseMask);
+        pixelCounter.SetTexture(kernalComputePixelCounts, "GeometryMaskTexture", geometryMask);
 
-        // If there is a material instantiated already, assign the colour
-        if (paintMaterialInstance != null)
-        {
-            paintMaterialInstance.SetColor(paintColourID, paintColour);
-        }
-    }
+        pixelCounter.SetFloat("MaskClipThreshold", PaintManager.ERASE_THRESHOLD);
 
-    // Get the current paint colour
-    public Color GetColour()
-    {
-        return paintColour;
+        Vector4 inverseMaskDimensions = new Vector4(1f / primaryEraseMask.width, 1f / primaryEraseMask.height, 0f, 0f);
+        pixelCounter.SetVector("InverseMaskDimensions", inverseMaskDimensions);
+
+        pixelCounter.SetBuffer(kernalComputePixelCounts, "ResultBuffer", computeBuffer);
+        pixelCounter.SetBuffer(kernalInitialise, "ResultBuffer", computeBuffer);
+
+        // Call all batches of the compute shader
+        pixelCounter.Dispatch(kernalInitialise, 1, 1, 1);
+        pixelCounter.Dispatch(kernalComputePixelCounts, primaryEraseMask.width / 8, primaryEraseMask.height / 8, 1);
+
+        // Submit a request for the results
+        dataRequest = AsyncGPUReadback.Request(computeBuffer);
+
+        // Memory cleanup
+        computeBuffer.Release();
     }
 
     // Bake the shape of the mesh into the geometry mask texture
@@ -272,42 +315,5 @@ public class MaskablePaint : MonoBehaviour
         // Execute commands and then clear the buffer
         Graphics.ExecuteCommandBuffer(setupBuffer);
         setupBuffer.Clear();
-    }
-
-    // Sends a request to the GPU to compare the mask/s to the paint texture
-    private void RequestMaskAnalysis()
-    {
-        // Don't submit another request while one is currently pending
-        if (removalInProgress) return;
-        removalInProgress = true;
-
-        ComputeBuffer computeBuffer = new ComputeBuffer(2, sizeof(int));
-        
-        // Get function handles in the compute shader, and create a buffer for the execution batches
-        int kernalInitialise = pixelCounter.FindKernel("Initialise");
-        int kernalComputePixelCounts = pixelCounter.FindKernel("ComputePixelCounts");
-
-        // Send data to the compute shader
-        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintTexture", paintTexture);
-        pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", outputEraseMask);
-        pixelCounter.SetTexture(kernalComputePixelCounts, "GeometryMaskTexture", geometryMask);
-
-        pixelCounter.SetFloat("MaskClipThreshold", PaintManager.ERASE_THRESHOLD);
-
-        Vector4 inverseMaskDimensions = new Vector4(1f / primaryEraseMask.width, 1f / primaryEraseMask.height, 0f, 0f);
-        pixelCounter.SetVector("InverseMaskDimensions", inverseMaskDimensions);
-
-        pixelCounter.SetBuffer(kernalComputePixelCounts, "ResultBuffer", computeBuffer);
-        pixelCounter.SetBuffer(kernalInitialise, "ResultBuffer", computeBuffer);
-
-        // Call all batches of the compute shader
-        pixelCounter.Dispatch(kernalInitialise, 1, 1, 1);
-        pixelCounter.Dispatch(kernalComputePixelCounts, primaryEraseMask.width / 8, primaryEraseMask.height / 8, 1);
-
-        // Submit a request for the results
-        dataRequest = AsyncGPUReadback.Request(computeBuffer);
-
-        // Memory cleanup
-        computeBuffer.Release();
     }
 }

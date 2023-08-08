@@ -648,7 +648,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9580c19d1fe46804eb7d2a98998e3469, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1109,8 +1109,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneCamera: {fileID: 1549064285}
+  renderingMaskShader: {fileID: 4800000, guid: 063c7ad912702b14788729f0efcf6889, type: 3}
   renderingMaskScript: {fileID: 482399312}
   renderingMaskTransform: {fileID: 482399315}
+  renderingMaskRenderer: {fileID: 482399313}
   backgroundMaterial: {fileID: 2100000, guid: b554b66f2af97ae49a85f113c4042485, type: 2}
   maskBackgroundTransform: {fileID: 2010995546}
   maskBackgroundFilter: {fileID: 2010995548}
@@ -1698,7 +1700,7 @@ MonoBehaviour:
   eraseThresholdProperty: _EraseThreshold
   paintTextureProperty: _PaintTexture
   paintColourProperty: _PaintColour
-  maskPixelDensity: 32
+  maskPixelDensity: 128
   maskResolutionCap: 10
   paintTextures:
   - {fileID: 2800000, guid: 641a48e3d5b1cb2428d78d2291ff135d, type: 3}

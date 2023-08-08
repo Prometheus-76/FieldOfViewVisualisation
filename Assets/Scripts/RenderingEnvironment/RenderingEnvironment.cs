@@ -8,8 +8,10 @@ public class RenderingEnvironment : MonoBehaviour
     public Camera sceneCamera;
 
     [Header("Rendering Mask")]
+    public Shader renderingMaskShader;
     public CarvableMesh renderingMaskScript;
     public Transform renderingMaskTransform;
+    public MeshRenderer renderingMaskRenderer;
 
     [Header("Mask Background")]
     public Material backgroundMaterial;
@@ -31,11 +33,12 @@ public class RenderingEnvironment : MonoBehaviour
     private int[] maskBoundsTriangles;
     private Vector2[] maskBoundsUVs;
 
+    private Material renderingMaskMaterialInstance = null;
     private Material backgroundMaterialInstance = null;
     private Material foregroundMaterialInstance = null;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         // Lock transforms
         ConstrainEnvironmentTransforms();
@@ -46,6 +49,8 @@ public class RenderingEnvironment : MonoBehaviour
         // Configure mask
         renderingMaskScript.Initialise();
         renderingMaskScript.halfMeshSize = CalculateHalfScreenBounds();
+        renderingMaskMaterialInstance = new Material(renderingMaskShader);
+        renderingMaskRenderer.material = renderingMaskMaterialInstance;
 
         // Update mask materials
         SetBackgroundMaterial(backgroundMaterial);
@@ -53,7 +58,7 @@ public class RenderingEnvironment : MonoBehaviour
     }
 
     // LateUpdate is called at the end of every frame
-    void LateUpdate()
+    private void LateUpdate()
     {
         // Keep transforms locked into place
         ConstrainEnvironmentTransforms();
@@ -70,7 +75,25 @@ public class RenderingEnvironment : MonoBehaviour
         renderingMaskScript.UpdateMesh();
     }
 
-    Vector2 CalculateHalfScreenBounds()
+    public void SetBackgroundMaterial(Material newMaterial)
+    {
+        backgroundMaterial = newMaterial;
+        backgroundMaterialInstance = new Material(newMaterial);
+
+        backgroundMaterialInstance.name = newMaterial.name + " (Instance)";
+        maskBackgroundRenderer.material = backgroundMaterialInstance;
+    }
+
+    public void SetForegroundMaterial(Material newMaterial)
+    {
+        foregroundMaterial = newMaterial;
+        foregroundMaterialInstance = new Material(newMaterial);
+
+        foregroundMaterialInstance.name = newMaterial.name + " (Instance)";
+        maskForegroundRenderer.material = foregroundMaterialInstance;
+    }
+
+    private Vector2 CalculateHalfScreenBounds()
     {
         float aspectRatio = (float)Screen.width / Screen.height;
 
@@ -80,7 +103,7 @@ public class RenderingEnvironment : MonoBehaviour
         return new Vector2(halfScreenWidth, halfScreenHeight);
     }
 
-    void InitialiseBoundsMeshes()
+    private void InitialiseBoundsMeshes()
     {
         maskBoundsMesh = new Mesh();
         maskBoundsMesh.name = "MaskBounds";
@@ -116,7 +139,7 @@ public class RenderingEnvironment : MonoBehaviour
         maskBoundsMesh.uv = maskBoundsUVs;
     }
 
-    void UpdateBoundsMeshes(Vector2 boundsSize)
+    private void UpdateBoundsMeshes(Vector2 boundsSize)
     {
         // Calculate vertex positions
         Vector2 topLeft = new Vector2(-boundsSize.x, boundsSize.y);
@@ -140,7 +163,7 @@ public class RenderingEnvironment : MonoBehaviour
         previousCameraSize = sceneCamera.orthographicSize;
     }
 
-    void ConstrainEnvironmentTransforms()
+    private void ConstrainEnvironmentTransforms()
     {
         // Lock local transforms of rendering mask and bounds meshes
         renderingMaskTransform.localPosition = Vector3.zero;
@@ -154,23 +177,5 @@ public class RenderingEnvironment : MonoBehaviour
         renderingMaskTransform.localScale = Vector3.one;
         maskBackgroundTransform.localScale = Vector3.one;
         maskForegroundTransform.localScale = Vector3.one;
-    }
-
-    public void SetBackgroundMaterial(Material newMaterial)
-    {
-        backgroundMaterial = newMaterial;
-        backgroundMaterialInstance = new Material(newMaterial);
-
-        backgroundMaterialInstance.name = newMaterial.name + " (Instance)";
-        maskBackgroundRenderer.material = backgroundMaterialInstance;
-    }
-
-    public void SetForegroundMaterial(Material newMaterial)
-    {
-        foregroundMaterial = newMaterial;
-        foregroundMaterialInstance = new Material(newMaterial);
-
-        foregroundMaterialInstance.name = newMaterial.name + " (Instance)";
-        maskForegroundRenderer.material = foregroundMaterialInstance;
     }
 }

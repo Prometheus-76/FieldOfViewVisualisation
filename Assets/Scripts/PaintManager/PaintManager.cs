@@ -113,7 +113,7 @@ public class PaintManager : MonoBehaviour
             // If active and splattered
             if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
             {
-                // If the distance to the bounding box is less than the brush radius...
+                // If the distance to the bounding box is less than the outer brush radius...
                 if (true)
                 {
                     // Check if brush radius overlaps with shape perimeter as well?
