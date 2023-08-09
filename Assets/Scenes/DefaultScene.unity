@@ -1690,17 +1690,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2adf1e65b23234f90025dfb3835d6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bInnerRadius: 0.3
-  bOuterRadius: 0.7
-  bTexture: {fileID: 2800000, guid: dde73061f2a58774c9039fb1f81b0103, type: 3}
-  bTextureStrength: 1
-  bTextureScale: 0.3
+  brushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
   paintPrefab: {fileID: 2390514906075326480, guid: 813489622b1203245bfaafc140834d82, type: 3}
   paintMaskProperty: _PaintMask
   eraseThresholdProperty: _EraseThreshold
   paintTextureProperty: _PaintTexture
   paintColourProperty: _PaintColour
-  maskPixelDensity: 128
+  maskPixelDensity: 32
   maskResolutionCap: 10
   paintTextures:
   - {fileID: 2800000, guid: 641a48e3d5b1cb2428d78d2291ff135d, type: 3}

@@ -181,7 +181,7 @@ public partial class CarvableMesh : MonoBehaviour
     {
         List<EdgePoint> edgePoints = new List<EdgePoint>();
 
-        Collider2D[] collidersInRange = Physics2D.OverlapBoxAll(meshTransform.position, halfMeshSize * 2f * meshTransform.lossyScale, meshTransform.eulerAngles.z);
+        Collider2D[] collidersInRange = Physics2D.OverlapBoxAll(meshTransform.position, halfMeshSize * 2f, meshTransform.eulerAngles.z);
 
         // Create a clock-wise winding of points that encompass each collider in range
         for (int c = 0; c < collidersInRange.Length; c++)

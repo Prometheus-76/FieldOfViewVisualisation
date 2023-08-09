@@ -173,20 +173,18 @@ public class MaskablePaint : MonoBehaviour
     }
 
     // Submits paint erase instructions at a given position
-    public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, float brushInnerRadius, float brushOuterRadius, Texture2D brushTexture, float brushTextureStrength, float brushTextureScale)
+    public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, BrushProfile brushProfile)
     {
         // If paint is ready to use
         if (isInitialised)
         {
-            if (brushOuterRadius <= brushInnerRadius) brushOuterRadius = brushInnerRadius + 0.01f;
-
             // Configure the brush
             maskPaintingMaterial.SetVector("_BrushPosition", brushPosition);
-            maskPaintingMaterial.SetFloat("_BrushInnerRadius", brushInnerRadius);
-            maskPaintingMaterial.SetFloat("_BrushOuterRadius", brushOuterRadius);
-            maskPaintingMaterial.SetTexture("_BrushTexture", brushTexture);
-            maskPaintingMaterial.SetFloat("_BrushTextureStrength", brushTextureStrength);
-            maskPaintingMaterial.SetFloat("_BrushTextureScale", brushTextureScale);
+            maskPaintingMaterial.SetFloat("_BrushInnerRadius", brushProfile.brushInnerRadius);
+            maskPaintingMaterial.SetFloat("_BrushOuterRadius", brushProfile.brushInnerRadius + brushProfile.brushOuterOffset);
+            maskPaintingMaterial.SetTexture("_BrushTexture", brushProfile.brushTexture);
+            maskPaintingMaterial.SetFloat("_BrushTextureStrength", brushProfile.brushTextureStrength);
+            maskPaintingMaterial.SetFloat("_BrushTextureScale", brushProfile.brushTextureScale);
 
             maskPaintingMaterial.SetTexture("_MainTex", primaryEraseMask);
 
@@ -231,7 +229,7 @@ public class MaskablePaint : MonoBehaviour
                 // Convert from pixel count -> world space area
                 float texelArea = outputEraseMask.texelSize.x * outputEraseMask.texelSize.y; // texelSize = (1 / textureResolution)
 
-                Vector2 meshDimensions = carvableMesh.halfMeshSize * 2f * carvableMesh.transform.lossyScale;
+                Vector2 meshDimensions = carvableMesh.halfMeshSize * 2f;
                 float meshArea = meshDimensions.x * meshDimensions.y;
 
                 return (removalDelta * texelArea * meshArea);

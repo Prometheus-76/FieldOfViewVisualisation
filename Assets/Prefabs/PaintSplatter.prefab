@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -126,10 +126,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carvableMesh: {fileID: 4560066373634751030}
   paintMeshRenderer: {fileID: 8445272382757875965}
-  pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
-  surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
-  geometryStencil: {fileID: 4800000, guid: 9ad33e0edaecf414ebf334fa62c3ffdc, type: 3}
-  maskExtension: {fileID: 4800000, guid: 1bb7a4892a1e02249b14d04427c0ceb0, type: 3}
-  eraseThreshold: 0.7
-  maskPixelDensity: 25
-  maskResolutionCap: 9

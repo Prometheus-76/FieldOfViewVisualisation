@@ -8,11 +8,7 @@ public class PaintManager : MonoBehaviour
     #region Inspector
 
     [Header("Brush config (PLACEHOLDER)")]
-    public float bInnerRadius;
-    public float bOuterRadius;
-    public Texture2D bTexture;
-    public float bTextureStrength;
-    public float bTextureScale;
+    public BrushProfile brushProfile;
 
     [Header("Configuration")]
     public GameObject paintPrefab;
@@ -77,7 +73,7 @@ public class PaintManager : MonoBehaviour
     private void Update()
     {
         Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
-        EraseFromAll(cursorWorldPos, bInnerRadius, bOuterRadius, bTexture, bTextureStrength, bTextureScale);
+        EraseFromAll(cursorWorldPos, brushProfile);
 
         totalRemoved += allPaint[0].ComputeRemovalDelta();
     }
@@ -104,7 +100,7 @@ public class PaintManager : MonoBehaviour
     }
 
     // Erase at a position in the world from all paint objects below the brush
-    public void EraseFromAll(Vector2 brushPosition, float brushInnerRadius, float brushOuterRadius, Texture2D brushTexture, float brushTextureStrength, float brushTextureScale)
+    public void EraseFromAll(Vector2 brushPosition, BrushProfile brushProfile)
     {
         // Broad -> narrow phase to find all applicable paint objects, erase them as we go
         int eraseCount = 0;
@@ -119,7 +115,7 @@ public class PaintManager : MonoBehaviour
                     // Check if brush radius overlaps with shape perimeter as well?
                     if (true)
                     {
-                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushInnerRadius, brushOuterRadius, brushTexture, brushTextureStrength, brushTextureScale);
+                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushProfile);
                         eraseCount += 1;
                     }
                 }

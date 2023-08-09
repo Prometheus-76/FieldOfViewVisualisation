@@ -53,11 +53,11 @@ Shader "Custom/SurfacePainter"
                 float distanceFromBrushCenter = distance(center, position);
                 float baseBrush = 1.0f - clamp(inverselerp(innerRadius, outerRadius, distanceFromBrushCenter), 0.0f, 1.0f);
                 
-                // Apply texture to brush
+                // Mask brush texture
                 float2 textureUV = frac(position * _BrushTextureScale);
-                float texturedBrush = clamp((baseBrush * tex2D(_BrushTexture, textureUV) * _BrushTextureStrength) + baseBrush, 0.0f, 1.0f);
+                float texturedBrush = baseBrush * tex2D(_BrushTexture, textureUV) * _BrushTextureStrength;
     
-                return texturedBrush;
+                return clamp(baseBrush + texturedBrush, 0.0f, 1.0f);
             }
 
             v2f vert (appdata v)
