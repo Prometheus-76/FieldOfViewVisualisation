@@ -8,8 +8,8 @@ public partial class CarvableMesh
     {
         if (cullContinuousVertices)
         {
-            // Skip the center (first) vertex
-            for (int i = 1; i < edgePoints.Count; i++)
+            // Start between the first pair of EdgePoints
+            for (int i = 2; i < edgePoints.Count; i++)
             {
                 // Get the EdgePoint before this one
                 EdgePoint previousEdgePoint = edgePoints[(i - 1) < 1 ? edgePoints.Count - 1 : (i - 1)];

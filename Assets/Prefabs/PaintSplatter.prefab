@@ -103,14 +103,13 @@ MonoBehaviour:
   carvingLayers:
     serializedVersion: 2
     m_Bits: 512
-  halfMeshSize: {x: 5, y: 5}
+  halfMeshSize: {x: 0, y: 0}
   maxEdgeSearchIterations: 8
   edgeSearchMinAngleThreshold: 0.1
   projectionOffsetThreshold: 0.25
   angleContinuityThreshold: 5
   cullContinuousVertices: 0
   generateTextureCoordinates: 1
-  detailedCurves: 0
   storePerimeter: 1
 --- !u!114 &2796150283089986461
 MonoBehaviour:
@@ -124,5 +123,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b229b58c6157546a3610e419588cbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paintTransform: {fileID: 4746229048038953488}
   carvableMesh: {fileID: 4560066373634751030}
   paintMeshRenderer: {fileID: 8445272382757875965}

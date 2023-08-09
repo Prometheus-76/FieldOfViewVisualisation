@@ -9,6 +9,7 @@ public class MaskablePaint : MonoBehaviour
     #region Inspector
 
     [Header("Components")]
+    public Transform paintTransform;
     [SerializeField]
     private CarvableMesh carvableMesh;
     public MeshRenderer paintMeshRenderer;
@@ -189,6 +190,19 @@ public class MaskablePaint : MonoBehaviour
         return paintColour;
     }
 
+    // Set the alpha of the material of this paint object
+    public void SetAlpha(float newAlpha)
+    {
+        // Only update if necessary
+        if (paintColour.a == newAlpha) return;
+
+        // We can't write to paintColour yet, otherwise it will appear as though the colour does not need changing
+        Color updatedColour = paintColour;
+        updatedColour.a = newAlpha;
+
+        SetColour(updatedColour);
+    }
+
     // Set the size of the mesh for this paint object, resets it, and updates the render textures
     public void SetSize(Vector2 newSize)
     {
@@ -223,6 +237,18 @@ public class MaskablePaint : MonoBehaviour
         geometryMask.Release();
         geometryMask.height = sideResolution;
         geometryMask.width = sideResolution;
+    }
+
+    // Get the current paint size
+    public Vector2 GetSize()
+    {
+        return paintSize;
+    }
+
+    // Get the perimeter of the paint mesh geometry
+    public Vector2[] GetPerimeter(bool returnCopy)
+    {
+        return carvableMesh.GetPerimeter(returnCopy);
     }
 
     // Submits paint erase instructions at a given position

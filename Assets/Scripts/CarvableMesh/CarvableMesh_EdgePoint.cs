@@ -113,8 +113,8 @@ public partial class CarvableMesh
         if (Vector2.Angle(minEdge.nextNormal, maxEdge.previousNormal) > angleContinuityThreshold) return false;
 
         // Project points onto surface tangents of each other
-        Vector2 projectedAOnTangentB = MathUtilities.FindPointOnLine(minEdge.position, MathUtilities.NormalToTangent(maxEdge.previousNormal), maxEdge.position);
-        Vector2 projectedBOnTangentA = MathUtilities.FindPointOnLine(maxEdge.position, MathUtilities.NormalToTangent(minEdge.nextNormal), minEdge.position);
+        Vector2 projectedAOnTangentB = MathUtilities.FindPointOnLine(minEdge.position, MathUtilities.Rotate90CW(maxEdge.previousNormal), maxEdge.position);
+        Vector2 projectedBOnTangentA = MathUtilities.FindPointOnLine(maxEdge.position, MathUtilities.Rotate90CW(minEdge.nextNormal), minEdge.position);
 
         // Find maximum discrepancy between the point position and where it would need to be for perfect continuity
         float maxContinuityOffset = Mathf.Max((minEdge.position - projectedAOnTangentB).sqrMagnitude, (maxEdge.position - projectedBOnTangentA).sqrMagnitude);

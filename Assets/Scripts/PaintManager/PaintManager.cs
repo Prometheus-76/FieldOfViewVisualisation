@@ -41,6 +41,10 @@ public class PaintManager : MonoBehaviour
     public Shader maskExtension;
     public Shader maskablePaint;
 
+    [Header("Optimisation")]
+    public bool boundsCulling = true;
+    public bool perimeterCulling = true;
+
     #endregion
 
     // PROPERTIES
@@ -73,8 +77,11 @@ public class PaintManager : MonoBehaviour
 
     private void Update()
     {
-        Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
-        EraseFromAll(cursorWorldPos, brushProfile);
+        if (InputManager.GetControlScheme() == InputManager.ControlScheme.MouseAndKeyboard)
+        {
+            Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
+            EraseFromAll(cursorWorldPos, brushProfile);
+        }
 
         UpdateAllRemovalDeltas();
     }
@@ -103,28 +110,41 @@ public class PaintManager : MonoBehaviour
     // Erase at a position in the world from all paint objects below the brush
     public void EraseFromAll(Vector2 brushPosition, BrushProfile brushProfile)
     {
+        bool eraseCommandSent = false;
+
+        float sqrOuterBrushRadius = (brushProfile.brushInnerRadius + brushProfile.brushOuterOffset);
+        sqrOuterBrushRadius *= sqrOuterBrushRadius;
+
         // Broad -> narrow phase to find all applicable paint objects, erase them as we go
-        int eraseCount = 0;
         for (int i = 0; i < allPaint.Count; i++)
         {
             // If active and splattered
             if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
             {
-                // If the distance to the bounding box is less than the outer brush radius...
-                if (true)
+                float sqrDistanceToPaintCenter = ((Vector2)allPaint[i].paintTransform.position - brushPosition).sqrMagnitude;
+                float sqrCircumcircleRadius = (allPaint[i].GetSize() / 2f).sqrMagnitude;
+
+                // Circumcircle cull pass
+                if (sqrDistanceToPaintCenter <= sqrCircumcircleRadius + sqrOuterBrushRadius)
                 {
-                    // Check if brush radius overlaps with shape perimeter as well?
-                    if (true)
+                    Vector2 brushRelativeToPaint = allPaint[i].paintTransform.InverseTransformPoint(brushPosition);
+
+                    // Bounds cull pass
+                    if (boundsCulling == false || MathUtilities.OverlapCircleRect(brushRelativeToPaint, sqrOuterBrushRadius, allPaint[i].GetSize() / 2f))
                     {
-                        allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushProfile);
-                        eraseCount += 1;
+                        // Perimeter cull pass
+                        if (perimeterCulling == false || MathUtilities.OverlapCirclePolygon(brushRelativeToPaint, sqrOuterBrushRadius, allPaint[i].GetPerimeter(false), false))
+                        {
+                            allPaint[i].AddEraseCommand(commandBuffer, brushPosition, brushProfile);
+                            eraseCommandSent = true;
+                        }                        
                     }
                 }
             }
         }
 
         // If the buffer is populated
-        if (eraseCount > 0)
+        if (eraseCommandSent)
         {
             // Then execute the commandbuffer and clear it
             Graphics.ExecuteCommandBuffer(commandBuffer);

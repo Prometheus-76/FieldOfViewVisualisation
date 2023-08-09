@@ -26,8 +26,8 @@ public partial class CarvableMesh
             // Find point data
             int nextIndex = (i + 1) % vertices.Count;
             int previousIndex = (i - 1 >= 0) ? (i - 1) : (vertices.Count - 1);
-            Vector2 previousNormal = MathUtilities.TangentToNormal((vertices[i] - vertices[previousIndex]));
-            Vector2 nextNormal = MathUtilities.TangentToNormal(vertices[nextIndex] - vertices[i]);
+            Vector2 previousNormal = MathUtilities.Rotate90CCW((vertices[i] - vertices[previousIndex]));
+            Vector2 nextNormal = MathUtilities.Rotate90CCW(vertices[nextIndex] - vertices[i]);
             float angleToPoint = MathUtilities.VectorTo360Angle(vertices[i].x, vertices[i].y);
 
             // Create EdgePoint for it

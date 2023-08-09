@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -34,7 +32,6 @@ public partial class CarvableMesh : MonoBehaviour
     [Header("Optimisation")]
     public bool cullContinuousVertices = false;
     public bool generateTextureCoordinates = false;
-    public bool detailedCurves = false;
     public bool storePerimeter = false;
 
     #endregion
@@ -257,14 +254,14 @@ public partial class CarvableMesh : MonoBehaviour
                 if (insertBefore)
                 {
                     // This edge is at the start of the object
-                    Vector2 edgeNormal = MathUtilities.TangentToNormal(edgePoints[i].position - edgeDropoffPoint.position);
+                    Vector2 edgeNormal = MathUtilities.Rotate90CCW(edgePoints[i].position - edgeDropoffPoint.position);
                     edgePoints[i].previousNormal = edgeNormal;
                     edgeDropoffPoint.nextNormal = edgeNormal;
                 }
                 else
                 {
                     // This edge is at the end of the object
-                    Vector2 edgeNormal = MathUtilities.TangentToNormal(edgeDropoffPoint.position - edgePoints[i].position);
+                    Vector2 edgeNormal = MathUtilities.Rotate90CCW(edgeDropoffPoint.position - edgePoints[i].position);
                     edgePoints[i].nextNormal = edgeNormal;
                     edgeDropoffPoint.previousNormal = edgeNormal;
                 }
@@ -318,7 +315,7 @@ public partial class CarvableMesh : MonoBehaviour
                 // Stitch normals together between inserted points
                 detailPoints.Item1.previousNormal = edgePoints[minEdgeIndex - 1 >= 0 ? minEdgeIndex - 1 : edgePoints.Count - 1].nextNormal;
 
-                detailPoints.Item1.nextNormal = MathUtilities.TangentToNormal(detailPoints.Item2.position - detailPoints.Item1.position);
+                detailPoints.Item1.nextNormal = MathUtilities.Rotate90CCW(detailPoints.Item2.position - detailPoints.Item1.position);
                 detailPoints.Item2.previousNormal = detailPoints.Item1.nextNormal;
 
                 // Ensure we skip to checking the max detail point next

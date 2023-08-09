@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Transactions;
 using UnityEngine;
 
 public static class MathUtilities
@@ -76,12 +78,12 @@ public static class MathUtilities
         return direction;
     }
 
-    public static Vector2 NormalToTangent(Vector2 normal)
+    public static Vector2 Rotate90CW(Vector2 normal)
     {
         return new Vector2(normal.y, -normal.x);
     }
 
-    public static Vector2 TangentToNormal(Vector2 tangent)
+    public static Vector2 Rotate90CCW(Vector2 tangent)
     {
         return new Vector2(-tangent.y, tangent.x);
     }
@@ -130,5 +132,128 @@ public static class MathUtilities
         _2048,
         _4096,
         _8192
+    }
+
+    public static bool OverlapCircleRect(Vector2 circleCenter, float sqrCircleRadius, Vector2 halfRectSize)
+    {
+        // Point closest inside bounds of rect
+        Vector2 clampedPosition = circleCenter;
+        clampedPosition.x = Mathf.Clamp(circleCenter.x, -halfRectSize.x, halfRectSize.x);
+        clampedPosition.y = Mathf.Clamp(circleCenter.y, -halfRectSize.y, halfRectSize.y);
+
+        // If distance to this point from the circle's center is less than the radius, then they're overlapping
+        float sqrDistanceToClamped = (clampedPosition - circleCenter).sqrMagnitude;
+
+        return sqrDistanceToClamped <= sqrCircleRadius;
+    }
+
+    public static bool OverlapCirclePolygon(Vector2 circleCenter, float sqrCircleRadius, Vector2[] localPolygonPointsCCW, bool testOutlineOnly)
+    {
+        // If the center is within the polygon, the circle is overlapping
+        if (testOutlineOnly == false && IsPointWithinPolygon(circleCenter, localPolygonPointsCCW)) return true;
+
+        for (int i = 0; i < localPolygonPointsCCW.Length; i++)
+        {
+            // Check if a vertex is within the circle, early out
+            float sqrDistanceToVertex = (localPolygonPointsCCW[i] - circleCenter).sqrMagnitude;
+            if (sqrDistanceToVertex <= sqrCircleRadius) return true;
+
+            int nextIndex = (i + 1);
+            if (nextIndex >= localPolygonPointsCCW.Length) nextIndex = 0;
+
+            // Get closest point on line segment
+            Tuple<Vector2, bool> closestPointClamped = ClosestPointOnLine(localPolygonPointsCCW[i], localPolygonPointsCCW[nextIndex], circleCenter, true);
+            
+            // If this point was clamped onto the line then it is on a vertex,
+            // So we can continue, because either:
+            // - It's in range of the next vertex, and we find out next iteration, or...
+            // - It isn't within range of this line segment at all (because we would have dealt with it this iteration)
+            if (closestPointClamped.Item2 == true) continue;
+
+            // Check if this mid-segment point is within the circle
+            float sqrDistanceToLine = (closestPointClamped.Item1 - circleCenter).sqrMagnitude;
+            if (sqrDistanceToLine <= sqrCircleRadius) return true;
+        }
+
+        // The circle and polygon are not overlapping
+        return false;
+    }
+
+    public static Tuple<Vector2, bool> ClosestPointOnLine(Vector2 start, Vector2 end, Vector2 point, bool clampPoint)
+    {
+        Tuple<Vector2, bool> result;
+
+        Vector2 startToEnd = end - start;
+        Vector2 startToPoint = point - start;
+
+        float projection = Vector2.Dot(startToPoint, startToEnd);
+        float sqrSegmentLength = startToEnd.sqrMagnitude;
+        float interpolant = projection / sqrSegmentLength;
+
+        if (clampPoint && interpolant <= 0f)
+        {
+            // Clamped to start
+            result = new Tuple<Vector2, bool>(start, true);
+        }
+        else if (clampPoint && interpolant >= 1f)
+        {
+            // Clamped to end
+            result = new Tuple<Vector2, bool>(end, true);
+        }
+        else
+        {
+            // Unclamped
+            result = new Tuple<Vector2, bool>(start + (startToEnd * interpolant), false);
+        }
+
+        return result;
+    }
+
+    public static bool IsPointWithinPolygon(Vector2 point, Vector2[] localPolygonPointsCCW)
+    {
+        uint rayIntersections = 0;
+
+        // Raycast (in the right direction) against each edge from the designated point against all sides of the polygon
+        // If the number of intersections is odd, the point is inside the shape, otherwise the point is outside
+        for (int i = 0; i < localPolygonPointsCCW.Length; i++)
+        {
+            int nextIndex = (i + 1);
+            if (nextIndex >= localPolygonPointsCCW.Length) nextIndex = 0;
+
+            // Ensure point is to the left of the line (as we are casting right)
+            if (point.x <= Mathf.Max(localPolygonPointsCCW[i].x, localPolygonPointsCCW[nextIndex].x))
+            {
+                Vector2 upperPoint = localPolygonPointsCCW[i].y >= localPolygonPointsCCW[nextIndex].y ? localPolygonPointsCCW[i] : localPolygonPointsCCW[nextIndex];
+                Vector2 lowerPoint = localPolygonPointsCCW[i].y < localPolygonPointsCCW[nextIndex].y ? localPolygonPointsCCW[i] : localPolygonPointsCCW[nextIndex];
+
+                // Ensure the point is at the correct height to hit the line
+                if (point.y >= Mathf.Min(localPolygonPointsCCW[i].y, localPolygonPointsCCW[nextIndex].y) &&
+                    point.y <= Mathf.Max(localPolygonPointsCCW[i].y, localPolygonPointsCCW[nextIndex].y))
+                {
+                    float yRange = upperPoint.y - lowerPoint.y;
+                    
+                    // Line tangent is +/- (1, 0), ie. parallel and aligned with the ray
+                    if (yRange == 0f)
+                    {
+                        rayIntersections += 1;
+                        continue;
+                    }
+
+                    float interpolantBasedOnY = (point.y - lowerPoint.y) / yRange;
+                    float xValue = ((upperPoint.x - lowerPoint.x) * interpolantBasedOnY) + lowerPoint.x;
+
+                    // The ray origin is to the left of the plane
+                    if (point.x <= xValue)
+                    {
+                        rayIntersections += 1;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // Check if intersection count is even (if final bit is flipped, number is odd)
+        // Doing this saves a modulo operator call
+        return ((rayIntersections & 1) == 1);
     }
 }
