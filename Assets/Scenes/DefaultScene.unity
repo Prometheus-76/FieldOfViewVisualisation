@@ -1698,6 +1698,8 @@ MonoBehaviour:
   paintColourProperty: _PaintColour
   maskPixelDensity: 32
   maskResolutionCap: 10
+  paintSizes:
+  - {x: 10, y: 10}
   paintTextures:
   - {fileID: 2800000, guid: 641a48e3d5b1cb2428d78d2291ff135d, type: 3}
   paintColours:

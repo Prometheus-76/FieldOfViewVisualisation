@@ -9,7 +9,8 @@ public class MaskablePaint : MonoBehaviour
     #region Inspector
 
     [Header("Components")]
-    public CarvableMesh carvableMesh;
+    [SerializeField]
+    private CarvableMesh carvableMesh;
     public MeshRenderer paintMeshRenderer;
 
     #endregion
@@ -17,6 +18,7 @@ public class MaskablePaint : MonoBehaviour
     // PROPERTIES
     public float removalPercent { get; private set; } = 0f;
     public bool removalInProgress { get; private set; } = false;
+    public bool maskModifiedSinceLastCheck { get; private set; } = false;
     public bool isReset { get; private set; } = true;
 
     public bool isInitialised
@@ -49,8 +51,13 @@ public class MaskablePaint : MonoBehaviour
 
     private ComputeShader pixelCounter = null;
     private Material paintMaterialInstance = null;
-    private Color paintColour = Color.clear;
+
+    private Vector2 paintSize = Vector2.zero;
     private Texture paintTexture = null;
+    private Color paintColour = Color.clear;
+
+    private int maskPixelDensity = -1;
+    private int maskResolutionCap = -1;
 
     private int paintMaskID = -1;
     private int eraseThresholdID = -1;
@@ -58,41 +65,19 @@ public class MaskablePaint : MonoBehaviour
     private int paintColourID = -1;
 
     // Set up the paint object, we should only need to do this once
-    public void Initialise(PaintManager paintManager, Texture2D newTexture, Color newColour)
+    public void Initialise(PaintManager paintManager, Vector2 newSize, Texture2D newTexture, Color newColour)
     {
+        // Ensure erase data is marked as reset
+        previousErasedPixels = 0;
         removalPercent = 0f;
+        isReset = true;
 
+        // Set compute shader
         pixelCounter = paintManager.pixelCounter;
 
-        // How high should the resolution of our masks be?
-        int resolution = paintManager.maskPixelDensity * Mathf.CeilToInt(carvableMesh.halfMeshSize.x + carvableMesh.halfMeshSize.y);
-        resolution = Mathf.Min(1 << (int)paintManager.maskResolutionCap, MathUtilities.NextHighestPowerOf2(resolution));
-
-        // Setup the RenderTexture masks
-        primaryEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
-        primaryEraseMask.name = "PrimaryEraseMask";
-        primaryEraseMask.filterMode = FilterMode.Bilinear;
-
-        secondaryEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
-        secondaryEraseMask.name = "SecondaryEraseMask";
-        secondaryEraseMask.filterMode = FilterMode.Bilinear;
-
-        outputEraseMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
-        outputEraseMask.name = "OutputEraseMask";
-        outputEraseMask.filterMode = FilterMode.Bilinear;
-
-        geometryMask = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.RFloat);
-        geometryMask.name = "GeometryMask";
-        geometryMask.filterMode = FilterMode.Point;
-
-        ClearMasks();
-
-        // Set material instances
-        maskPaintingMaterial = new Material(paintManager.surfacePainter);
-        maskStencilMaterial = new Material(paintManager.geometryStencil);
-        maskExtensionMaterial = new Material(paintManager.maskExtension);
-
-        paintMaterialInstance = new Material(paintManager.maskablePaint);
+        // Save values from PaintManager
+        maskPixelDensity = paintManager.maskPixelDensity;
+        maskResolutionCap = 1 << (int)paintManager.maskResolutionCap;
 
         // Get the shader variable hooks
         paintMaskID = paintManager.paintMaskID;
@@ -100,19 +85,45 @@ public class MaskablePaint : MonoBehaviour
         paintTextureID = paintManager.paintTextureID;
         paintColourID = paintManager.paintColourID;
 
+        // Initialise the RenderTexture masks
+        primaryEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
+        primaryEraseMask.filterMode = FilterMode.Bilinear;
+        primaryEraseMask.name = "PrimaryEraseMask";
+
+        secondaryEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
+        secondaryEraseMask.filterMode = FilterMode.Bilinear;
+        secondaryEraseMask.name = "SecondaryEraseMask";
+
+        outputEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
+        outputEraseMask.filterMode = FilterMode.Bilinear;
+        outputEraseMask.name = "OutputEraseMask";
+
+        geometryMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
+        geometryMask.filterMode = FilterMode.Point;
+        geometryMask.name = "GeometryMask";
+
+        // Set paint properties
+        SetSize(newSize);
+        SetTexture(newTexture);
+        SetColour(newColour);
+        ClearMasks();
+
+        // Create material instances
+        maskPaintingMaterial = new Material(paintManager.surfacePainter);
+        maskStencilMaterial = new Material(paintManager.geometryStencil);
+        maskExtensionMaterial = new Material(paintManager.maskExtension);
+
+        paintMaterialInstance = new Material(paintManager.maskablePaint);
+
+        // Attach material properties
         paintMaterialInstance.SetTexture(paintMaskID, outputEraseMask);
         paintMaterialInstance.SetFloat(eraseThresholdID, PaintManager.ERASE_THRESHOLD);
 
-        // Apply new material
+        // Apply material
         paintMeshRenderer.material = paintMaterialInstance;
-
-        SetTexture(newTexture);
-        SetColour(newColour);
 
         // Initialise the carvable mesh
         carvableMesh.Initialise();
-
-        isReset = true;
     }
 
     // Simulates the paint splatter
@@ -148,15 +159,21 @@ public class MaskablePaint : MonoBehaviour
     // Sets a new material for this paint object (and resets it)
     public void SetTexture(Texture2D newTexture)
     {
-        ResetPaint();
-
+        // Only update if necessary
+        if (newTexture == paintTexture) return;
         paintTexture = newTexture;
+
+        // Reset if required
+        if (isReset == false) ResetPaint();
+
         paintMaterialInstance.SetTexture(paintTextureID, newTexture);
     }
 
     // Set the colour of the material of this paint object
     public void SetColour(Color newColour)
     {
+        // Only update if necessary
+        if (paintColour == newColour) return;
         paintColour = newColour;
 
         // If there is a material instantiated already, assign the colour
@@ -170,6 +187,42 @@ public class MaskablePaint : MonoBehaviour
     public Color GetColour()
     {
         return paintColour;
+    }
+
+    // Set the size of the mesh for this paint object, resets it, and updates the render textures
+    public void SetSize(Vector2 newSize)
+    {
+        // Ensure we only update if necessary
+        if (newSize == paintSize) return;
+        paintSize = newSize;
+
+        // Reset if required
+        if (isReset == false) ResetPaint();
+
+        // Apply to mesh size
+        carvableMesh.halfMeshSize = paintSize / 2f;
+
+        // How high should the resolution of our masks be?
+        float largestSide = Mathf.Max(paintSize.x, paintSize.y);
+        int sideResolution = Mathf.CeilToInt(largestSide * maskPixelDensity);
+        sideResolution = Mathf.Min(maskResolutionCap, MathUtilities.NextHighestPowerOf2(sideResolution));
+
+        // Set the resolution of the masks
+        primaryEraseMask.Release();
+        primaryEraseMask.height = sideResolution;
+        primaryEraseMask.width = sideResolution;
+
+        secondaryEraseMask.Release();
+        secondaryEraseMask.height = sideResolution;
+        secondaryEraseMask.width = sideResolution;
+
+        outputEraseMask.Release();
+        outputEraseMask.height = sideResolution;
+        outputEraseMask.width = sideResolution;
+
+        geometryMask.Release();
+        geometryMask.height = sideResolution;
+        geometryMask.width = sideResolution;
     }
 
     // Submits paint erase instructions at a given position
@@ -200,12 +253,17 @@ public class MaskablePaint : MonoBehaviour
             commandBuffer.SetRenderTarget(outputEraseMask);
             maskExtensionMaterial.SetTexture("_MainTex", primaryEraseMask);
             commandBuffer.Blit(secondaryEraseMask, outputEraseMask, maskExtensionMaterial);
+
+            maskModifiedSinceLastCheck = true;
         }
     }
 
     // Returns the amount of paint which has been removed since last checking
     public float ComputeRemovalDelta()
     {
+        // Don't check if no changes have been made to the mask
+        if (maskModifiedSinceLastCheck == false) return 0f;
+
         RequestMaskAnalysis();
 
         // When the current request is complete
@@ -232,6 +290,7 @@ public class MaskablePaint : MonoBehaviour
                 Vector2 meshDimensions = carvableMesh.halfMeshSize * 2f;
                 float meshArea = meshDimensions.x * meshDimensions.y;
 
+                maskModifiedSinceLastCheck = false;
                 return (removalDelta * texelArea * meshArea);
             }
         }

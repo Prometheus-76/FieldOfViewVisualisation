@@ -25,6 +25,7 @@ public class PaintManager : MonoBehaviour
     public MathUtilities.PowerOf2 maskResolutionCap = MathUtilities.PowerOf2._1024;
 
     [Header("Variations")]
+    public List<Vector2> paintSizes;
     public List<Texture2D> paintTextures;
     public List<Color> paintColours;
 
@@ -62,11 +63,11 @@ public class PaintManager : MonoBehaviour
     {
         Initialise();
 
-        MaskablePaint paint = ExtractFromPool();
-        paint.gameObject.SetActive(true);
-        paint.transform.parent = null;
+        MaskablePaint paint = ExtractFromPool(null, paintSizes[0], paintTextures[0], paintColours[0], true);
+
         paint.transform.position = new Vector2(6, -3);
         paint.transform.rotation = Quaternion.Euler(0f, 0f, -42);
+
         paint.Splatter();
     }
 
@@ -75,7 +76,7 @@ public class PaintManager : MonoBehaviour
         Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
         EraseFromAll(cursorWorldPos, brushProfile);
 
-        totalRemoved += allPaint[0].ComputeRemovalDelta();
+        UpdateAllRemovalDeltas();
     }
 
     // Setup the paint manager
@@ -95,7 +96,7 @@ public class PaintManager : MonoBehaviour
         // Create initial pool size
         for (int i = 0; i < initialPaintReserve; i++)
         {
-            ReturnToPool(CreatePaint());
+            ReturnToPool(CreatePaint(Vector2.one, null, Color.clear));
         }
     }
 
@@ -122,6 +123,7 @@ public class PaintManager : MonoBehaviour
             }
         }
 
+        // If the buffer is populated
         if (eraseCount > 0)
         {
             // Then execute the commandbuffer and clear it
@@ -130,21 +132,33 @@ public class PaintManager : MonoBehaviour
         }
     }
 
-    // Get a paint instance from the open pool, creating one if necessary
-    public MaskablePaint ExtractFromPool()
+    // Get a paint instance from the open pool, or create one if necessary
+    public MaskablePaint ExtractFromPool(Transform parent, Vector2 paintSize, Texture2D paintTexture, Color paintColour, bool setActive)
     {
+        MaskablePaint paintInstance;
+
         // If there is paint available
         if (availablePaint.Count > 0)
         {
-            // Remove and return an item from the open pool
-            MaskablePaint paintInstance = availablePaint.First.Value;
+            // Remove an item from the open pool
+            paintInstance = availablePaint.First.Value;
             availablePaint.RemoveFirst();
-
-            return paintInstance;
+        }
+        else
+        {
+            // Create a new instance instead
+            paintInstance = CreatePaint(paintSize, paintTexture, paintColour);
         }
 
-        // Create a new instance and return that instead
-        return CreatePaint();
+        // Configure and return the instance
+        paintInstance.SetSize(paintSize);
+        paintInstance.SetTexture(paintTexture);
+        paintInstance.SetColour(paintColour);
+
+        paintInstance.transform.parent = parent;
+        paintInstance.gameObject.SetActive(setActive);
+
+        return paintInstance;
     }
 
     // Returns a paint instance to the open pool
@@ -161,7 +175,7 @@ public class PaintManager : MonoBehaviour
     }
 
     // Creates a new paint object and return it
-    private MaskablePaint CreatePaint()
+    private MaskablePaint CreatePaint(Vector2 paintSize, Texture2D paintTexture, Color paintColour)
     {
         // Create the paint object
         GameObject paintObject = Instantiate(paintPrefab);
@@ -175,8 +189,24 @@ public class PaintManager : MonoBehaviour
         paintObject.SetActive(false);
 
         // Initialise this paint
-        paintComponent.Initialise(this, paintTextures[0], paintColours[0]);
+        paintComponent.Initialise(this, paintSize, paintTexture, paintColour);
 
         return paintComponent;
+    }
+
+    // Analyses all paint objects which have been updated
+    private void UpdateAllRemovalDeltas()
+    {
+        for (int i = 0; i < allPaint.Count; i++)
+        {
+            // If active and splattered
+            if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
+            {
+                float amountRemoved = allPaint[i].ComputeRemovalDelta();
+                Color paintColour = allPaint[i].GetColour();
+
+                totalRemoved += amountRemoved;
+            }
+        }
     }
 }
