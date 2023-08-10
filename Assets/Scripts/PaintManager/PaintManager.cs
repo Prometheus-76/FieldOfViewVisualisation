@@ -10,29 +10,10 @@ public class PaintManager : MonoBehaviour
     [Header("Brush config (PLACEHOLDER)")]
     public BrushProfile brushProfile;
 
-    [Header("Configuration")]
-    public GameObject paintPrefab;
-
-    [Header("Material Properties")]
-    public string paintMaskProperty;
-    public string eraseThresholdProperty;
-    public string paintTextureProperty;
-    public string paintColourProperty;
-
-    [Header("Mask Fidelity")]
-    [Min(1)]
-    public int maskPixelDensity = 32;
-    public MathUtilities.PowerOf2 maskResolutionCap = MathUtilities.PowerOf2._1024;
-
     [Header("Variations")]
     public List<Vector2> paintSizes;
     public List<Texture2D> paintTextures;
     public List<Color> paintColours;
-
-    [Header("Object Pooling")]
-    [Range(0, 100)]
-    public int initialPaintReserve = 0;
-    public bool preventDuplicateReturns = false;
 
     [Header("Shaders")]
     public ComputeShader pixelCounter;
@@ -40,6 +21,23 @@ public class PaintManager : MonoBehaviour
     public Shader geometryStencil;
     public Shader maskExtension;
     public Shader maskablePaint;
+
+    [Header("Material Properties")]
+    public string paintMaskProperty;
+    public string eraseThresholdProperty;
+    public string paintTextureProperty;
+    public string paintColourProperty;
+
+    [Header("Object Pooling")]
+    public GameObject paintPrefab;
+    [Range(0, 100)]
+    public int initialPaintReserve = 0;
+    public bool preventDuplicateReturns = false;
+
+    [Header("Mask Fidelity")]
+    [Min(1)]
+    public int maskPixelDensity = 32;
+    public MathUtilities.PowerOf2 maskResolutionCap = MathUtilities.PowerOf2._1024;
 
     [Header("Optimisation")]
     public bool boundsCulling = true;
@@ -86,7 +84,11 @@ public class PaintManager : MonoBehaviour
         UpdateAllRemovalDeltas();
     }
 
-    // Setup the paint manager
+    #region Public Methods
+
+    /// <summary>
+    /// Setup the paint manager
+    /// </summary>
     public void Initialise()
     {
         availablePaint = new LinkedList<MaskablePaint>();
@@ -107,7 +109,11 @@ public class PaintManager : MonoBehaviour
         }
     }
 
-    // Erase at a position in the world from all paint objects below the brush
+    /// <summary>
+    /// Erase at a position in the world from all paint objects below the brush
+    /// </summary>
+    /// <param name="brushPosition">World position of the center of the brush</param>
+    /// <param name="brushProfile">The brush style to erase with</param>
     public void EraseFromAll(Vector2 brushPosition, BrushProfile brushProfile)
     {
         bool eraseCommandSent = false;
@@ -152,7 +158,15 @@ public class PaintManager : MonoBehaviour
         }
     }
 
-    // Get a paint instance from the open pool, or create one if necessary
+    /// <summary>
+    /// Get a paint instance from the open pool, or create one if necessary
+    /// </summary>
+    /// <param name="parent">The transform which is set as the parent of the retrieved paint object</param>
+    /// <param name="paintSize">The full local size of the paint object</param>
+    /// <param name="paintTexture">The paint texture to apply to this object</param>
+    /// <param name="paintColour">The colour to set the paint to</param>
+    /// <param name="setActive">Whether the paint object should be active on retrieval</param>
+    /// <returns>Reference to the paint script on the returned object</returns>
     public MaskablePaint ExtractFromPool(Transform parent, Vector2 paintSize, Texture2D paintTexture, Color paintColour, bool setActive)
     {
         MaskablePaint paintInstance;
@@ -163,6 +177,11 @@ public class PaintManager : MonoBehaviour
             // Remove an item from the open pool
             paintInstance = availablePaint.First.Value;
             availablePaint.RemoveFirst();
+
+            // Configure and return the instance
+            paintInstance.SetSize(paintSize);
+            paintInstance.SetTexture(paintTexture);
+            paintInstance.SetColour(paintColour);
         }
         else
         {
@@ -170,18 +189,16 @@ public class PaintManager : MonoBehaviour
             paintInstance = CreatePaint(paintSize, paintTexture, paintColour);
         }
 
-        // Configure and return the instance
-        paintInstance.SetSize(paintSize);
-        paintInstance.SetTexture(paintTexture);
-        paintInstance.SetColour(paintColour);
-
         paintInstance.transform.parent = parent;
         paintInstance.gameObject.SetActive(setActive);
 
         return paintInstance;
     }
 
-    // Returns a paint instance to the open pool
+    /// <summary>
+    /// Returns a paint instance to the open pool
+    /// </summary>
+    /// <param name="paintToRelease">Reference to the script on the paint instance which will be returned</param>
     public void ReturnToPool(MaskablePaint paintToRelease)
     {
         if (preventDuplicateReturns && availablePaint.Contains(paintToRelease)) return;
@@ -194,7 +211,8 @@ public class PaintManager : MonoBehaviour
         paintToRelease.gameObject.SetActive(false);
     }
 
-    // Creates a new paint object and return it
+    #endregion
+
     private MaskablePaint CreatePaint(Vector2 paintSize, Texture2D paintTexture, Color paintColour)
     {
         // Create the paint object
@@ -214,7 +232,6 @@ public class PaintManager : MonoBehaviour
         return paintComponent;
     }
 
-    // Analyses all paint objects which have been updated
     private void UpdateAllRemovalDeltas()
     {
         for (int i = 0; i < allPaint.Count; i++)

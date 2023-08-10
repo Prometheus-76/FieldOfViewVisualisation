@@ -65,7 +65,15 @@ public class MaskablePaint : MonoBehaviour
     private int paintTextureID = -1;
     private int paintColourID = -1;
 
-    // Set up the paint object, we should only need to do this once
+    #region Public Methods
+
+    /// <summary>
+    /// Set up the paint object, we should only need to do this once when it's created
+    /// </summary>
+    /// <param name="paintManager">The paint manager instance which this paint is being initialised from</param>
+    /// <param name="newSize">The local size the paint object</param>
+    /// <param name="newTexture">The texture used by the paint object</param>
+    /// <param name="newColour">The colour of the paint object</param>
     public void Initialise(PaintManager paintManager, Vector2 newSize, Texture2D newTexture, Color newColour)
     {
         // Ensure erase data is marked as reset
@@ -127,13 +135,15 @@ public class MaskablePaint : MonoBehaviour
         carvableMesh.Initialise();
     }
 
-    // Simulates the paint splatter
+    /// <summary>
+    /// Simulates the paint splatter, creating the mesh shape and baking it to the geometry mask
+    /// </summary>
     public void Splatter()
     {
         if (isReset == false) ResetPaint();
 
         // Regenerate the mesh shape
-        carvableMesh.UpdateMesh();
+        carvableMesh.GenerateMesh();
 
         // Bake the geometry mask
         BakeGeometryMask();
@@ -141,7 +151,9 @@ public class MaskablePaint : MonoBehaviour
         isReset = false;
     }
 
-    // Reset the paint splatter
+    /// <summary>
+    /// Reset the paint splatter, and all associated data for it
+    /// </summary>
     public void ResetPaint()
     {
         if (isInitialised == false) return;
@@ -157,7 +169,10 @@ public class MaskablePaint : MonoBehaviour
         isReset = true;
     }
 
-    // Sets a new material for this paint object (and resets it)
+    /// <summary>
+    /// Sets a new material for this paint object (and resets it)
+    /// </summary>
+    /// <param name="newTexture">The new texture to assign</param>
     public void SetTexture(Texture2D newTexture)
     {
         // Only update if necessary
@@ -170,7 +185,10 @@ public class MaskablePaint : MonoBehaviour
         paintMaterialInstance.SetTexture(paintTextureID, newTexture);
     }
 
-    // Set the colour of the material of this paint object
+    /// <summary>
+    /// Set the colour of the material of this paint object
+    /// </summary>
+    /// <param name="newColour">The new colour to set for this paint object</param>
     public void SetColour(Color newColour)
     {
         // Only update if necessary
@@ -184,13 +202,19 @@ public class MaskablePaint : MonoBehaviour
         }
     }
 
-    // Get the current paint colour
+    /// <summary>
+    /// Get the current paint colour
+    /// </summary>
+    /// <returns>The paint colour currently set, including the alpha</returns>
     public Color GetColour()
     {
         return paintColour;
     }
 
-    // Set the alpha of the material of this paint object
+    /// <summary>
+    /// Set the alpha of the material of this paint object
+    /// </summary>
+    /// <param name="newAlpha">The new alpha of the paint colour</param>
     public void SetAlpha(float newAlpha)
     {
         // Only update if necessary
@@ -203,7 +227,10 @@ public class MaskablePaint : MonoBehaviour
         SetColour(updatedColour);
     }
 
-    // Set the size of the mesh for this paint object, resets it, and updates the render textures
+    /// <summary>
+    /// Set the size of the mesh for this paint object, resets it, and updates the render textures
+    /// </summary>
+    /// <param name="newSize">The full local size to set for the paint object</param>
     public void SetSize(Vector2 newSize)
     {
         // Ensure we only update if necessary
@@ -239,19 +266,31 @@ public class MaskablePaint : MonoBehaviour
         geometryMask.width = sideResolution;
     }
 
-    // Get the current paint size
+    /// <summary>
+    /// Get the current paint size
+    /// </summary>
+    /// <returns>The full paint size</returns>
     public Vector2 GetSize()
     {
         return paintSize;
     }
 
-    // Get the perimeter of the paint mesh geometry
+    /// <summary>
+    /// Return the perimeter of the mesh object
+    /// </summary>
+    /// <param name="returnCopy">Whether the array should be returned as a copy or a reference (unsafe but faster)</param>
+    /// <returns>Array of vectors representing the mesh vertices in local space</returns>
     public Vector2[] GetPerimeter(bool returnCopy)
     {
         return carvableMesh.GetPerimeter(returnCopy);
     }
 
-    // Submits paint erase instructions at a given position
+    /// <summary>
+    /// Submits paint erase instructions at a given position
+    /// </summary>
+    /// <param name="commandBuffer">The command buffer to which the erase command will be added</param>
+    /// <param name="brushPosition">The world position of the center of the brush</param>
+    /// <param name="brushProfile">The style of brush to erase with</param>
     public void AddEraseCommand(CommandBuffer commandBuffer, Vector2 brushPosition, BrushProfile brushProfile)
     {
         // If paint is ready to use
@@ -284,7 +323,10 @@ public class MaskablePaint : MonoBehaviour
         }
     }
 
-    // Returns the amount of paint which has been removed since last checking
+    /// <summary>
+    /// Returns the amount of paint which has been removed since last checking
+    /// </summary>
+    /// <returns>The amount of paint which has been removed (in world-space area)</returns>
     public float ComputeRemovalDelta()
     {
         // Don't check if no changes have been made to the mask
@@ -324,7 +366,8 @@ public class MaskablePaint : MonoBehaviour
         return 0f;
     }
 
-    // Sends a request to the GPU to compare the mask/s to the paint texture
+    #endregion
+
     private void RequestMaskAnalysis()
     {
         // Don't submit another request while one is currently pending
@@ -361,7 +404,6 @@ public class MaskablePaint : MonoBehaviour
         computeBuffer.Release();
     }
 
-    // Bake the shape of the mesh into the geometry mask texture
     private void BakeGeometryMask()
     {
         // Create a command buffer to execute GPU tasks
@@ -376,7 +418,6 @@ public class MaskablePaint : MonoBehaviour
         bakeBuffer.Clear();
     }
 
-    // Clear the rendering masks
     private void ClearMasks()
     {
         // Create a command buffer to execute GPU tasks

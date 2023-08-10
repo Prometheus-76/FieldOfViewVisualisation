@@ -72,7 +72,7 @@ public class RenderingEnvironment : MonoBehaviour
 
         // Regenerate rendering mask
         renderingMaskScript.halfMeshSize = halfBoundsSize;
-        renderingMaskScript.UpdateMesh();
+        renderingMaskScript.GenerateMesh();
     }
 
     public void SetBackgroundMaterial(Material newMaterial)

@@ -83,12 +83,21 @@ public static class InputManager
 
     #region Public Methods
 
+    /// <summary>
+    /// Returns the most recently used control scheme
+    /// </summary>
+    /// <returns>The most recently used control scheme</returns>
     public static ControlScheme GetControlScheme()
     {
         return currentControlScheme;
     }
 
-    public static Vector2 GetMovementDirection()
+    /// <summary>
+    /// Calculate the current movement input direction
+    /// </summary>
+    /// <param name="normalized">Whether the returned vector should be normalized</param>
+    /// <returns>The movement input direction, clamped between 0 and 1</returns>
+    public static Vector2 GetMovementDirection(bool normalized)
     {
         InputAction action = Instance.Player.Movement;
         UpdateControlScheme(action);
@@ -98,9 +107,14 @@ public static class InputManager
         // Deadzone for control sticks
         if (currentControlScheme == ControlScheme.Controller) actionValue = DeadzoneRemap(actionValue);
 
-        return actionValue;
+        return normalized ? actionValue.normalized : actionValue;
     }
 
+    /// <summary>
+    /// Calculate the direction from the player to the mouse cursor, normalized
+    /// </summary>
+    /// <param name="playerScreenPosition">The player's position on the screen</param>
+    /// <returns>The normalized vector from the player to the mouse cursor</returns>
     public static Vector2 GetAimDirection(Vector2 playerScreenPosition)
     {
         InputAction action = null;
@@ -146,6 +160,10 @@ public static class InputManager
         return Vector2.zero;
     }
 
+    /// <summary>
+    /// Return the position of the mouse cursor, in screen-space (NOTE: only valid with mouse and keyboard)
+    /// </summary>
+    /// <returns>The position of the mouse cursor in screen-space, null if not using mouse and keyboard</returns>
     public static Vector2? GetAimPosition()
     {
         Vector2? aimPosition = null;

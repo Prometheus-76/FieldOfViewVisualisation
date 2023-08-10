@@ -69,6 +69,9 @@ public partial class CarvableMesh : MonoBehaviour
 
     #region Public Methods
 
+    /// <summary>
+    /// Setup the script instance
+    /// </summary>
     public void Initialise()
     {
         if (isInitialised) return;
@@ -99,7 +102,10 @@ public partial class CarvableMesh : MonoBehaviour
         if (isInitialised) meshFailed = false;
     }
 
-    public void UpdateMesh()
+    /// <summary>
+    /// Generates the mesh according to the script parameters
+    /// </summary>
+    public void GenerateMesh()
     {
         if (meshFailed) return;
 
@@ -145,6 +151,9 @@ public partial class CarvableMesh : MonoBehaviour
         isReset = false;
     }
 
+    /// <summary>
+    /// Reset the mesh data
+    /// </summary>
     public void ResetMesh()
     {
         if (isReset) return;
@@ -156,6 +165,11 @@ public partial class CarvableMesh : MonoBehaviour
         isReset = true;
     }
 
+    /// <summary>
+    /// Return the perimeter of the mesh object
+    /// </summary>
+    /// <param name="returnCopy">Whether the array should be returned as a copy or a reference (unsafe but faster)</param>
+    /// <returns>Array of vectors representing the mesh vertices in local space</returns>
     public Vector2[] GetPerimeter(bool returnCopy)
     {
         if (storePerimeter == false || isInitialised == false)

@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         Vector2 currentVelocity = playerRigidbody.velocity;
-        Vector2 targetVelocity = InputManager.GetMovementDirection() * movementSpeed;
+        Vector2 targetVelocity = InputManager.GetMovementDirection(true) * movementSpeed;
         Vector2 velocityDifference = (targetVelocity - currentVelocity);
 
         Vector2 appliedAcceleration = velocityDifference * movementAcceleration;
