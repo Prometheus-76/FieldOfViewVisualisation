@@ -399,7 +399,7 @@ GameObject:
   - component: {fileID: 227755597}
   - component: {fileID: 227755596}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: SystemManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dca58f76137d174db33de8c8fb48666, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  paintManager: {fileID: 963744412}
+  paintSystem: {fileID: 963744412}
 --- !u!4 &227755597
 Transform:
   m_ObjectHideFlags: 0
@@ -1702,7 +1702,7 @@ GameObject:
   - component: {fileID: 963744411}
   - component: {fileID: 963744412}
   m_Layer: 0
-  m_Name: PaintManager
+  m_Name: PaintSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

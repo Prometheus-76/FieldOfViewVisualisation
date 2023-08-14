@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
 
-public class PaintManager : MonoBehaviour
+public class PaintSystem : MonoBehaviour
 {
     #region Inspector
 

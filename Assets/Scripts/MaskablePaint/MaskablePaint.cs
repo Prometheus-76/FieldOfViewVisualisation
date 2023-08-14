@@ -56,9 +56,9 @@ public class MaskablePaint : MonoBehaviour
     /// <summary>
     /// Set up the paint object, we should only need to do this once when it's created
     /// </summary>
-    /// <param name="paintManager">The paint manager instance which this paint is being initialised from</param>
+    /// <param name="paintSystem">The paint manager instance which this paint is being initialised from</param>
     /// <param name="paintProfile">The style of paint this object should be initialised to</param>
-    public void Initialise(PaintManager paintManager, PaintProfile paintProfile)
+    public void Initialise(PaintSystem paintSystem, PaintProfile paintProfile)
     {
         if (isInitialised) return;
 
@@ -68,17 +68,17 @@ public class MaskablePaint : MonoBehaviour
         isReset = true;
 
         // Set compute shader
-        pixelCounter = paintManager.pixelCounter;
+        pixelCounter = paintSystem.pixelCounter;
 
-        // Save values from PaintManager
-        maskPixelDensity = paintManager.maskPixelDensity;
-        maskResolutionCap = 1 << (int)paintManager.maskResolutionCap;
+        // Save values from PaintSystem
+        maskPixelDensity = paintSystem.maskPixelDensity;
+        maskResolutionCap = 1 << (int)paintSystem.maskResolutionCap;
 
         // Get the shader variable hooks
-        paintMaskID = paintManager.paintMaskID;
-        eraseThresholdID = paintManager.eraseThresholdID;
-        paintTextureID = paintManager.paintTextureID;
-        paintColourID = paintManager.paintColourID;
+        paintMaskID = paintSystem.paintMaskID;
+        eraseThresholdID = paintSystem.eraseThresholdID;
+        paintTextureID = paintSystem.paintTextureID;
+        paintColourID = paintSystem.paintColourID;
 
         // Initialise the RenderTexture masks
         primaryEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
@@ -98,15 +98,15 @@ public class MaskablePaint : MonoBehaviour
         geometryMask.name = "GeometryMask";
 
         // Create material instances
-        maskPaintingMaterial = new Material(paintManager.surfacePainter);
-        maskStencilMaterial = new Material(paintManager.geometryStencil);
-        maskExtensionMaterial = new Material(paintManager.maskExtension);
+        maskPaintingMaterial = new Material(paintSystem.surfacePainter);
+        maskStencilMaterial = new Material(paintSystem.geometryStencil);
+        maskExtensionMaterial = new Material(paintSystem.maskExtension);
 
-        paintMaterialInstance = new Material(paintManager.maskablePaint);
+        paintMaterialInstance = new Material(paintSystem.maskablePaint);
 
         // Attach material properties
         paintMaterialInstance.SetTexture(paintMaskID, outputEraseMask);
-        paintMaterialInstance.SetFloat(eraseThresholdID, PaintManager.ERASE_THRESHOLD);
+        paintMaterialInstance.SetFloat(eraseThresholdID, PaintSystem.ERASE_THRESHOLD);
 
         // Set paint properties
         SetSize(paintProfile.GetRandomSize());
@@ -375,7 +375,7 @@ public class MaskablePaint : MonoBehaviour
         pixelCounter.SetTexture(kernalComputePixelCounts, "PaintMaskTexture", outputEraseMask);
         pixelCounter.SetTexture(kernalComputePixelCounts, "GeometryMaskTexture", geometryMask);
 
-        pixelCounter.SetFloat("MaskClipThreshold", PaintManager.ERASE_THRESHOLD);
+        pixelCounter.SetFloat("MaskClipThreshold", PaintSystem.ERASE_THRESHOLD);
 
         Vector4 inverseMaskDimensions = new Vector4(1f / primaryEraseMask.width, 1f / primaryEraseMask.height, 0f, 0f);
         pixelCounter.SetVector("InverseMaskDimensions", inverseMaskDimensions);
