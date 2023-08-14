@@ -8,14 +8,6 @@ public class PaintManager : MonoBehaviour
 {
     #region Inspector
 
-    [Header("Brush config (PLACEHOLDER)")]
-    public BrushProfile brushProfile;
-
-    [Header("Variations")]
-    public List<Vector2> paintSizes;
-    public List<Texture2D> paintTextures;
-    public List<Color> paintColours;
-
     [Header("Shaders")]
     public ComputeShader pixelCounter;
     public Shader surfacePainter;
@@ -31,8 +23,6 @@ public class PaintManager : MonoBehaviour
 
     [Header("Object Pooling")]
     public GameObject paintPrefab;
-    [Range(0, 100)]
-    public int initialPaintReserve = 0;
     public bool preventDuplicateReturns = false;
 
     [Header("Mask Fidelity")]
@@ -66,24 +56,11 @@ public class PaintManager : MonoBehaviour
     private void Start()
     {
         Initialise();
-
-        MaskablePaint paint = ExtractFromPool(null, paintSizes[0], paintTextures[0], paintColours[0], true);
-
-        paint.transform.position = new Vector2(6, -3);
-        paint.transform.rotation = Quaternion.Euler(0f, 0f, -42);
-
-        paint.Splatter();
     }
 
     private void Update()
     {
         UpdateAllRemovalDeltas();
-        
-        if (InputManager.GetControlScheme() == InputManager.ControlScheme.MouseAndKeyboard)
-        {
-            Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
-            EraseFromAll(cursorWorldPos, brushProfile);
-        }
     }
 
     #region Public Methods
@@ -103,12 +80,6 @@ public class PaintManager : MonoBehaviour
         eraseThresholdID = Shader.PropertyToID(eraseThresholdProperty);
         paintTextureID = Shader.PropertyToID(paintTextureProperty);
         paintColourID = Shader.PropertyToID(paintColourProperty);
-
-        // Create initial pool size
-        for (int i = 0; i < initialPaintReserve; i++)
-        {
-            ReturnToPool(CreatePaint(Vector2.one, null, Color.clear));
-        }
     }
 
     /// <summary>
@@ -118,6 +89,9 @@ public class PaintManager : MonoBehaviour
     /// <param name="brushProfile">The brush style to erase with</param>
     public void EraseFromAll(Vector2 brushPosition, BrushProfile brushProfile)
     {
+        Vector2 brushRelativeToPaint;
+        Vector2 halfPaintSize;
+
         bool eraseCommandSent = false;
 
         float sqrOuterBrushRadius = (brushProfile.brushInnerRadius + brushProfile.brushOuterOffset);
@@ -130,15 +104,18 @@ public class PaintManager : MonoBehaviour
             if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
             {
                 float sqrDistanceToPaintCenter = ((Vector2)allPaint[i].paintTransform.position - brushPosition).sqrMagnitude;
-                float sqrCircumcircleRadius = (allPaint[i].GetSize() / 2f).sqrMagnitude;
+                float sqrCircumcircleRadius = allPaint[i].GetSize() * allPaint[i].GetSize() * 0.5f;
 
                 // Circumcircle cull pass
                 if (sqrDistanceToPaintCenter <= sqrCircumcircleRadius + sqrOuterBrushRadius)
                 {
-                    Vector2 brushRelativeToPaint = allPaint[i].paintTransform.InverseTransformPoint(brushPosition);
+                    brushRelativeToPaint = allPaint[i].paintTransform.InverseTransformPoint(brushPosition);
+
+                    halfPaintSize.x = allPaint[i].GetSize() / 2f;
+                    halfPaintSize.y = halfPaintSize.x;
 
                     // Bounds cull pass
-                    if (boundsCulling == false || MathUtilities.OverlapCircleRect(brushRelativeToPaint, sqrOuterBrushRadius, allPaint[i].GetSize() / 2f))
+                    if (boundsCulling == false || MathUtilities.OverlapCircleRect(brushRelativeToPaint, sqrOuterBrushRadius, halfPaintSize))
                     {
                         // Perimeter cull pass
                         if (perimeterCulling == false || MathUtilities.OverlapCirclePolygon(brushRelativeToPaint, sqrOuterBrushRadius, allPaint[i].GetPerimeter(false), false))
@@ -164,12 +141,10 @@ public class PaintManager : MonoBehaviour
     /// Get a paint instance from the open pool, or create one if necessary
     /// </summary>
     /// <param name="parent">The transform which is set as the parent of the retrieved paint object</param>
-    /// <param name="paintSize">The full local size of the paint object</param>
-    /// <param name="paintTexture">The paint texture to apply to this object</param>
-    /// <param name="paintColour">The colour to set the paint to</param>
+    /// <param name="paintProfile">The desired paint style</param>
     /// <param name="setActive">Whether the paint object should be active on retrieval</param>
     /// <returns>Reference to the paint script on the returned object</returns>
-    public MaskablePaint ExtractFromPool(Transform parent, Vector2 paintSize, Texture2D paintTexture, Color paintColour, bool setActive)
+    public MaskablePaint ExtractFromPool(Transform parent, PaintProfile paintProfile, bool setActive)
     {
         MaskablePaint paintInstance;
 
@@ -181,14 +156,14 @@ public class PaintManager : MonoBehaviour
             availablePaint.RemoveFirst();
 
             // Configure and return the instance
-            paintInstance.SetSize(paintSize);
-            paintInstance.SetTexture(paintTexture);
-            paintInstance.SetColour(paintColour);
+            paintInstance.SetSize(paintProfile.GetRandomSize());
+            paintInstance.SetTexture(paintProfile.GetRandomTexture());
+            paintInstance.SetColour(paintProfile.GetRandomColour());
         }
         else
         {
             // Create a new instance instead
-            paintInstance = CreatePaint(paintSize, paintTexture, paintColour);
+            paintInstance = CreatePaint(paintProfile);
         }
 
         paintInstance.transform.parent = parent;
@@ -215,7 +190,7 @@ public class PaintManager : MonoBehaviour
 
     #endregion
 
-    private MaskablePaint CreatePaint(Vector2 paintSize, Texture2D paintTexture, Color paintColour)
+    private MaskablePaint CreatePaint(PaintProfile paintProfile)
     {
         // Create the paint object
         GameObject paintObject = Instantiate(paintPrefab);
@@ -229,7 +204,7 @@ public class PaintManager : MonoBehaviour
         paintObject.SetActive(false);
 
         // Initialise this paint
-        paintComponent.Initialise(this, paintSize, paintTexture, paintColour);
+        paintComponent.Initialise(this, paintProfile);
 
         return paintComponent;
     }

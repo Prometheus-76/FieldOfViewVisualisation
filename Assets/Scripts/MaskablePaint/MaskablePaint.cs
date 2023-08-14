@@ -53,7 +53,7 @@ public class MaskablePaint : MonoBehaviour
     private ComputeShader pixelCounter = null;
     private Material paintMaterialInstance = null;
 
-    private Vector2 paintSize = Vector2.zero;
+    private float paintSize = 0f;
     private Texture paintTexture = null;
     private Color paintColour = Color.clear;
 
@@ -71,10 +71,8 @@ public class MaskablePaint : MonoBehaviour
     /// Set up the paint object, we should only need to do this once when it's created
     /// </summary>
     /// <param name="paintManager">The paint manager instance which this paint is being initialised from</param>
-    /// <param name="newSize">The local size the paint object</param>
-    /// <param name="newTexture">The texture used by the paint object</param>
-    /// <param name="newColour">The colour of the paint object</param>
-    public void Initialise(PaintManager paintManager, Vector2 newSize, Texture2D newTexture, Color newColour)
+    /// <param name="paintProfile">The style of paint this object should be initialised to</param>
+    public void Initialise(PaintManager paintManager, PaintProfile paintProfile)
     {
         // Ensure erase data is marked as reset
         previousErasedPixels = 0;
@@ -112,9 +110,9 @@ public class MaskablePaint : MonoBehaviour
         geometryMask.name = "GeometryMask";
 
         // Set paint properties
-        SetSize(newSize);
-        SetTexture(newTexture);
-        SetColour(newColour);
+        SetSize(paintProfile.GetRandomSize());
+        SetTexture(paintProfile.GetRandomTexture());
+        SetColour(paintProfile.GetRandomColour());
         ClearMasks();
 
         // Create material instances
@@ -230,8 +228,8 @@ public class MaskablePaint : MonoBehaviour
     /// <summary>
     /// Set the size of the mesh for this paint object, resets it, and updates the render textures
     /// </summary>
-    /// <param name="newSize">The full local size to set for the paint object</param>
-    public void SetSize(Vector2 newSize)
+    /// <param name="newSize">The full local size of each side of the paint object</param>
+    public void SetSize(float newSize)
     {
         // Ensure we only update if necessary
         if (newSize == paintSize) return;
@@ -241,11 +239,11 @@ public class MaskablePaint : MonoBehaviour
         if (isReset == false) ResetPaint();
 
         // Apply to mesh size
-        carvableMesh.halfMeshSize = paintSize / 2f;
+        carvableMesh.halfMeshSize.x = paintSize / 2f;
+        carvableMesh.halfMeshSize.y = carvableMesh.halfMeshSize.x;
 
         // How high should the resolution of our masks be?
-        float largestSide = Mathf.Max(paintSize.x, paintSize.y);
-        int sideResolution = Mathf.CeilToInt(largestSide * maskPixelDensity);
+        int sideResolution = Mathf.CeilToInt(paintSize * maskPixelDensity);
         sideResolution = Mathf.Min(maskResolutionCap, MathUtilities.NextHighestPowerOf2(sideResolution));
 
         // Set the resolution of the masks
@@ -270,7 +268,7 @@ public class MaskablePaint : MonoBehaviour
     /// Get the current paint size
     /// </summary>
     /// <returns>The full paint size</returns>
-    public Vector2 GetSize()
+    public float GetSize()
     {
         return paintSize;
     }
