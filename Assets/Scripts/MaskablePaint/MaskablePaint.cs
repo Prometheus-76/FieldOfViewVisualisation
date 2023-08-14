@@ -22,21 +22,7 @@ public class MaskablePaint : MonoBehaviour
     public bool maskModifiedSinceLastCheck { get; private set; } = false;
     public bool isReset { get; private set; } = true;
 
-    public bool isInitialised
-    {
-        get
-        {
-            if (primaryEraseMask == null) return false;
-            if (secondaryEraseMask == null) return false;
-            if (maskPaintingMaterial == null) return false;
-            if (maskStencilMaterial == null) return false;
-            if (maskExtensionMaterial == null) return false;
-            if (paintMaterialInstance == null) return false;
-            if (carvableMesh.isInitialised == false) return false;
-
-            return true;
-        }
-    }
+    public bool isInitialised { get; private set; } = false;
 
     // PRIVATE
     private int previousErasedPixels = 0;
@@ -74,6 +60,8 @@ public class MaskablePaint : MonoBehaviour
     /// <param name="paintProfile">The style of paint this object should be initialised to</param>
     public void Initialise(PaintManager paintManager, PaintProfile paintProfile)
     {
+        if (isInitialised) return;
+
         // Ensure erase data is marked as reset
         previousErasedPixels = 0;
         removalPercent = 0f;
@@ -132,6 +120,8 @@ public class MaskablePaint : MonoBehaviour
 
         // Initialise the carvable mesh
         carvableMesh.Initialise();
+
+        isInitialised = true;
     }
 
     /// <summary>

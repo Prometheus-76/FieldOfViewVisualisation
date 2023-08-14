@@ -37,30 +37,13 @@ public partial class CarvableMesh : MonoBehaviour
     #endregion
 
     // PRIVATE
-    private bool meshFailed = false;
     private Mesh meshInstance = null;
     private RaycastHit2D[] nonAllocHits = null;
     private Vector2[] ccwPerimeter = null;
 
     // PROPERTIES
     public bool isReset { get; private set; } = true;
-    public bool isInitialised
-    {
-        get
-        {
-            // All required conditions for correct functionality
-            if (meshTransform == null) return false;
-            if (meshFilter == null) return false;
-            if (meshRenderer == null) return false;
-            if (meshInstance == null) return false;
-            if (nonAllocHits == null) return false;
-
-            if (meshFilter.mesh != meshInstance) return false;
-
-            // All conditions met
-            return true;
-        }
-    }
+    public bool isInitialised { get; private set; } = false;
 
     public Vector2 topRight { get { return new Vector2(halfMeshSize.x, halfMeshSize.y); } }
     public Vector2 topLeft { get { return new Vector2(-halfMeshSize.x, halfMeshSize.y); } }
@@ -98,8 +81,7 @@ public partial class CarvableMesh : MonoBehaviour
         // Ensure mesh is assigned to filter
         if (meshFilter != null) meshFilter.mesh = meshInstance;
 
-        // If everything worked the way we expected, allow the mesh to operate
-        if (isInitialised) meshFailed = false;
+        isInitialised = true;
     }
 
     /// <summary>
@@ -107,22 +89,8 @@ public partial class CarvableMesh : MonoBehaviour
     /// </summary>
     public void GenerateMesh()
     {
-        if (meshFailed) return;
-
         // Attempt to ensure things are initialised
-        if (isInitialised == false)
-        {
-            Initialise();
-
-            // Initialisation failed
-            if (isInitialised == false)
-            {
-                Debug.Log("CarvableMesh initialisation failed: " + "\"" + gameObject.name + "\"");
-
-                meshFailed = true;
-                return;
-            }
-        }
+        if (isInitialised == false) Initialise();
 
         // Reset previous mesh data
         ResetMesh();
@@ -172,16 +140,9 @@ public partial class CarvableMesh : MonoBehaviour
     /// <returns>Array of vectors representing the mesh vertices in local space</returns>
     public Vector2[] GetPerimeter(bool returnCopy)
     {
-        if (storePerimeter == false || isInitialised == false)
-        {
-            return null;
-        }
-
         // Ensure we return the data we expect
-        if (ccwPerimeter != null && ccwPerimeter.Length == 0)
-        {
-            return null;
-        }
+        if (storePerimeter == false || isInitialised == false) return null;
+        if (ccwPerimeter != null && ccwPerimeter.Length == 0) return null;
 
         return returnCopy ? ccwPerimeter.Clone() as Vector2[] : ccwPerimeter;
     }

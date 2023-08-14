@@ -14,7 +14,7 @@ public class PaintProfile : ScriptableObject
     [Header("Paint Appearance")]
     [SerializeField]
     private List<Texture2D> paintTextures;
-    [SerializeField]
+    [SerializeField, Space(5f)]
     private List<Color> paintColours;
 
     #region Public Methods

@@ -49,28 +49,13 @@ public class PaintManager : MonoBehaviour
     public int paintTextureID { get; private set; } = -1;
     public int paintColourID { get; private set; } = -1;
 
+    public bool isInitialised { get; private set; } = false;
+
     // PRIVATE
     private LinkedList<MaskablePaint> availablePaint;
     private List<MaskablePaint> allPaint;
 
     private CommandBuffer commandBuffer = null;
-
-    private void Start()
-    {
-        Initialise();
-
-        MaskablePaint paint = ExtractFromPool(null, testProfile, true);
-
-        paint.transform.position = new Vector2(6, -3);
-        paint.transform.rotation = Quaternion.Euler(0f, 0f, -42);
-
-        paint.Splatter();
-    }
-
-    private void Update()
-    {
-        UpdateAllRemovalDeltas();
-    }
 
     #region Public Methods
 
@@ -79,6 +64,8 @@ public class PaintManager : MonoBehaviour
     /// </summary>
     public void Initialise()
     {
+        if (isInitialised) return;
+
         availablePaint = new LinkedList<MaskablePaint>();
         allPaint = new List<MaskablePaint>();
 
@@ -89,6 +76,8 @@ public class PaintManager : MonoBehaviour
         eraseThresholdID = Shader.PropertyToID(eraseThresholdProperty);
         paintTextureID = Shader.PropertyToID(paintTextureProperty);
         paintColourID = Shader.PropertyToID(paintColourProperty);
+
+        isInitialised = true;
     }
 
     /// <summary>
@@ -98,6 +87,8 @@ public class PaintManager : MonoBehaviour
     /// <param name="brushProfile">The brush style to erase with</param>
     public void EraseFromAll(Vector2 brushPosition, BrushProfile brushProfile)
     {
+        if (isInitialised == false) Initialise();
+
         Vector2 brushRelativeToPaint;
         Vector2 halfPaintSize;
 
@@ -155,6 +146,8 @@ public class PaintManager : MonoBehaviour
     /// <returns>Reference to the paint script on the returned object</returns>
     public MaskablePaint ExtractFromPool(Transform parent, PaintProfile paintProfile, bool setActive)
     {
+        if (isInitialised == false) Initialise();
+
         MaskablePaint paintInstance;
 
         // If there is paint available
@@ -187,6 +180,8 @@ public class PaintManager : MonoBehaviour
     /// <param name="paintToRelease">Reference to the script on the paint instance which will be returned</param>
     public void ReturnToPool(MaskablePaint paintToRelease)
     {
+        if (isInitialised == false) Initialise();
+
         if (preventDuplicateReturns && availablePaint.Contains(paintToRelease)) return;
 
         // Return it to the pool
@@ -218,8 +213,11 @@ public class PaintManager : MonoBehaviour
         return paintComponent;
     }
 
+    private void Update() => UpdateAllRemovalDeltas();
     private void UpdateAllRemovalDeltas()
     {
+        if (isInitialised == false) Initialise();
+
         for (int i = 0; i < allPaint.Count; i++)
         {
             // If active and splattered
