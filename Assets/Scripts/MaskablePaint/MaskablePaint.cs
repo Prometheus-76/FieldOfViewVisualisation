@@ -109,12 +109,6 @@ public class MaskablePaint : MonoBehaviour
         geometryMask.filterMode = FilterMode.Point;
         geometryMask.name = "GeometryMask";
 
-        // Set paint properties
-        SetSize(paintProfile.GetRandomSize());
-        SetTexture(paintProfile.GetRandomTexture());
-        SetColour(paintProfile.GetRandomColour());
-        ClearMasks();
-
         // Create material instances
         maskPaintingMaterial = new Material(paintManager.surfacePainter);
         maskStencilMaterial = new Material(paintManager.geometryStencil);
@@ -125,6 +119,13 @@ public class MaskablePaint : MonoBehaviour
         // Attach material properties
         paintMaterialInstance.SetTexture(paintMaskID, outputEraseMask);
         paintMaterialInstance.SetFloat(eraseThresholdID, PaintManager.ERASE_THRESHOLD);
+
+        // Set paint properties
+        SetSize(paintProfile.GetRandomSize());
+        SetTexture(paintProfile.GetRandomTexture());
+        SetColour(paintProfile.GetRandomColour());
+
+        ClearMasks();
 
         // Apply material
         paintMeshRenderer.material = paintMaterialInstance;
@@ -180,6 +181,7 @@ public class MaskablePaint : MonoBehaviour
         // Reset if required
         if (isReset == false) ResetPaint();
 
+        if (newTexture == null) Debug.Log("It's nullin time");
         paintMaterialInstance.SetTexture(paintTextureID, newTexture);
     }
 

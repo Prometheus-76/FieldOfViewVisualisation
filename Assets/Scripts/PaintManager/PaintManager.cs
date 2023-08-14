@@ -8,6 +8,8 @@ public class PaintManager : MonoBehaviour
 {
     #region Inspector
 
+    public PaintProfile testProfile;
+
     [Header("Shaders")]
     public ComputeShader pixelCounter;
     public Shader surfacePainter;
@@ -56,6 +58,13 @@ public class PaintManager : MonoBehaviour
     private void Start()
     {
         Initialise();
+
+        MaskablePaint paint = ExtractFromPool(null, testProfile, true);
+
+        paint.transform.position = new Vector2(6, -3);
+        paint.transform.rotation = Quaternion.Euler(0f, 0f, -42);
+
+        paint.Splatter();
     }
 
     private void Update()
