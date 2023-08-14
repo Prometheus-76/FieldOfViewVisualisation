@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 
 public class PaintManager : MonoBehaviour
@@ -43,6 +44,9 @@ public class PaintManager : MonoBehaviour
     public bool boundsCulling = true;
     public bool perimeterCulling = true;
 
+    [Header("Events"), Space(5f)]
+    public UnityEvent<float, Color> OnErased;
+
     #endregion
 
     // PROPERTIES
@@ -59,8 +63,6 @@ public class PaintManager : MonoBehaviour
 
     private CommandBuffer commandBuffer = null;
 
-    private float totalRemoved = 0f;
-
     private void Start()
     {
         Initialise();
@@ -75,13 +77,13 @@ public class PaintManager : MonoBehaviour
 
     private void Update()
     {
+        UpdateAllRemovalDeltas();
+        
         if (InputManager.GetControlScheme() == InputManager.ControlScheme.MouseAndKeyboard)
         {
             Vector2 cursorWorldPos = Camera.main.ScreenToWorldPoint(InputManager.GetAimPosition().Value);
             EraseFromAll(cursorWorldPos, brushProfile);
         }
-
-        UpdateAllRemovalDeltas();
     }
 
     #region Public Methods
@@ -239,10 +241,14 @@ public class PaintManager : MonoBehaviour
             // If active and splattered
             if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
             {
-                float amountRemoved = allPaint[i].ComputeRemovalDelta();
+                // Only proceed if paint was actually removed from this instance
+                float paintRemoved = allPaint[i].ComputeRemovalDelta();
+                if (paintRemoved <= 0f) continue;
+
                 Color paintColour = allPaint[i].GetColour();
 
-                totalRemoved += amountRemoved;
+                // Alert listeners that paint was removed
+                OnErased.Invoke(paintRemoved, paintColour);
             }
         }
     }
