@@ -8,8 +8,6 @@ public class PaintSystem : MonoBehaviour
 {
     #region Inspector
 
-    public PaintProfile testProfile;
-
     [Header("Shaders")]
     public ComputeShader pixelCounter;
     public Shader surfacePainter;
