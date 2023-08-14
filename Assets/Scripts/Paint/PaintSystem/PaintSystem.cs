@@ -142,7 +142,7 @@ public class PaintSystem : MonoBehaviour
     /// <param name="paintProfile">The desired paint style</param>
     /// <param name="setActive">Whether the paint object should be active on retrieval</param>
     /// <returns>Reference to the paint script on the returned object</returns>
-    public MaskablePaint ExtractFromPool(Transform parent, PaintProfile paintProfile, bool setActive)
+    public MaskablePaint GetPaint(Transform parent, PaintProfile paintProfile, bool setActive)
     {
         if (isInitialised == false) Initialise();
 
@@ -175,19 +175,19 @@ public class PaintSystem : MonoBehaviour
     /// <summary>
     /// Returns a paint instance to the open pool
     /// </summary>
-    /// <param name="paintToRelease">Reference to the script on the paint instance which will be returned</param>
-    public void ReturnToPool(MaskablePaint paintToRelease)
+    /// <param name="paintInstance">Reference to the script on the paint instance which will be returned</param>
+    public void ReturnPaint(MaskablePaint paintInstance)
     {
         if (isInitialised == false) Initialise();
 
-        if (preventDuplicateReturns && availablePaint.Contains(paintToRelease)) return;
+        if (preventDuplicateReturns && availablePaint.Contains(paintInstance)) return;
 
         // Return it to the pool
-        availablePaint.AddLast(paintToRelease);
+        availablePaint.AddLast(paintInstance);
 
         // Store as inactive child
-        paintToRelease.transform.parent = transform;
-        paintToRelease.gameObject.SetActive(false);
+        paintInstance.transform.parent = transform;
+        paintInstance.gameObject.SetActive(false);
     }
 
     #endregion

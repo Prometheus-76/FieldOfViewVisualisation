@@ -1735,7 +1735,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2adf1e65b23234f90025dfb3835d6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testProfile: {fileID: 11400000, guid: c8e088a1ebdac0f469bd77b116364caf, type: 2}
   pixelCounter: {fileID: 7200000, guid: 58c8afc1173ef264ca3bb9240d69d090, type: 3}
   surfacePainter: {fileID: 4800000, guid: 66600ec701519f646b9b8a3602c20df8, type: 3}
   geometryStencil: {fileID: 4800000, guid: 9ad33e0edaecf414ebf334fa62c3ffdc, type: 3}
@@ -1753,7 +1752,19 @@ MonoBehaviour:
   perimeterCulling: 1
   OnErased:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1098244965}
+        m_TargetAssemblyTypeName: PlayerWeaponSystem, Assembly-CSharp
+        m_MethodName: AddPaint
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1064724377
 GameObject:
   m_ObjectHideFlags: 0
@@ -1897,6 +1908,7 @@ GameObject:
   - component: {fileID: 1098244964}
   - component: {fileID: 1098244963}
   - component: {fileID: 1098244962}
+  - component: {fileID: 1098244965}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2049,6 +2061,25 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &1098244965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1098244959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 767887f9c49dac24abbb9aba11421ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 1098244961}
+  paintSystem: {fileID: 963744412}
+  playerMovement: {fileID: 1098244962}
+  startingPaint: 1
+  startingWeaponProfile: {fileID: 11400000, guid: 5666268f492ce97439080a3dc86037f0, type: 2}
+  playerBrushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
+  maxPaint: 100
 --- !u!1 &1211014894
 GameObject:
   m_ObjectHideFlags: 0
