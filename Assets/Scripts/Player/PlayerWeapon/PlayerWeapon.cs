@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerWeapon : MonoBehaviour
+public partial class PlayerWeapon : MonoBehaviour
 {
     #region Inspector
 
@@ -11,83 +11,63 @@ public class PlayerWeapon : MonoBehaviour
     public PaintSystem paintSystem;
     public PlayerMovement playerMovement;
 
-    [Header("Starting State")]
-    [Range(0f, 1f)]
-    public float startingPaint;
-    public WeaponProfile startingWeaponProfile;
-
     [Header("Configuration")]
+    public WeaponProfile startingWeaponProfile;
+    public Camera mainCamera;
+
+    [Header("Paint")]
     public BrushProfile playerBrushProfile;
-    [Min(1f)]
-    public float maxPaint;
+
+    [Header("Bullet Pool")]
+    public GameObject bulletPrefab;
+    public bool preventDuplicateReturns = false;
+    public bool cullExcessBullets = false;
 
     #endregion
 
     // PROPERTIES
-    public float currentPaint { get; private set; } = 0f;
+    public float currentPaint { get; private set; }
     public WeaponProfile currentProfile { get; private set; }
 
     // PRIVATE
-    private LinkedList<Bullet> availableAmmo;
-    private List<Bullet> allAmmo;
+    private LinkedList<Bullet> availableBullets;
+    private List<Bullet> allBullets;
+
+    private bool primaryFireInputHeld = false;
+    private bool secondaryFireInputHeld = false;
+    private Vector2 fireDirection = Vector2.up;
+    private Vector2? firePosition = Vector2.zero;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        availableAmmo = new LinkedList<Bullet>();
-        allAmmo = new List<Bullet>();
+        BulletPoolStart();
 
-        currentPaint = Mathf.Clamp(maxPaint * startingPaint, 0f, maxPaint);
-        currentProfile = startingWeaponProfile;
+        PaintStart();
+
+        SetWeaponProfile(startingWeaponProfile);
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        InputUpdate(Time.deltaTime);
+
         PaintUpdate(Time.deltaTime);
 
-        WeaponUpdate(Time.deltaTime);
+        FiringUpdate(Time.deltaTime);
     }
 
     #region Public Methods
 
-    /// <summary>
-    /// Returns paint to the player's reserves
-    /// </summary>
-    /// <param name="paintAmount">The amount of paint to add</param>
-    /// <param name="paintColour">The colour of the added paint</param>
-    public void AddPaint(float paintAmount, Color paintColour)
+    public void SetWeaponProfile(WeaponProfile newProfile)
     {
-        // Play sound/animation?
-    }
+        if (newProfile == currentProfile) return;
+        currentProfile = newProfile;
 
-    /// <summary>
-    /// Take some paint from the player's reserve
-    /// </summary>
-    /// <param name="paintAmount">The amount we want to remove</param>
-    /// <returns>The amount we actually removed</returns>
-    public float RemovePaint(float paintAmount)
-    {
-        float originalPaint = currentPaint;
-
-        // Remove from the current amount, not dropping below zero
-        currentPaint -= paintAmount;
-        currentPaint = Mathf.Max(currentPaint, 0f);
-
-        // Return how much we actually removed
-        float paintRemoved = originalPaint - currentPaint;
-        return paintRemoved;
+        // Update all bullets in the pool, and adjust the pool size if necessary
+        ReconfigureBulletPool(currentProfile);
     }
 
     #endregion
-
-    private void PaintUpdate(float deltaTime)
-    {
-        paintSystem.EraseFromAll(playerTransform.position, playerBrushProfile);
-    }
-
-    private void WeaponUpdate(float deltaTime)
-    {
-
-    }
 }

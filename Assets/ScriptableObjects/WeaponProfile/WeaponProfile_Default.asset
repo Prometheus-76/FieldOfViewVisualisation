@@ -12,3 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a3ade1030084a748be18b705bf7724e, type: 3}
   m_Name: WeaponProfile_Default
   m_EditorClassIdentifier: 
+  damageMultiplier: 1
+  damageFalloffDistanceScalar: 0.8
+  damageFalloffAmountScalar: 0.4
+  magazineBulletCapacity: 40
+  magazinePaintCapacity: 12
+  bulletsPerMinute: 600
+  accuracyAngle: 10
+  bulletRange: 15
+  bulletVelocity: 22
+  bulletMaxUpdateDistance: 0.5
+  bulletDiameter: 0.2
+  knockbackPerSecond: 7
+  movementSpeedMultiplier: 0.6

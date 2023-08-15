@@ -7,6 +7,7 @@ public static class InputManager
 {
     private const float minDeadzone = 0.01f;
     private const float maxDeadzone = 0.99f;
+    private const float triggerPressThreshold = 0.8f;
 
     public enum ControlScheme
     {
@@ -175,6 +176,24 @@ public static class InputManager
         }
 
         return aimPosition;
+    }
+
+    /// <summary>
+    /// Whether the player is holding the primary fire binding down
+    /// </summary>
+    /// <returns>The button held state</returns>
+    public static bool GetPrimaryFire()
+    {
+        return Instance.Player.PrimaryFire.ReadValue<float>() >= triggerPressThreshold;
+    }
+
+    /// <summary>
+    /// Whether the player is holding the secondary fire binding down
+    /// </summary>
+    /// <returns>The button held state</returns>
+    public static bool GetSecondaryFire()
+    {
+        return Instance.Player.SecondaryFire.ReadValue<float>() >= triggerPressThreshold;
     }
 
     #endregion
