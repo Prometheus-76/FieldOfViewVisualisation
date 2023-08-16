@@ -2079,6 +2079,7 @@ MonoBehaviour:
   startingWeaponProfile: {fileID: 11400000, guid: 5666268f492ce97439080a3dc86037f0, type: 2}
   mainCamera: {fileID: 1549064285}
   playerBrushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
+  bulletPrefab: {fileID: 4827635775277349915, guid: 7bd4c13d6d7e7e84987583ac48d79417, type: 3}
   preventDuplicateReturns: 0
   cullExcessBullets: 0
 --- !u!1 &1211014894
