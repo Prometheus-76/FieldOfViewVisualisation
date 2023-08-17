@@ -1,10 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Pipes;
 using UnityEngine;
 
-public partial class PlayerWeapon
+public partial class PlayerController : MonoBehaviour
 {
+    // PRIVATE
+    private Vector2 movementInputDirection = Vector2.zero;
+
+    private bool primaryFireInputHeld = false;
+    private bool secondaryFireInputHeld = false;
+    private Vector2 fireInputDirection = Vector2.up;
+    private Vector2? fireInputPosition = null;
+
     private void InputUpdate(float deltaTime)
+    {
+        ReadMovementInput();
+
+        ReadCombatInput();
+    }
+
+    private void ReadMovementInput()
+    {
+        // Directional input
+        movementInputDirection = InputManager.GetMovementDirection(true);
+    }
+
+    private void ReadCombatInput()
     {
         // Button presses
         primaryFireInputHeld = InputManager.GetPrimaryFire();
@@ -12,12 +34,12 @@ public partial class PlayerWeapon
 
         // Directional input
         Vector2 playerScreenPosition = mainCamera.WorldToScreenPoint(playerTransform.position);
-        fireDirection = InputManager.GetAimDirection(playerScreenPosition);
+        fireInputDirection = InputManager.GetAimDirection(playerScreenPosition);
 
         if (InputManager.GetControlScheme() == InputManager.ControlScheme.Controller)
         {
             // If we're not aiming with the controller
-            if (fireDirection.sqrMagnitude <= 0f)
+            if (fireInputDirection.sqrMagnitude <= 0f)
             {
                 Vector2 movementDirection = InputManager.GetMovementDirection(true);
 
@@ -25,12 +47,12 @@ public partial class PlayerWeapon
                 if (movementDirection.sqrMagnitude > 0f)
                 {
                     // Make the player aim straight ahead in the direction they're moving
-                    fireDirection = movementDirection;
+                    fireInputDirection = movementDirection;
                 }
             }
         }
 
         // Cursor position
-        firePosition = InputManager.GetAimPosition();
+        fireInputPosition = InputManager.GetAimPosition();
     }
 }

@@ -1753,7 +1753,7 @@ MonoBehaviour:
   OnErased:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1098244965}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerWeapon, Assembly-CSharp
         m_MethodName: OnPaintErased
         m_Mode: 0
@@ -1907,7 +1907,6 @@ GameObject:
   - component: {fileID: 1098244960}
   - component: {fileID: 1098244964}
   - component: {fileID: 1098244963}
-  - component: {fileID: 1098244962}
   - component: {fileID: 1098244965}
   m_Layer: 0
   m_Name: Player
@@ -1978,27 +1977,11 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.92, y: -5.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1098244962
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1098244959}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a5b01a54ac3ed0498a510d2dccd76bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerRigidbody: {fileID: 1098244963}
-  playerCollider: {fileID: 1098244964}
-  movementSpeed: 6
-  movementAcceleration: 14
 --- !u!50 &1098244963
 Rigidbody2D:
   serializedVersion: 4
@@ -2070,18 +2053,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1098244959}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 767887f9c49dac24abbb9aba11421ee0, type: 3}
+  m_Script: {fileID: 11500000, guid: 1e89993d80a7c1e4c8ec8db9acd35567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 1098244961}
+  playerCollider: {fileID: 1098244964}
+  playerRigidbody: {fileID: 1098244963}
   paintSystem: {fileID: 963744412}
-  playerMovement: {fileID: 1098244962}
-  startingWeaponProfile: {fileID: 11400000, guid: 5666268f492ce97439080a3dc86037f0, type: 2}
   mainCamera: {fileID: 1549064285}
   playerBrushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
-  bulletPrefab: {fileID: 4827635775277349915, guid: 7bd4c13d6d7e7e84987583ac48d79417, type: 3}
-  preventDuplicateReturns: 0
-  cullExcessBullets: 0
+  magazinePaintCapacity: 10
+  movementSpeed: 6
+  movementAcceleration: 14
 --- !u!1 &1211014894
 GameObject:
   m_ObjectHideFlags: 0
