@@ -15,6 +15,24 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "Phase",
+                    "type": "Button",
+                    "id": "173b835c-e27d-4171-9e15-577814d3d3e5",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Fire",
+                    "type": "Button",
+                    "id": "69cb3bfb-d6f3-40bd-b5ce-79b5720531e3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "AimPosition",
                     "type": "Value",
                     "id": "6d2307e1-73d5-41f0-ad36-7bdc2e5763ef",
@@ -33,18 +51,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "PrimaryFire",
+                    "name": "SwapWeapons",
                     "type": "Button",
-                    "id": "69cb3bfb-d6f3-40bd-b5ce-79b5720531e3",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "SecondaryFire",
-                    "type": "Button",
-                    "id": "173b835c-e27d-4171-9e15-577814d3d3e5",
+                    "id": "e71fe81d-1ea2-4c7f-b732-98198f922c12",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -153,23 +162,12 @@
                 },
                 {
                     "name": "",
-                    "id": "eda03df0-8a04-4680-a4c4-9d90e909083a",
-                    "path": "<Gamepad>/rightTrigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Controller",
-                    "action": "PrimaryFire",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "cb8f7cd8-3593-40b3-b867-a36af90d8037",
-                    "path": "<Mouse>/leftButton",
+                    "id": "5fa0d8f0-eda3-45b1-8cc0-9568afcd9e74",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardAndMouse",
-                    "action": "PrimaryFire",
+                    "action": "Phase",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -180,18 +178,51 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "SecondaryFire",
+                    "action": "Phase",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "5fa0d8f0-eda3-45b1-8cc0-9568afcd9e74",
-                    "path": "<Mouse>/rightButton",
+                    "id": "cb8f7cd8-3593-40b3-b867-a36af90d8037",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardAndMouse",
-                    "action": "SecondaryFire",
+                    "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "eda03df0-8a04-4680-a4c4-9d90e909083a",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Controller",
+                    "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4b50bc4d-acdc-498e-9c9e-5b1962e8038f",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Controller",
+                    "action": "SwapWeapons",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ac3a4e13-3b57-40ec-8eb0-7e73c85bfddc",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardAndMouse",
+                    "action": "SwapWeapons",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

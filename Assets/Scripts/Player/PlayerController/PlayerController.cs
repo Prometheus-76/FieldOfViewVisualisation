@@ -11,11 +11,27 @@ public partial class PlayerController : MonoBehaviour
 
     public PaintSystem paintSystem;
     public Camera mainCamera;
+    public RumbleProfile testProfile;
+    public RumbleSystem rumbleSystem;
+    public float fireInterval;
+    public float fireTimer;
+
+    private Coroutine firingRumble = null;
 
     // Start is called before the first frame update
     private void Start()
     {
-        
+        CombatStart();
+    }
+
+    IEnumerator FiringRumble()
+    {
+        while (true)
+        {
+            rumbleSystem.AddRumbleEvent(testProfile);
+
+            yield return new WaitForSeconds(fireInterval);
+        }
     }
 
     // Update is called once per frame
@@ -26,6 +42,22 @@ public partial class PlayerController : MonoBehaviour
         GameplayUpdate(Time.deltaTime);
 
         CombatUpdate(Time.deltaTime);
+
+        if (fireInputHeld)
+        {
+            if (firingRumble == null)
+            {
+                firingRumble = StartCoroutine(FiringRumble());
+            }
+        }
+        else
+        {
+            if (firingRumble != null)
+            {
+                StopCoroutine(firingRumble);
+                firingRumble = null;
+            }
+        }
     }
 
     // FixedUpdate is called once per physics iteration

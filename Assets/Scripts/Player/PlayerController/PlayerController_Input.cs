@@ -8,10 +8,11 @@ public partial class PlayerController : MonoBehaviour
     // PRIVATE
     private Vector2 movementInputDirection = Vector2.zero;
 
-    private bool primaryFireInputHeld = false;
-    private bool secondaryFireInputHeld = false;
+    private bool fireInputHeld = false;
     private Vector2 fireInputDirection = Vector2.up;
     private Vector2? fireInputPosition = null;
+
+    private bool phaseInputHeld = false;
 
     private void InputUpdate(float deltaTime)
     {
@@ -22,6 +23,9 @@ public partial class PlayerController : MonoBehaviour
 
     private void ReadMovementInput()
     {
+        // Button presses
+        phaseInputHeld = InputManager.GetPhaseButton();
+
         // Directional input
         movementInputDirection = InputManager.GetMovementDirection(true);
     }
@@ -29,8 +33,7 @@ public partial class PlayerController : MonoBehaviour
     private void ReadCombatInput()
     {
         // Button presses
-        primaryFireInputHeld = InputManager.GetPrimaryFire();
-        secondaryFireInputHeld = InputManager.GetSecondaryFire();
+        fireInputHeld = InputManager.GetFireButton();
 
         // Directional input
         Vector2 playerScreenPosition = mainCamera.WorldToScreenPoint(playerTransform.position);

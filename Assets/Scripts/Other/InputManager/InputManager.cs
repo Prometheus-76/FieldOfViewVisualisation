@@ -7,7 +7,8 @@ public static class InputManager
 {
     private const float minDeadzone = 0.01f;
     private const float maxDeadzone = 0.99f;
-    private const float triggerPressThreshold = 0.8f;
+    private const float triggerPressThreshold = 0.9f;
+    private const float triggerReleaseThreshold = 0.8f;
 
     public enum ControlScheme
     {
@@ -17,7 +18,13 @@ public static class InputManager
 
     // PRIVATE
     private static InputMaster inputMaster = null;
-    private static ControlScheme currentControlScheme;
+
+    private static ControlScheme currentControlScheme = ControlScheme.MouseAndKeyboard;
+    private static Gamepad currentGamepad = null;
+
+    private static bool phaseButtonPressed = false;
+    private static bool fireButtonPressed = false;
+    private static bool swapWeaponsButtonPressed = false;
 
     private static InputMaster Instance
     {
@@ -40,6 +47,15 @@ public static class InputManager
         if (inputAction.activeControl == null) return;
         if (inputAction.activeControl.device == null) return;
 
+        // Stop rumble if we're switching from controller to another control scheme 
+        if (inputAction.activeControl.device is Gamepad == false)
+        {
+            if (currentControlScheme == ControlScheme.Controller && currentGamepad != null)
+            {
+                currentGamepad.ResetHaptics();
+            }
+        }
+
         switch (inputAction.activeControl.device)
         {
             case Keyboard or Mouse:
@@ -47,6 +63,15 @@ public static class InputManager
                 break;
 
             case Gamepad:
+                Gamepad thisGamepad = inputAction.activeControl.device as Gamepad;
+
+                if (thisGamepad != currentGamepad)
+                {
+                    // Ensure the previous controller doesn't keep rumbling if we're not using it anymore
+                    if (currentGamepad != null) currentGamepad.ResetHaptics();
+                    currentGamepad = thisGamepad;
+                }
+
                 currentControlScheme = ControlScheme.Controller;
                 break;
         }
@@ -82,6 +107,22 @@ public static class InputManager
         return input.normalized * magnitude01;
     }
 
+    private static bool ButtonPoll(InputAction inputAction, ref bool previousValue)
+    {
+        float pressValue = inputAction.ReadValue<float>();
+        if (pressValue >= triggerPressThreshold)
+        {
+            UpdateControlScheme(inputAction);
+            previousValue = true;
+        }
+        else if (pressValue <= triggerReleaseThreshold)
+        {
+            previousValue = false;
+        }
+
+        return previousValue;
+    }
+
     #region Public Methods
 
     /// <summary>
@@ -91,6 +132,38 @@ public static class InputManager
     public static ControlScheme GetControlScheme()
     {
         return currentControlScheme;
+    }
+
+    /// <summary>
+    /// Control the rumble strength of the motors in the current controller
+    /// </summary>
+    /// <param name="lowFrequencyStrength">The strength of the low frequency motor's rumble</param>
+    /// <param name="highFrequencyStrength">The strength of the high frequency motor's rumble</param>
+    public static void SetControllerRumble(float lowFrequencyStrength, float highFrequencyStrength)
+    {
+        if (currentControlScheme == ControlScheme.Controller)
+        {
+            if (currentGamepad != null)
+            {
+                lowFrequencyStrength = Mathf.Clamp01(lowFrequencyStrength);
+                highFrequencyStrength = Mathf.Clamp01(highFrequencyStrength);
+
+                // Using controller, with the most recently used available
+                currentGamepad.SetMotorSpeeds(lowFrequencyStrength, highFrequencyStrength);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stop the current controller from rumbling
+    /// </summary>
+    public static void ResetControllerRumble()
+    {
+        // Reset regardless of current control scheme
+        if (currentGamepad != null)
+        {
+            currentGamepad.ResetHaptics();
+        }
     }
 
     /// <summary>
@@ -179,21 +252,30 @@ public static class InputManager
     }
 
     /// <summary>
-    /// Whether the player is holding the primary fire binding down
+    /// Whether the player is holding the phase binding down
     /// </summary>
     /// <returns>The button held state</returns>
-    public static bool GetPrimaryFire()
+    public static bool GetPhaseButton()
     {
-        return Instance.Player.PrimaryFire.ReadValue<float>() >= triggerPressThreshold;
+        return ButtonPoll(Instance.Player.Phase, ref phaseButtonPressed);
     }
 
     /// <summary>
-    /// Whether the player is holding the secondary fire binding down
+    /// Whether the player is holding the fire binding down
     /// </summary>
     /// <returns>The button held state</returns>
-    public static bool GetSecondaryFire()
+    public static bool GetFireButton()
     {
-        return Instance.Player.SecondaryFire.ReadValue<float>() >= triggerPressThreshold;
+        return ButtonPoll(Instance.Player.Fire, ref fireButtonPressed);
+    }
+
+    /// <summary>
+    /// Whether the player is holding the swap weapons binding down
+    /// </summary>
+    /// <returns>The button held state</returns>
+    public static bool GetSwapWeaponsButton()
+    {
+        return ButtonPoll(Instance.Player.SwapWeapons, ref swapWeaponsButtonPressed);
     }
 
     #endregion

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb741da35c3c57c4e8a42f2de68423f4, type: 3}
+  m_Name: New Rumble Profile
+  m_EditorClassIdentifier: 
+  lowFrequencyRumble: 0
+  lowFrequencyStrength: 1
+  lowFrequencyInDuration: 1
+  lowFrequencyHoldDuration: 1
+  lowFrequencyOutDuration: 1
+  lowFrequencyInCurve: 0
+  lowFrequencyOutCurve: 0
+  highFrequencyRumble: 0
+  highFrequencyStrength: 1
+  highFrequencyInDuration: 1
+  highFrequencyHoldDuration: 1
+  highFrequencyOutDuration: 1
+  highFrequencyInCurve: 0
+  highFrequencyOutCurve: 0

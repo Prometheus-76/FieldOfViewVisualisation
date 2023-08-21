@@ -37,6 +37,24 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
+                    ""name"": ""Phase"",
+                    ""type"": ""Button"",
+                    ""id"": ""173b835c-e27d-4171-9e15-577814d3d3e5"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Fire"",
+                    ""type"": ""Button"",
+                    ""id"": ""69cb3bfb-d6f3-40bd-b5ce-79b5720531e3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""AimPosition"",
                     ""type"": ""Value"",
                     ""id"": ""6d2307e1-73d5-41f0-ad36-7bdc2e5763ef"",
@@ -55,18 +73,9 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""PrimaryFire"",
+                    ""name"": ""SwapWeapons"",
                     ""type"": ""Button"",
-                    ""id"": ""69cb3bfb-d6f3-40bd-b5ce-79b5720531e3"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""SecondaryFire"",
-                    ""type"": ""Button"",
-                    ""id"": ""173b835c-e27d-4171-9e15-577814d3d3e5"",
+                    ""id"": ""e71fe81d-1ea2-4c7f-b732-98198f922c12"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -175,23 +184,12 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""eda03df0-8a04-4680-a4c4-9d90e909083a"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Controller"",
-                    ""action"": ""PrimaryFire"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""cb8f7cd8-3593-40b3-b867-a36af90d8037"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""id"": ""5fa0d8f0-eda3-45b1-8cc0-9568afcd9e74"",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""KeyboardAndMouse"",
-                    ""action"": ""PrimaryFire"",
+                    ""action"": ""Phase"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -202,18 +200,51 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Controller"",
-                    ""action"": ""SecondaryFire"",
+                    ""action"": ""Phase"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""5fa0d8f0-eda3-45b1-8cc0-9568afcd9e74"",
-                    ""path"": ""<Mouse>/rightButton"",
+                    ""id"": ""cb8f7cd8-3593-40b3-b867-a36af90d8037"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""KeyboardAndMouse"",
-                    ""action"": ""SecondaryFire"",
+                    ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""eda03df0-8a04-4680-a4c4-9d90e909083a"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4b50bc4d-acdc-498e-9c9e-5b1962e8038f"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""SwapWeapons"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ac3a4e13-3b57-40ec-8eb0-7e73c85bfddc"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardAndMouse"",
+                    ""action"": ""SwapWeapons"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -253,10 +284,11 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Movement = m_Player.FindAction("Movement", throwIfNotFound: true);
+        m_Player_Phase = m_Player.FindAction("Phase", throwIfNotFound: true);
+        m_Player_Fire = m_Player.FindAction("Fire", throwIfNotFound: true);
         m_Player_AimPosition = m_Player.FindAction("AimPosition", throwIfNotFound: true);
         m_Player_AimDirection = m_Player.FindAction("AimDirection", throwIfNotFound: true);
-        m_Player_PrimaryFire = m_Player.FindAction("PrimaryFire", throwIfNotFound: true);
-        m_Player_SecondaryFire = m_Player.FindAction("SecondaryFire", throwIfNotFound: true);
+        m_Player_SwapWeapons = m_Player.FindAction("SwapWeapons", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -319,19 +351,21 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Movement;
+    private readonly InputAction m_Player_Phase;
+    private readonly InputAction m_Player_Fire;
     private readonly InputAction m_Player_AimPosition;
     private readonly InputAction m_Player_AimDirection;
-    private readonly InputAction m_Player_PrimaryFire;
-    private readonly InputAction m_Player_SecondaryFire;
+    private readonly InputAction m_Player_SwapWeapons;
     public struct PlayerActions
     {
         private @InputMaster m_Wrapper;
         public PlayerActions(@InputMaster wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_Player_Movement;
+        public InputAction @Phase => m_Wrapper.m_Player_Phase;
+        public InputAction @Fire => m_Wrapper.m_Player_Fire;
         public InputAction @AimPosition => m_Wrapper.m_Player_AimPosition;
         public InputAction @AimDirection => m_Wrapper.m_Player_AimDirection;
-        public InputAction @PrimaryFire => m_Wrapper.m_Player_PrimaryFire;
-        public InputAction @SecondaryFire => m_Wrapper.m_Player_SecondaryFire;
+        public InputAction @SwapWeapons => m_Wrapper.m_Player_SwapWeapons;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -344,18 +378,21 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
             @Movement.started += instance.OnMovement;
             @Movement.performed += instance.OnMovement;
             @Movement.canceled += instance.OnMovement;
+            @Phase.started += instance.OnPhase;
+            @Phase.performed += instance.OnPhase;
+            @Phase.canceled += instance.OnPhase;
+            @Fire.started += instance.OnFire;
+            @Fire.performed += instance.OnFire;
+            @Fire.canceled += instance.OnFire;
             @AimPosition.started += instance.OnAimPosition;
             @AimPosition.performed += instance.OnAimPosition;
             @AimPosition.canceled += instance.OnAimPosition;
             @AimDirection.started += instance.OnAimDirection;
             @AimDirection.performed += instance.OnAimDirection;
             @AimDirection.canceled += instance.OnAimDirection;
-            @PrimaryFire.started += instance.OnPrimaryFire;
-            @PrimaryFire.performed += instance.OnPrimaryFire;
-            @PrimaryFire.canceled += instance.OnPrimaryFire;
-            @SecondaryFire.started += instance.OnSecondaryFire;
-            @SecondaryFire.performed += instance.OnSecondaryFire;
-            @SecondaryFire.canceled += instance.OnSecondaryFire;
+            @SwapWeapons.started += instance.OnSwapWeapons;
+            @SwapWeapons.performed += instance.OnSwapWeapons;
+            @SwapWeapons.canceled += instance.OnSwapWeapons;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -363,18 +400,21 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
             @Movement.started -= instance.OnMovement;
             @Movement.performed -= instance.OnMovement;
             @Movement.canceled -= instance.OnMovement;
+            @Phase.started -= instance.OnPhase;
+            @Phase.performed -= instance.OnPhase;
+            @Phase.canceled -= instance.OnPhase;
+            @Fire.started -= instance.OnFire;
+            @Fire.performed -= instance.OnFire;
+            @Fire.canceled -= instance.OnFire;
             @AimPosition.started -= instance.OnAimPosition;
             @AimPosition.performed -= instance.OnAimPosition;
             @AimPosition.canceled -= instance.OnAimPosition;
             @AimDirection.started -= instance.OnAimDirection;
             @AimDirection.performed -= instance.OnAimDirection;
             @AimDirection.canceled -= instance.OnAimDirection;
-            @PrimaryFire.started -= instance.OnPrimaryFire;
-            @PrimaryFire.performed -= instance.OnPrimaryFire;
-            @PrimaryFire.canceled -= instance.OnPrimaryFire;
-            @SecondaryFire.started -= instance.OnSecondaryFire;
-            @SecondaryFire.performed -= instance.OnSecondaryFire;
-            @SecondaryFire.canceled -= instance.OnSecondaryFire;
+            @SwapWeapons.started -= instance.OnSwapWeapons;
+            @SwapWeapons.performed -= instance.OnSwapWeapons;
+            @SwapWeapons.canceled -= instance.OnSwapWeapons;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -413,9 +453,10 @@ public partial class @InputMaster: IInputActionCollection2, IDisposable
     public interface IPlayerActions
     {
         void OnMovement(InputAction.CallbackContext context);
+        void OnPhase(InputAction.CallbackContext context);
+        void OnFire(InputAction.CallbackContext context);
         void OnAimPosition(InputAction.CallbackContext context);
         void OnAimDirection(InputAction.CallbackContext context);
-        void OnPrimaryFire(InputAction.CallbackContext context);
-        void OnSecondaryFire(InputAction.CallbackContext context);
+        void OnSwapWeapons(InputAction.CallbackContext context);
     }
 }

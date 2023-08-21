@@ -9,5 +9,10 @@ public enum WeaponType
 
 public abstract class PlayerWeapon : MonoBehaviour
 {
-    // Put some abstract functions here that our child classes will need to override
+    [Header("Generic Configuration")]
+    public WeaponType weaponType;
+
+    public abstract void WeaponInitialise(PlayerController playerController);
+    public abstract void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection);
+    public abstract void WeaponReset();
 }
