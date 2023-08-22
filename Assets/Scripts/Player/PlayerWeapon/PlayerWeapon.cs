@@ -12,7 +12,10 @@ public abstract class PlayerWeapon : MonoBehaviour
     [Header("Generic Configuration")]
     public WeaponType weaponType;
 
+    // PROPERTIES
+    public bool isFiring { get; protected set; }
+
     public abstract void WeaponInitialise(PlayerController playerController);
     public abstract void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection);
-    public abstract void WeaponReset();
+    public abstract void WeaponReset(bool resetBullets);
 }

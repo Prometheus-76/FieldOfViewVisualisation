@@ -173,7 +173,7 @@ public static class InputManager
     /// <returns>The movement input direction, clamped between 0 and 1</returns>
     public static Vector2 GetMovementDirection(bool normalized)
     {
-        InputAction action = Instance.Player.Movement;
+        InputAction action = Instance.Gameplay.Movement;
         UpdateControlScheme(action);
 
         Vector2 actionValue = action.ReadValue<Vector2>();
@@ -197,7 +197,7 @@ public static class InputManager
         if (currentControlScheme == ControlScheme.MouseAndKeyboard)
         {
             // Check for controller aim input
-            if (DeadzoneRemap(Instance.Player.AimDirection.ReadValue<Vector2>()).sqrMagnitude > 0f)
+            if (DeadzoneRemap(Instance.Gameplay.AimDirection.ReadValue<Vector2>()).sqrMagnitude > 0f)
             {
                 // Controller is aiming!
                 currentControlScheme = ControlScheme.Controller;
@@ -208,11 +208,11 @@ public static class InputManager
         switch (currentControlScheme)
         {
             case ControlScheme.MouseAndKeyboard:
-                action = Instance.Player.AimPosition;
+                action = Instance.Gameplay.AimPosition;
                 break;
 
             case ControlScheme.Controller:
-                action = Instance.Player.AimDirection;
+                action = Instance.Gameplay.AimDirection;
                 break;
         }
 
@@ -245,7 +245,7 @@ public static class InputManager
         // Only returns a valid value if the player is using mouse and keyboard
         if (currentControlScheme == ControlScheme.MouseAndKeyboard)
         {
-            aimPosition = Instance.Player.AimPosition.ReadValue<Vector2>();
+            aimPosition = Instance.Gameplay.AimPosition.ReadValue<Vector2>();
         }
 
         return aimPosition;
@@ -257,7 +257,7 @@ public static class InputManager
     /// <returns>The button held state</returns>
     public static bool GetPhaseButton()
     {
-        return ButtonPoll(Instance.Player.Phase, ref phaseButtonPressed);
+        return ButtonPoll(Instance.Gameplay.Phase, ref phaseButtonPressed);
     }
 
     /// <summary>
@@ -266,7 +266,7 @@ public static class InputManager
     /// <returns>The button held state</returns>
     public static bool GetFireButton()
     {
-        return ButtonPoll(Instance.Player.Fire, ref fireButtonPressed);
+        return ButtonPoll(Instance.Gameplay.Fire, ref fireButtonPressed);
     }
 
     /// <summary>
@@ -275,7 +275,7 @@ public static class InputManager
     /// <returns>The button held state</returns>
     public static bool GetSwapWeaponsButton()
     {
-        return ButtonPoll(Instance.Player.SwapWeapons, ref swapWeaponsButtonPressed);
+        return ButtonPoll(Instance.Gameplay.SwapWeapons, ref swapWeaponsButtonPressed);
     }
 
     #endregion

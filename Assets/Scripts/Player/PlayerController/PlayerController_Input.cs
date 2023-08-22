@@ -27,7 +27,15 @@ public partial class PlayerController : MonoBehaviour
         phaseInputHeld = InputManager.GetPhaseButton();
 
         // Directional input
-        movementInputDirection = InputManager.GetMovementDirection(true);
+        InputManager.ControlScheme controlScheme = InputManager.GetControlScheme();
+        if (controlScheme == InputManager.ControlScheme.MouseAndKeyboard)
+        {
+            movementInputDirection = InputManager.GetMovementDirection(true);
+        }
+        else if (controlScheme == InputManager.ControlScheme.Controller)
+        {
+            movementInputDirection = InputManager.GetMovementDirection(false);
+        }
     }
 
     private void ReadCombatInput()

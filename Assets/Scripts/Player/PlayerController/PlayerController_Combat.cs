@@ -46,14 +46,14 @@ public partial class PlayerController : MonoBehaviour
         if (equipInPrimarySlot)
         {
             // Reset previous weapon before replacing it
-            if (primaryWeapon != null) primaryWeapon.WeaponReset();
+            if (primaryWeapon != null) primaryWeapon.WeaponReset(true);
 
             primaryWeapon = replacementWeapon;
         }
         else
         {
             // Reset previous weapon before replacing it
-            if (secondaryWeapon != null) secondaryWeapon.WeaponReset();
+            if (secondaryWeapon != null) secondaryWeapon.WeaponReset(true);
             
             secondaryWeapon = replacementWeapon;
         }

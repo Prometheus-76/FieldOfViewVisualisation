@@ -16,16 +16,12 @@ public class RumbleSystem : MonoBehaviour
 
     private void LateUpdate()
     {
-        // If we have rumble values to apply
-        if (totalLowFrequency + totalHighFrequency > 0f)
-        {
-            // Calculate intensity values along an asymptote approaching 1.0
-            float combinedLowFrequencyIntensity = 1f - (1f / ((falloffStrength * totalLowFrequency) + 1f));
-            float combinedHighFrequencyIntensity = 1f - (1f / ((falloffStrength * totalHighFrequency) + 1f));
+        // Calculate intensity values along an asymptote approaching 1.0
+        float combinedLowFrequencyIntensity = 1f - (1f / ((falloffStrength * totalLowFrequency) + 1f));
+        float combinedHighFrequencyIntensity = 1f - (1f / ((falloffStrength * totalHighFrequency) + 1f));
 
-            // Apply combined values
-            InputManager.SetControllerRumble(combinedLowFrequencyIntensity, combinedHighFrequencyIntensity);
-        }
+        // Apply combined values
+        InputManager.SetControllerRumble(combinedLowFrequencyIntensity, combinedHighFrequencyIntensity);
 
         // Reset rumble values
         totalLowFrequency = 0f;
