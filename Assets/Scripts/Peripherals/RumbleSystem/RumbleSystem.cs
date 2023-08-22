@@ -4,63 +4,45 @@ using UnityEngine;
 
 public class RumbleSystem : MonoBehaviour
 {
-    [Min(0.1f)]
-    public float falloffScalar;
+    [Header("Configuration")]
+    [Min(0.1f), Tooltip("Affects how rumble is combined, lower values require more rumble to reach the maximum effect")]
+    public float falloffStrength;
+    [Min(1f), Tooltip("Remaps added rumble such that lower values feel significantly less impactful than higher ones")]
+    public float additivePower;
 
-    private List<RumbleEvent> activeEvents;
-    private LinkedList<RumbleEvent> availableEvents;
+    // PRIVATE
+    private float totalLowFrequency = 0f;
+    private float totalHighFrequency = 0f;
 
-    public void Initialise()
+    private void LateUpdate()
     {
-        activeEvents = new List<RumbleEvent>();
-        availableEvents = new LinkedList<RumbleEvent>();
+        // If we have rumble values to apply
+        if (totalLowFrequency + totalHighFrequency > 0f)
+        {
+            // Calculate intensity values along an asymptote approaching 1.0
+            float combinedLowFrequencyIntensity = 1f - (1f / ((falloffStrength * totalLowFrequency) + 1f));
+            float combinedHighFrequencyIntensity = 1f - (1f / ((falloffStrength * totalHighFrequency) + 1f));
+
+            // Apply combined values
+            InputManager.SetControllerRumble(combinedLowFrequencyIntensity, combinedHighFrequencyIntensity);
+        }
+
+        // Reset rumble values
+        totalLowFrequency = 0f;
+        totalHighFrequency = 0f;
     }
 
-    public void Update()
+    /// <summary>
+    /// Add some rumble to the total which will be applied at the end of this frame, for best results this function should be called from Update()
+    /// </summary>
+    /// <param name="lowFrequency">The strength of the low frequency motor rumble</param>
+    /// <param name="highFrequency">The strength of the high frequency motor rumble</param>
+    public void AddRumbleThisFrame(float lowFrequency, float highFrequency)
     {
-        float totalLowFrequencyIntensity = 0f;
-        float totalHighFrequencyIntensity = 0f;
+        lowFrequency = Mathf.Max(lowFrequency, 0f);
+        highFrequency = Mathf.Max(highFrequency, 0f);
 
-        for (int i = 0; i < activeEvents.Count; i++)
-        {
-            activeEvents[i].Simulate(Time.deltaTime);
-
-            totalLowFrequencyIntensity += activeEvents[i].lowFrequencyIntensity;
-            totalHighFrequencyIntensity += activeEvents[i].highFrequencyIntensity;
-
-            if (activeEvents[i].hasCompleted)
-            {
-                // Return this event to the pool on completion
-                availableEvents.AddLast(activeEvents[i]);
-                activeEvents.RemoveAt(i);
-                i -= 1;
-            }
-        }
-
-        // Calculate asymptotic combined intensity
-        float combinedLowFrequencyIntensity = 1f - (1f / ((falloffScalar * totalLowFrequencyIntensity) + 1f));
-        float combinedHighFrequencyIntensity = 1f - (1f / ((falloffScalar * totalHighFrequencyIntensity) + 1f));
-
-        // Apply combined values
-        InputManager.SetControllerRumble(combinedLowFrequencyIntensity, combinedHighFrequencyIntensity);
-    }
-
-    public void AddRumbleEvent(RumbleProfile rumbleProfile, float timeOffset = 0f)
-    {
-        RumbleEvent newEvent;
-
-        if (availableEvents.Count > 0)
-        {
-            newEvent = availableEvents.First.Value;
-            availableEvents.RemoveFirst();
-        }
-        else
-        {
-            newEvent = new RumbleEvent();
-        }
-
-        newEvent.Configure(rumbleProfile);
-        newEvent.Simulate(timeOffset);
-        activeEvents.Add(newEvent);
+        totalLowFrequency += Mathf.Pow(lowFrequency, additivePower);
+        totalHighFrequency += Mathf.Pow(highFrequency, additivePower);
     }
 }

@@ -347,7 +347,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 552fc4108b6a2134180b5e21ddaf023c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  falloffScalar: 0.7
+  falloffStrength: 1.5
+  additivePower: 1.5
 --- !u!1 &226189845
 GameObject:
   m_ObjectHideFlags: 0
@@ -508,7 +509,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   paintSystem: {fileID: 963744412}
-  rumbleSystem: {fileID: 219133803}
 --- !u!4 &227755597
 Transform:
   m_ObjectHideFlags: 0
@@ -2154,10 +2154,6 @@ MonoBehaviour:
   playerRigidbody: {fileID: 1098244963}
   paintSystem: {fileID: 963744412}
   mainCamera: {fileID: 1549064285}
-  testProfile: {fileID: 11400000, guid: b52e3b822f1deea428a72ea34fe9e57f, type: 2}
-  rumbleSystem: {fileID: 219133803}
-  fireInterval: 0.1
-  fireTimer: 0
   playerWeapons:
   - {fileID: 152990815}
   startingWeapon: 0

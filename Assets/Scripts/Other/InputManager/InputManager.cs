@@ -7,8 +7,8 @@ public static class InputManager
 {
     private const float minDeadzone = 0.01f;
     private const float maxDeadzone = 0.99f;
-    private const float triggerPressThreshold = 0.9f;
-    private const float triggerReleaseThreshold = 0.8f;
+    private const float triggerPressThreshold = 0.95f;
+    private const float triggerReleaseThreshold = 0.7f;
 
     public enum ControlScheme
     {
@@ -135,7 +135,7 @@ public static class InputManager
     }
 
     /// <summary>
-    /// Control the rumble strength of the motors in the current controller
+    /// Set the rumble strength of the motors in the current controller
     /// </summary>
     /// <param name="lowFrequencyStrength">The strength of the low frequency motor's rumble</param>
     /// <param name="highFrequencyStrength">The strength of the high frequency motor's rumble</param>
