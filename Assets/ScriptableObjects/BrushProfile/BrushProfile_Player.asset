@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51d506c9f3d057c498daacb14e5aa893, type: 3}
   m_Name: BrushProfile_Player
   m_EditorClassIdentifier: 
-  brushInnerRadius: 0.3
+  brushInnerRadius: 0.5
   brushOuterOffset: 0.4
   brushTexture: {fileID: 2800000, guid: dde73061f2a58774c9039fb1f81b0103, type: 3}
-  brushTextureStrength: 0.8
+  brushTextureStrength: 0.9
   brushTextureScale: 0.2

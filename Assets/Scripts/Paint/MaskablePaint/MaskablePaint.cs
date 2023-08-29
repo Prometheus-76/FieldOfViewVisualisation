@@ -19,7 +19,7 @@ public class MaskablePaint : MonoBehaviour
     // PROPERTIES
     public float removalPercent { get; private set; } = 0f;
     public bool removalInProgress { get; private set; } = false;
-    public bool maskModifiedSinceLastCheck { get; private set; } = false;
+    public bool maskModifiedSinceLastRequest { get; private set; } = false;
     public bool isReset { get; private set; } = true;
 
     public bool isInitialised { get; private set; } = false;
@@ -171,7 +171,6 @@ public class MaskablePaint : MonoBehaviour
         // Reset if required
         if (isReset == false) ResetPaint();
 
-        if (newTexture == null) Debug.Log("It's nullin time");
         paintMaterialInstance.SetTexture(paintTextureID, newTexture);
     }
 
@@ -309,7 +308,7 @@ public class MaskablePaint : MonoBehaviour
             maskExtensionMaterial.SetTexture("_MainTex", primaryEraseMask);
             commandBuffer.Blit(secondaryEraseMask, outputEraseMask, maskExtensionMaterial);
 
-            maskModifiedSinceLastCheck = true;
+            maskModifiedSinceLastRequest = true;
         }
     }
 
@@ -319,39 +318,43 @@ public class MaskablePaint : MonoBehaviour
     /// <returns>The amount of paint which has been removed (in world-space area)</returns>
     public float ComputeRemovalDelta()
     {
-        // Don't check if no changes have been made to the mask
-        if (maskModifiedSinceLastCheck == false) return 0f;
+        // If we know there have been no changes, then we don't need to check
+        if (maskModifiedSinceLastRequest == false && removalInProgress == false) return 0f;
 
-        RequestMaskAnalysis();
-
-        // When the current request is complete
         if (dataRequest.done)
         {
             removalInProgress = false;
 
             if (dataRequest.hasError == false)
             {
-                // How many of the image's non-transparent pixels are covered by the mask? (from 0 - 1)
+                // How many of the image's non-transparent pixels are covered by the mask?
                 int totalErasablePixels = dataRequest.GetData<int>(0)[0];
                 int currentErasedPixels = dataRequest.GetData<int>(0)[1];
                 
-                // How many of the removable pixels have been removed?
+                // How many of the removable pixels have been removed? (from 0 to 1)
                 removalPercent = Mathf.Clamp01((float)currentErasedPixels / totalErasablePixels);
 
                 // How many pixels have been removed since last checking?
                 int removalDelta = Mathf.Max(0, currentErasedPixels - previousErasedPixels);
                 previousErasedPixels = currentErasedPixels;
 
-                // Convert from pixel count -> world space area
+                // Convert from pixel count -> world space area using the world-space size of a pixel
                 float texelArea = outputEraseMask.texelSize.x * outputEraseMask.texelSize.y; // texelSize = (1 / textureResolution)
 
                 Vector2 meshDimensions = carvableMesh.halfMeshSize * 2f;
                 float meshArea = meshDimensions.x * meshDimensions.y;
 
-                maskModifiedSinceLastCheck = false;
                 return (removalDelta * texelArea * meshArea);
             }
+            else
+            {
+                // In the case that there was an error processing the request, try again
+                RequestMaskAnalysis();
+            }
         }
+
+        // Request another update if there have been changes
+        if (maskModifiedSinceLastRequest) RequestMaskAnalysis();
 
         return 0f;
     }
@@ -389,6 +392,7 @@ public class MaskablePaint : MonoBehaviour
 
         // Submit a request for the results
         dataRequest = AsyncGPUReadback.Request(computeBuffer);
+        maskModifiedSinceLastRequest = false;
 
         // Memory cleanup
         computeBuffer.Release();
