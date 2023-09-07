@@ -48,10 +48,10 @@ Shader "Custom/SurfacePainter"
                 return (t - from) / (to - from);
             }
 
-            float evaluateBrush(float2 position, float2 center, float innerRadius, float outerRadius)
+            float evaluateBrush(float2 position)
             {
-                float distanceFromBrushCenter = distance(center, position);
-                float baseBrush = 1.0f - clamp(inverselerp(innerRadius, outerRadius, distanceFromBrushCenter), 0.0f, 1.0f);
+                float distanceFromBrushCenter = distance(_BrushPosition, position);
+                float baseBrush = 1.0f - clamp(inverselerp(_BrushInnerRadius, _BrushOuterRadius, distanceFromBrushCenter), 0.0f, 1.0f);
                 
                 // Mask brush texture
                 float2 textureUV = frac(position * _BrushTextureScale);
@@ -76,8 +76,8 @@ Shader "Custom/SurfacePainter"
             {
                 float4 existingColour = tex2D(_MainTex, i.uv);
     
-                // Determine pixel brightness based on proximity to brush, and brush settings
-                float baseBrush = evaluateBrush(i.worldPos.xy, _BrushPosition, _BrushInnerRadius, _BrushOuterRadius);
+                // Determine the brightness of this pixel in accordance with the brush position and settings
+                float baseBrush = evaluateBrush(i.worldPos.xy);
     
                 // Blend brush with the existing mask
                 return max(existingColour, baseBrush);

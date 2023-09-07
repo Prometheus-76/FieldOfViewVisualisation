@@ -38,9 +38,9 @@ Shader "Custom/MaskExtension"
             v2f vert(appdata v)
             {
                 v2f o;
-                o.uv = v.uv; // UV value of this vertex, passed through rasterizer and interpolated for fragment shader
+                o.uv = v.uv;
     
-                // Remap (and potentially flip depending on the renderer used) the UVs as the rasterizer expects -1 to 1, not 0 to 1
+                // Remap (and flip depending on graphics API) the UVs as the rasterizer expects -1 to 1, not 0 to 1
                 float2 remappedUV = (v.uv * 2 - 1) * float2(1, _ProjectionParams.x);
                 o.vertex = float4(remappedUV, 0, 1);
                 return o;
