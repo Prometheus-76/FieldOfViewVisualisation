@@ -71,6 +71,8 @@ public class MachineGun : PlayerWeapon
 
     public override void WeaponInitialise(PlayerController playerController)
     {
+        base.WeaponInitialise(playerController);
+
         // Create maximum number of bullets
         // bulletLifetime, maxRPM, etc
 
@@ -79,7 +81,7 @@ public class MachineGun : PlayerWeapon
 
     public override void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection)
     {
-        UpdateBullets();
+        UpdateBullets(deltaTime);
 
         if (isCurrentlyHeld == false) return;
 
@@ -110,7 +112,7 @@ public class MachineGun : PlayerWeapon
         isFiring = false;
     }
 
-    private void UpdateBullets()
+    private void UpdateBullets(float deltaTime)
     {
         // Simulate, etc
     }
@@ -154,13 +156,13 @@ public class MachineGun : PlayerWeapon
 
     private void FireBullet(Vector2 direction, float initialSimulationStep)
     {
-
+        
     }
 
     private void UpdateSpin(float deltaTime, bool isTriggerHeld)
     {
         // Spin up/down
-        float linearIncrement = isTriggerHeld ? (deltaTime / spinUpDuration) : (-deltaTime / spinDownDuration);
+        float linearIncrement = deltaTime / (isTriggerHeld ? spinUpDuration : -spinDownDuration);
         currentLinearSpin = Mathf.Clamp01(currentLinearSpin + linearIncrement);
 
         // Calculate remapped spin

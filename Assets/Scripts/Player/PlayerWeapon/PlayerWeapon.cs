@@ -15,7 +15,15 @@ public abstract class PlayerWeapon : MonoBehaviour
     // PROPERTIES
     public bool isFiring { get; protected set; }
 
-    public abstract void WeaponInitialise(PlayerController playerController);
+    // PROTECTED
+    protected PlayerController playerController = null;
+
+    public virtual void WeaponInitialise(PlayerController playerController)
+    {
+        this.playerController = playerController;
+    }
+
     public abstract void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection);
+
     public abstract void WeaponReset(bool resetBullets);
 }
