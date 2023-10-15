@@ -73,7 +73,7 @@ public class MachineGun : PlayerWeapon
     {
         base.WeaponInitialise(playerController);
 
-        // Create maximum number of bullets
+        // Calculate and create maximum number of bullets
         // bulletLifetime, maxRPM, etc
 
         WeaponReset(true);
@@ -85,12 +85,11 @@ public class MachineGun : PlayerWeapon
 
         if (isCurrentlyHeld == false) return;
 
-        // Determine if we should fire a bullet
+        // Fire bullet/s as necessary this frame
         UpdateFiring(deltaTime, isTriggerHeld, aimDirection);
 
-        // Modify spin speed
+        // Modify spin speed, and adjust weapon properties accordingly
         UpdateSpin(deltaTime, isTriggerHeld);
-
         UpdateSpinProperties();
 
         // Shake the controller
@@ -131,11 +130,13 @@ public class MachineGun : PlayerWeapon
             isFiring = true;
         }
 
-        // While we're able to fire another bullet
+        // While firing is off cooldown
         while (timeUntilNextFire <= 0f)
         {
             if (isTriggerHeld)
             {
+                // Fire another bullet
+                
                 // Increment cooldown until next bullet is fired
                 float firingInterval = (60f / currentRPM);
                 timeUntilNextFire += firingInterval;
@@ -145,6 +146,8 @@ public class MachineGun : PlayerWeapon
             }
             else
             {
+                // Reset firing mechanism
+
                 // Don't fire a bullet, cooldown is over so we don't need to refresh it
                 timeUntilNextFire = 0f;
                 isFiring = false;
