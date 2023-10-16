@@ -185,6 +185,9 @@ public class PaintSystem : MonoBehaviour
         // Return it to the pool
         availablePaint.AddLast(paintInstance);
 
+        // Reset if needed
+        if (paintInstance.isReset == false) paintInstance.ResetPaint();
+
         // Store as inactive child
         paintInstance.transform.parent = transform;
         paintInstance.gameObject.SetActive(false);
@@ -212,6 +215,7 @@ public class PaintSystem : MonoBehaviour
     }
 
     private void Update() => UpdateAllRemovalDeltas();
+
     private void UpdateAllRemovalDeltas()
     {
         if (isInitialised == false) Initialise();
@@ -229,6 +233,9 @@ public class PaintSystem : MonoBehaviour
 
                 // Alert listeners that paint was removed
                 OnErased.Invoke(paintRemoved, paintColour);
+
+                // If all the paint has been removed from this object, we can return it immediately
+                if (allPaint[i].removalPercent >= 1f) ReturnPaint(allPaint[i]);
             }
         }
     }
