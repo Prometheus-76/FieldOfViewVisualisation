@@ -20,10 +20,19 @@ public class PaintSystem : MonoBehaviour
     public string eraseThresholdProperty;
     public string paintTextureProperty;
     public string paintColourProperty;
+    public string spawnEffectProperty;
 
     [Header("Object Pooling")]
     public GameObject paintPrefab;
     public bool preventDuplicateReturns = false;
+
+    [Header("Spawning / Despawning")]
+    [Min(0.01f)]
+    public float spawnEffectDuration;
+    [Min(0f)]
+    public float despawnFadeDelay;
+    [Min(0.01f)]
+    public float despawnFadeDuration;
 
     [Header("Mask Fidelity")]
     [Min(1)]
@@ -46,6 +55,7 @@ public class PaintSystem : MonoBehaviour
     public int eraseThresholdID { get; private set; } = -1;
     public int paintTextureID { get; private set; } = -1;
     public int paintColourID { get; private set; } = -1;
+    public int spawnEffectID { get; private set; } = -1;
 
     public bool isInitialised { get; private set; } = false;
 
@@ -74,6 +84,7 @@ public class PaintSystem : MonoBehaviour
         eraseThresholdID = Shader.PropertyToID(eraseThresholdProperty);
         paintTextureID = Shader.PropertyToID(paintTextureProperty);
         paintColourID = Shader.PropertyToID(paintColourProperty);
+        spawnEffectID = Shader.PropertyToID(spawnEffectProperty);
 
         isInitialised = true;
     }
@@ -222,20 +233,29 @@ public class PaintSystem : MonoBehaviour
 
         for (int i = 0; i < allPaint.Count; i++)
         {
+            MaskablePaint paintInstance = allPaint[i];
+
             // If active and splattered
-            if (allPaint[i].gameObject.activeSelf && allPaint[i].isReset == false)
+            if (paintInstance.gameObject.activeSelf && paintInstance.isReset == false)
             {
+                // If this paint object is now ready to despawn, return it immediately and continue
+                if (paintInstance.despawnPercent >= 1f)
+                {
+                    ReturnPaint(paintInstance);
+                    continue;
+                }
+
                 // Only proceed if paint was actually removed from this instance
-                float paintRemoved = allPaint[i].ComputeRemovalDelta();
+                float paintRemoved = paintInstance.ComputeRemovalDelta();
                 if (paintRemoved <= 0f) continue;
 
-                Color paintColour = allPaint[i].GetColour();
+                Color paintColour = paintInstance.GetColour();
 
-                // Alert listeners that paint was removed
+                // Alert event listeners that paint was removed
                 OnErased.Invoke(paintRemoved, paintColour);
 
                 // If all the paint has been removed from this object, we can return it immediately
-                if (allPaint[i].removalPercent >= 1f) ReturnPaint(allPaint[i]);
+                if (paintInstance.removalPercent >= 1f) ReturnPaint(paintInstance);
             }
         }
     }

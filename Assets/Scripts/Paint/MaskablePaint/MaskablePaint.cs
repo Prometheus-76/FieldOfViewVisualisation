@@ -18,6 +18,8 @@ public class MaskablePaint : MonoBehaviour
 
     // PROPERTIES
     public float removalPercent { get; private set; } = 0f;
+    public float spawnPercent { get; private set; } = 0f;
+    public float despawnPercent { get; private set; } = 0f;
     public bool removalInProgress { get; private set; } = false;
     public bool maskModifiedSinceLastRequest { get; private set; } = false;
     public bool isReset { get; private set; } = true;
@@ -25,6 +27,8 @@ public class MaskablePaint : MonoBehaviour
     public bool isInitialised { get; private set; } = false;
 
     // PRIVATE
+    private float spawnEffectTimer = 0f;
+    private float despawnTimer = 0f;
     private int previousErasedPixels = 0;
     private AsyncGPUReadbackRequest dataRequest;
 
@@ -43,6 +47,10 @@ public class MaskablePaint : MonoBehaviour
     private Texture paintTexture = null;
     private Color paintColour = Color.clear;
 
+    private float spawnEffectDuration = -1f;
+    private float despawnFadeDelay = -1f;
+    private float despawnFadeDuration = -1f;
+
     private int maskPixelDensity = -1;
     private int maskResolutionCap = -1;
 
@@ -50,6 +58,7 @@ public class MaskablePaint : MonoBehaviour
     private int eraseThresholdID = -1;
     private int paintTextureID = -1;
     private int paintColourID = -1;
+    private int spawnEffectID = -1;
 
     #region Public Methods
 
@@ -61,6 +70,15 @@ public class MaskablePaint : MonoBehaviour
     public void Initialise(PaintSystem paintSystem, PaintProfile paintProfile)
     {
         if (isInitialised) return;
+
+        // Set spawn in/out data
+        spawnEffectDuration = paintSystem.spawnEffectDuration;
+        despawnFadeDelay = paintSystem.despawnFadeDelay;
+        despawnFadeDuration = paintSystem.despawnFadeDuration;
+
+        spawnEffectTimer = 0f;
+        despawnTimer = 0f;
+        despawnPercent = 0f;
 
         // Ensure erase data is marked as reset
         previousErasedPixels = 0;
@@ -79,18 +97,19 @@ public class MaskablePaint : MonoBehaviour
         eraseThresholdID = paintSystem.eraseThresholdID;
         paintTextureID = paintSystem.paintTextureID;
         paintColourID = paintSystem.paintColourID;
+        spawnEffectID = paintSystem.spawnEffectID;
 
         // Initialise the RenderTexture masks
         primaryEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
-        primaryEraseMask.filterMode = FilterMode.Bilinear;
+        primaryEraseMask.filterMode = FilterMode.Point;
         primaryEraseMask.name = "PrimaryEraseMask";
 
         secondaryEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
-        secondaryEraseMask.filterMode = FilterMode.Bilinear;
+        secondaryEraseMask.filterMode = FilterMode.Point;
         secondaryEraseMask.name = "SecondaryEraseMask";
 
         outputEraseMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
-        outputEraseMask.filterMode = FilterMode.Bilinear;
+        outputEraseMask.filterMode = FilterMode.Point;
         outputEraseMask.name = "OutputEraseMask";
 
         geometryMask = new RenderTexture(0, 0, 0, RenderTextureFormat.RFloat);
@@ -152,6 +171,10 @@ public class MaskablePaint : MonoBehaviour
         removalPercent = 0f;
         ClearMasks();
 
+        // Reset spawn/despawn timers
+        spawnEffectTimer = 0f;
+        despawnTimer = 0f;
+
         // Ignore pending GPU jobs
         removalInProgress = false;
 
@@ -171,7 +194,11 @@ public class MaskablePaint : MonoBehaviour
         // Reset if required
         if (isReset == false) ResetPaint();
 
-        paintMaterialInstance.SetTexture(paintTextureID, newTexture);
+        // If there is a material instantiated already, assign the texture
+        if (paintMaterialInstance != null)
+        {
+            paintMaterialInstance.SetTexture(paintTextureID, newTexture);
+        }
     }
 
     /// <summary>
@@ -198,22 +225,6 @@ public class MaskablePaint : MonoBehaviour
     public Color GetColour()
     {
         return paintColour;
-    }
-
-    /// <summary>
-    /// Set the alpha of the material of this paint object
-    /// </summary>
-    /// <param name="newAlpha">The new alpha of the paint colour</param>
-    public void SetAlpha(float newAlpha)
-    {
-        // Only update if necessary
-        if (paintColour.a == newAlpha) return;
-
-        // We can't write to paintColour yet, otherwise it will appear as though the colour does not need changing
-        Color updatedColour = paintColour;
-        updatedColour.a = newAlpha;
-
-        SetColour(updatedColour);
     }
 
     /// <summary>
@@ -360,6 +371,65 @@ public class MaskablePaint : MonoBehaviour
     }
 
     #endregion
+
+    private void Update()
+    {
+        // While splattered...
+        if (isReset == false)
+        {
+            // While not fully spawned in yet...
+            if (spawnEffectTimer < spawnEffectDuration)
+            {
+                UpdateSpawnAnimation(Time.deltaTime);
+            }
+
+            UpdateLifetime(Time.deltaTime);
+        }
+    }
+
+    private void UpdateSpawnAnimation(float deltaTime)
+    {
+        // Update spawn animation timer
+        spawnEffectTimer += Time.deltaTime;
+        spawnEffectTimer = Mathf.Clamp(spawnEffectTimer, 0f, spawnEffectDuration);
+
+        // Update spawn effect
+        float spawnProgress = Mathf.Clamp01(spawnEffectTimer / spawnEffectDuration);
+        SetSpawnEffect(spawnProgress);
+    }
+
+    private void UpdateLifetime(float deltaTime)
+    {
+        // Update timer
+        despawnTimer += deltaTime;
+        despawnTimer = Mathf.Clamp(despawnTimer, 0f, despawnFadeDelay + despawnFadeDuration);
+
+        // Update despawn amount and alpha accordingly, when despawn amount reaches 1.0 this object is returned by the PaintSystem
+        despawnPercent = Mathf.Clamp01((despawnTimer - despawnFadeDelay) / despawnFadeDuration);
+
+        SetAlpha(1f - despawnPercent);
+    }
+
+    private void SetAlpha(float newAlpha)
+    {
+        // Only update if necessary
+        if (paintColour.a == newAlpha) return;
+
+        // We can't write to paintColour yet, otherwise it will appear as though the colour does not need changing
+        Color updatedColour = paintColour;
+        updatedColour.a = newAlpha;
+
+        SetColour(updatedColour);
+    }
+
+    private void SetSpawnEffect(float newSpawnEffect)
+    {
+        // If there is a material instantiated already, assign the float value
+        if (paintMaterialInstance != null)
+        {
+            paintMaterialInstance.SetFloat(spawnEffectID, newSpawnEffect);
+        }
+    }
 
     private void RequestMaskAnalysis()
     {

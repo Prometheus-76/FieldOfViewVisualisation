@@ -2061,8 +2061,12 @@ MonoBehaviour:
   eraseThresholdProperty: _EraseThreshold
   paintTextureProperty: _PaintTexture
   paintColourProperty: _PaintColour
+  spawnEffectProperty: _SpawnEffect
   paintPrefab: {fileID: 2390514906075326480, guid: 813489622b1203245bfaafc140834d82, type: 3}
   preventDuplicateReturns: 0
+  spawnEffectDuration: 0.2
+  despawnFadeDelay: 30
+  despawnFadeDuration: 2
   maskPixelDensity: 64
   maskResolutionCap: 10
   boundsCulling: 1
@@ -2423,7 +2427,7 @@ Transform:
   m_GameObject: {fileID: 1098244959}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.09, y: -8.46, z: 0}
+  m_LocalPosition: {x: -1.5900002, y: -0.96000004, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2578,7 +2582,7 @@ Transform:
   m_GameObject: {fileID: 1211014894}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.09, y: -8.46, z: -10}
+  m_LocalPosition: {x: -1.5900002, y: -0.96000004, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
