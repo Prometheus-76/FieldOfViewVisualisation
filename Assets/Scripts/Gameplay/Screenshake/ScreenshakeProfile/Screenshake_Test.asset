@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8cc3d10cd04b264cadcdbbe3cf825c0, type: 3}
+  m_Name: Screenshake_Test
+  m_EditorClassIdentifier: 
+  shakeType: 1
+  usePosition: 1
+  useRotation: 0
+  useZoom: 0
+  continuousPositionNoiseMagnitude: {x: 0, y: 0}
+  continuousPositionNoiseFrequency: {x: 0.01, y: 0.01}
+  continuousRotationNoiseMagnitude: 0
+  continuousRotationNoiseFrequency: 0
+  continuousZoomNoiseInMagnitude: 0
+  continuousZoomNoiseOutMagnitude: 0
+  continuousZoomNoiseFrequency: 0
+  shakeDuration: 0.01
+  discretePositionStyle: 0
+  discretePositionNoiseMagnitude: {x: 0, y: 0}
+  discretePositionNoiseFrequency: {x: 0, y: 0}
+  discretePositionNoiseCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  discretePositionAnimationMagnitude: 0
+  discretePositionAnimationDirection: {x: 0, y: 0}
+  discretePositionAnimationCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  discreteRotationNoiseMagnitude: 0
+  discreteRotationNoiseFrequency: 0
+  discreteRotationNoiseCurve: 0
+  discreteZoomStyle: 0
+  discreteZoomNoiseInMagnitude: 0
+  discreteZoomNoiseOutMagnitude: 0
+  discreteZoomNoiseFrequency: 0
+  discreteZoomNoiseCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  discreteZoomAnimationMagnitude: 0
+  discreteZoomAnimationCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb09612b362f2154a9935256fab87d13, type: 3}
-  m_Name: PaintProfile_Default
+  m_Name: Paint_Default
   m_EditorClassIdentifier: 
   basePaintSize: 10
   paintSizeVariance: 5

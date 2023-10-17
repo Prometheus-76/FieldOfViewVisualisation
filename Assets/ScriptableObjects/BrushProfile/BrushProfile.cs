@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Brush Profile", menuName = "ScriptableObject/BrushProfile")]
+[CreateAssetMenu(fileName = "Brush_", menuName = "ScriptableObject/BrushProfile")]
 public class BrushProfile : ScriptableObject
 {
     [Header("Brush Size")]

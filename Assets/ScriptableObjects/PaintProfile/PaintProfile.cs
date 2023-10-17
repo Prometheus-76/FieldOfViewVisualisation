@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Paint Profile", menuName = "ScriptableObject/PaintProfile")]
+[CreateAssetMenu(fileName = "Paint_", menuName = "ScriptableObject/PaintProfile")]
 public class PaintProfile : ScriptableObject
 {
     [Header("Paint Size")]
