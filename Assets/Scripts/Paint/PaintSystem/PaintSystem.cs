@@ -68,7 +68,7 @@ public class PaintSystem : MonoBehaviour
     #region Public Methods
 
     /// <summary>
-    /// Setup the paint manager
+    /// Setup the paint system
     /// </summary>
     public void Initialise()
     {

@@ -64,19 +64,4 @@ public class ScreenshakeProfile : ScriptableObject
     // --Animation
     public float discreteZoomAnimationMagnitude;
     public AnimationCurve discreteZoomAnimationCurve;
-
-    public bool IsTestShakeHappening()
-    {
-        return false;
-    }
-
-    public void StartTestShake()
-    {
-        
-    }
-
-    public void StopTestShake()
-    {
-        
-    }
 }
