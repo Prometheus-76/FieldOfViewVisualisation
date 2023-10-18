@@ -6,7 +6,6 @@ public class CameraController : MonoBehaviour
 {
     [Header("Components")]
     public Transform controllerTransform;
-    public Transform cameraTransform;
     public Transform playerTransform;
     public RenderingEnvironment renderingEnvironment;
 

@@ -4,5 +4,12 @@ using UnityEngine;
 
 public class ScreenshakeHandle
 {
-    
+    private ScreenshakeEvent screenshakeEvent = null;
+
+    public ScreenshakeHandle(ScreenshakeEvent screenshakeEvent)
+    {
+        this.screenshakeEvent = screenshakeEvent;
+    }
+
+    public void RemoveEvent() => screenshakeEvent.RemoveEvent();
 }
