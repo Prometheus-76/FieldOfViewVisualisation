@@ -26,16 +26,17 @@ public class ScreenshakeProfile_Editor : Editor
             screenshakeProfile.shakeDuration = Mathf.Max(floatFieldResult, 0.01f);
         }
 
-        EditorGUILayout.Space(10f);
+        InspectorUtilities.DrawDivider(15f);
 
-        bool positionDrawn = DrawPositionSection(ref screenshakeProfile, ref attributes);
-        if (positionDrawn) EditorGUILayout.Space(10f);
+        DrawPositionSection(ref screenshakeProfile, ref attributes);
 
-        bool rotationDrawn = DrawRotationSection(ref screenshakeProfile, ref attributes);
-        if (rotationDrawn) EditorGUILayout.Space(10f);
-        
-        bool zoomDrawn = DrawZoomSection(ref screenshakeProfile, ref attributes);
-        if (zoomDrawn) EditorGUILayout.Space(10f);
+        InspectorUtilities.DrawDivider(15f);
+
+        DrawRotationSection(ref screenshakeProfile, ref attributes);
+
+        InspectorUtilities.DrawDivider(15f);
+
+        DrawZoomSection(ref screenshakeProfile, ref attributes);
     }
 
     private bool DrawPositionSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
@@ -50,67 +51,139 @@ public class ScreenshakeProfile_Editor : Editor
 
         if (screenshakeProfile.usePosition)
         {
+            EditorGUILayout.Space(10f);
+
             if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Continuous)
             {
-                attributes.text = "Noise Magnitude";
-                attributes.tooltip = "How far the camera will be moved by this shake event (in world-units).";
-                Vector2 vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.continuousPositionNoiseMagnitude);
-                vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0f);
-                vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0f);
-                screenshakeProfile.continuousPositionNoiseMagnitude = vector2FieldResult;
-
-                attributes.text = "Noise Frequency";
-                attributes.tooltip = "How fast the camera will be moved by this shake event.";
-                vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.continuousPositionNoiseFrequency);
-                vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0.01f);
-                vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0.01f);
-                screenshakeProfile.continuousPositionNoiseFrequency = vector2FieldResult;
+                DrawContinuousPositionSection(ref screenshakeProfile, ref attributes);
             }
             else if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Discrete)
             {
-                attributes.text = "Discrete Style";
-                attributes.tooltip = "Whether the position is manipulated using noise, or with a directional animation.";
-                screenshakeProfile.discretePositionStyle = (ScreenshakeSystem.DiscreteType)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionStyle);
-
-                if (screenshakeProfile.discretePositionStyle == ScreenshakeSystem.DiscreteType.Noise)
-                {
-                    attributes.text = "Noise Magnitude";
-                    attributes.tooltip = "How far the camera will be moved by this shake event (in world-units).";
-                    Vector2 vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionNoiseMagnitude);
-                    vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0f);
-                    vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0f);
-                    screenshakeProfile.discretePositionNoiseMagnitude = vector2FieldResult;
-
-                    attributes.text = "Noise Frequency";
-                    attributes.tooltip = "How fast the camera will be moved by this shake event.";
-                    vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionNoiseFrequency);
-                    vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0.01f);
-                    vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0.01f);
-                    screenshakeProfile.discretePositionNoiseFrequency = vector2FieldResult;
-
-                    attributes.text = "Noise Curve";
-                    attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
-                    screenshakeProfile.discretePositionNoiseCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discretePositionNoiseCurve);
-                }
-                else if (screenshakeProfile.discretePositionStyle == ScreenshakeSystem.DiscreteType.Animation)
-                {
-                    attributes.text = "Animation Magnitude";
-                    attributes.tooltip = "How far the animation will push the camera in the desired direction with a value of 1.0 (in world-units).";
-                    float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discretePositionAnimationMagnitude);
-                    screenshakeProfile.discretePositionAnimationMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                    attributes.text = "Animation Direction";
-                    attributes.tooltip = "Which way the animation should push the camera, is normalized in code. (0, 0) will randomise the direction of the whole animation.";
-                    screenshakeProfile.discretePositionAnimationDirection = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionAnimationDirection);
-
-                    attributes.text = "Animation Curve";
-                    attributes.tooltip = "How the position changes along the desired direction over time.";
-                    screenshakeProfile.discretePositionAnimationCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discretePositionAnimationCurve);
-                }
+                DrawDiscretePositionSection(ref screenshakeProfile, ref attributes);
             }
         }
 
         return screenshakeProfile.usePosition;
+    }
+
+    private void DrawContinuousPositionSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise Magnitude";
+        attributes.tooltip = "How far the camera will be moved by this shake event (in world-units).";
+        Vector2 vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.continuousPositionNoiseMagnitude);
+        vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0f);
+        vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0f);
+        screenshakeProfile.continuousPositionNoiseMagnitude = vector2FieldResult;
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How fast the camera will be moved by this shake event.";
+        vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.continuousPositionNoiseFrequency);
+        vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0.01f);
+        vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0.01f);
+        screenshakeProfile.continuousPositionNoiseFrequency = vector2FieldResult;
+    }
+
+    private void DrawDiscretePositionSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Discrete Style";
+        attributes.tooltip = "Whether the position is manipulated using noise, or with a directional animation.";
+        screenshakeProfile.discretePositionStyle = (ScreenshakeSystem.DiscreteType)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionStyle);
+
+        if (screenshakeProfile.discretePositionStyle == ScreenshakeSystem.DiscreteType.Noise)
+        {
+            DrawDiscretePositionNoiseSection(ref screenshakeProfile, ref attributes);
+        }
+        else if (screenshakeProfile.discretePositionStyle == ScreenshakeSystem.DiscreteType.Animation)
+        {
+            DrawDiscretePositionAnimationSection(ref screenshakeProfile, ref attributes);
+        }
+    }
+
+    private void DrawDiscretePositionNoiseSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise Magnitude";
+        attributes.tooltip = "How far the camera will be moved by this shake event (in world-units).";
+        Vector2 vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionNoiseMagnitude);
+        vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0f);
+        vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0f);
+        screenshakeProfile.discretePositionNoiseMagnitude = vector2FieldResult;
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How fast the camera will be moved by this shake event.";
+        vector2FieldResult = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionNoiseFrequency);
+        vector2FieldResult.x = Mathf.Max(vector2FieldResult.x, 0.01f);
+        vector2FieldResult.y = Mathf.Max(vector2FieldResult.y, 0.01f);
+        screenshakeProfile.discretePositionNoiseFrequency = vector2FieldResult;
+
+        EditorGUILayout.Space(10f);
+
+        attributes.text = "Use Custom Curve";
+        attributes.tooltip = "Whether to use a custom curve defined by splines (more expensive but more accurate) or a set of equations describing implicit curves.";
+        screenshakeProfile.discretePositionNoiseUseCustomCurve = EditorGUILayout.Toggle(attributes, screenshakeProfile.discretePositionNoiseUseCustomCurve);
+
+        EditorGUILayout.Space(10f);
+
+        if (screenshakeProfile.discretePositionNoiseUseCustomCurve)
+        {
+            attributes.text = "Noise Curve";
+            attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
+            screenshakeProfile.discretePositionNoiseCustomCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discretePositionNoiseCustomCurve);
+        }
+        else
+        {
+            attributes.text = "Noise Curve In";
+            attributes.tooltip = "How intense the effect of this shake event is over time, up the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discretePositionNoiseFixedCurveIn = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionNoiseFixedCurveIn);
+
+            attributes.text = "Noise Curve Midpoint";
+            attributes.tooltip = "Where the midpoint of this shake is.";
+            InspectorUtilities.MinMaxLabelledSlider(attributes, ref screenshakeProfile.discretePositionNoiseFixedCurveMidpointIn, ref screenshakeProfile.discretePositionNoiseFixedCurveMidpointOut, 0f, 1f);
+
+            attributes.text = "Noise Curve Out";
+            attributes.tooltip = "How intense the effect of this shake event is over time, past the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discretePositionNoiseFixedCurveOut = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionNoiseFixedCurveOut);
+        }
+    }
+
+    private void DrawDiscretePositionAnimationSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Animation Magnitude";
+        attributes.tooltip = "How far the animation will push the camera in the desired direction with a value of 1.0 (in world-units).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discretePositionAnimationMagnitude);
+        screenshakeProfile.discretePositionAnimationMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Animation Direction";
+        attributes.tooltip = "Which way the animation should push the camera, is normalized in code. (0, 0) will randomise the direction of the whole animation.";
+        screenshakeProfile.discretePositionAnimationDirection = EditorGUILayout.Vector2Field(attributes, screenshakeProfile.discretePositionAnimationDirection);
+
+        EditorGUILayout.Space(10f);
+
+        attributes.text = "Use Custom Curve";
+        attributes.tooltip = "Whether to use a custom curve defined by splines (more expensive but more accurate) or a set of equations describing implicit curves.";
+        screenshakeProfile.discretePositionAnimationUseCustomCurve = EditorGUILayout.Toggle(attributes, screenshakeProfile.discretePositionAnimationUseCustomCurve);
+
+        EditorGUILayout.Space(10f);
+
+        if (screenshakeProfile.discretePositionAnimationUseCustomCurve)
+        {
+            attributes.text = "Animation Curve";
+            attributes.tooltip = "How the position changes along the desired direction over time.";
+            screenshakeProfile.discretePositionAnimationCustomCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discretePositionAnimationCustomCurve);
+        }
+        else
+        {
+            attributes.text = "Noise Curve In";
+            attributes.tooltip = "How intense the effect of this shake event is over time, up the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discretePositionAnimationFixedCurveIn = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionAnimationFixedCurveIn);
+
+            attributes.text = "Noise Curve Midpoint";
+            attributes.tooltip = "Where the midpoint of this shake is.";
+            InspectorUtilities.MinMaxLabelledSlider(attributes, ref screenshakeProfile.discretePositionAnimationFixedCurveMidpointIn, ref screenshakeProfile.discretePositionAnimationFixedCurveMidpointOut, 0f, 1f);
+
+            attributes.text = "Noise Curve Out";
+            attributes.tooltip = "How intense the effect of this shake event is over time, past the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discretePositionAnimationFixedCurveOut = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discretePositionAnimationFixedCurveOut);
+        }
     }
 
     private bool DrawRotationSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
@@ -125,37 +198,74 @@ public class ScreenshakeProfile_Editor : Editor
 
         if (screenshakeProfile.useRotation)
         {
+            EditorGUILayout.Space(10f);
+
             if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Continuous)
             {
-                attributes.text = "Noise Magnitude";
-                attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
-                float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousRotationNoiseMagnitude);
-                screenshakeProfile.continuousRotationNoiseMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                attributes.text = "Noise Frequency";
-                attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
-                floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousRotationNoiseFrequency);
-                screenshakeProfile.continuousRotationNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+                DrawContinuousRotationSection(ref screenshakeProfile, ref attributes);
             }
             else if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Discrete)
             {
-                attributes.text = "Noise Magnitude";
-                attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
-                float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteRotationNoiseMagnitude);
-                screenshakeProfile.discreteRotationNoiseMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                attributes.text = "Noise Frequency";
-                attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
-                floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteRotationNoiseFrequency);
-                screenshakeProfile.discreteRotationNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
-
-                attributes.text = "Noise Curve";
-                attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
-                screenshakeProfile.discreteRotationNoiseCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteRotationNoiseCurve);
+                DrawDiscreteRotationSection(ref screenshakeProfile, ref attributes);
             }
         }
 
         return screenshakeProfile.useRotation;
+    }
+
+    private void DrawContinuousRotationSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise Magnitude";
+        attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousRotationNoiseMagnitude);
+        screenshakeProfile.continuousRotationNoiseMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousRotationNoiseFrequency);
+        screenshakeProfile.continuousRotationNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+    }
+
+    private void DrawDiscreteRotationSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise Magnitude";
+        attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteRotationNoiseMagnitude);
+        screenshakeProfile.discreteRotationNoiseMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How much the camera will be rotated by this shake event (in degrees).";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteRotationNoiseFrequency);
+        screenshakeProfile.discreteRotationNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+
+        EditorGUILayout.Space(10f);
+
+        attributes.text = "Use Custom Curve";
+        attributes.tooltip = "Whether to use a custom curve defined by splines (more expensive but more accurate) or a set of equations describing implicit curves.";
+        screenshakeProfile.discreteRotationNoiseUseCustomCurve = EditorGUILayout.Toggle(attributes, screenshakeProfile.discreteRotationNoiseUseCustomCurve);
+
+        EditorGUILayout.Space(10f);
+
+        if (screenshakeProfile.discreteRotationNoiseUseCustomCurve)
+        {
+            attributes.text = "Noise Curve";
+            attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
+            screenshakeProfile.discreteRotationNoiseCustomCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteRotationNoiseCustomCurve);
+        }
+        else
+        {
+            attributes.text = "Noise Curve In";
+            attributes.tooltip = "How intense the effect of this shake event is over time, up the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteRotationNoiseFixedCurveIn = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteRotationNoiseFixedCurveIn);
+
+            attributes.text = "Noise Curve Midpoint";
+            attributes.tooltip = "Where the midpoint of this shake is.";
+            InspectorUtilities.MinMaxLabelledSlider(attributes, ref screenshakeProfile.discreteRotationNoiseFixedCurveMidpointIn, ref screenshakeProfile.discreteRotationNoiseFixedCurveMidpointOut, 0f, 1f);
+
+            attributes.text = "Noise Curve Out";
+            attributes.tooltip = "How intense the effect of this shake event is over time, past the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteRotationNoiseFixedCurveOut = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteRotationNoiseFixedCurveOut);
+        }
     }
 
     private bool DrawZoomSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
@@ -170,64 +280,136 @@ public class ScreenshakeProfile_Editor : Editor
 
         if (screenshakeProfile.useZoom)
         {
+            EditorGUILayout.Space(10f);
+
             if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Continuous)
             {
-                attributes.text = "Noise In Magnitude";
-                attributes.tooltip = "How much the camera will zoom in from this shake event (in orthographic size).";
-                float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseInMagnitude);
-                screenshakeProfile.continuousZoomNoiseInMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                attributes.text = "Noise Out Magnitude";
-                attributes.tooltip = "How much the camera will zoom out from this shake event (in orthographic size).";
-                floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseOutMagnitude);
-                screenshakeProfile.continuousZoomNoiseOutMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                attributes.text = "Noise Frequency";
-                attributes.tooltip = "How fast the camera zoom will be changed by this shake event.";
-                floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseFrequency);
-                screenshakeProfile.continuousZoomNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+                DrawContinuousZoomSection(ref screenshakeProfile, ref attributes);
             }
             else if (screenshakeProfile.shakeType == ScreenshakeSystem.ShakeType.Discrete)
             {
-                attributes.text = "Discrete Style";
-                attributes.tooltip = "Whether the zoom is manipulated using noise, or with an animation.";
-                screenshakeProfile.discreteZoomStyle = (ScreenshakeSystem.DiscreteType)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomStyle);
-
-                if (screenshakeProfile.discreteZoomStyle == ScreenshakeSystem.DiscreteType.Noise)
-                {
-                    attributes.text = "Noise In Magnitude";
-                    attributes.tooltip = "How much the camera will zoom in from this shake event (in orthographic size).";
-                    float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseInMagnitude);
-                    screenshakeProfile.discreteZoomNoiseInMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                    attributes.text = "Noise Out Magnitude";
-                    attributes.tooltip = "How much the camera will zoom out from this shake event (in orthographic size).";
-                    floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseOutMagnitude);
-                    screenshakeProfile.discreteZoomNoiseOutMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                    attributes.text = "Noise Frequency";
-                    attributes.tooltip = "How fast the camera zoom will be changed by this shake event.";
-                    floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseFrequency);
-                    screenshakeProfile.discreteZoomNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
-
-                    attributes.text = "Noise Curve";
-                    attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
-                    screenshakeProfile.discreteZoomNoiseCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteZoomNoiseCurve);
-                }
-                else if (screenshakeProfile.discreteZoomStyle == ScreenshakeSystem.DiscreteType.Animation)
-                {
-                    attributes.text = "Animation Magnitude";
-                    attributes.tooltip = "How much the animation will adjust the camera zoom with a value of 1.0 (in orthographic size).";
-                    float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomAnimationMagnitude);
-                    screenshakeProfile.discreteZoomAnimationMagnitude = Mathf.Max(floatFieldResult, 0f);
-
-                    attributes.text = "Noise Curve";
-                    attributes.tooltip = "How the camera zoom changes over time.";
-                    screenshakeProfile.discreteZoomAnimationCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteZoomAnimationCurve);
-                }
+                DrawDiscreteZoomSection(ref screenshakeProfile, ref attributes);
             }
         }
 
         return screenshakeProfile.useZoom;
+    }
+
+    private void DrawContinuousZoomSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise In Magnitude";
+        attributes.tooltip = "How much the camera will zoom in from this shake event (in orthographic size).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseInMagnitude);
+        screenshakeProfile.continuousZoomNoiseInMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Out Magnitude";
+        attributes.tooltip = "How much the camera will zoom out from this shake event (in orthographic size).";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseOutMagnitude);
+        screenshakeProfile.continuousZoomNoiseOutMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How fast the camera zoom will be changed by this shake event.";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.continuousZoomNoiseFrequency);
+        screenshakeProfile.continuousZoomNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+    }
+
+    private void DrawDiscreteZoomSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Discrete Style";
+        attributes.tooltip = "Whether the zoom is manipulated using noise, or with an animation.";
+        screenshakeProfile.discreteZoomStyle = (ScreenshakeSystem.DiscreteType)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomStyle);
+
+        if (screenshakeProfile.discreteZoomStyle == ScreenshakeSystem.DiscreteType.Noise)
+        {
+            DrawDiscreteZoomNoiseSection(ref screenshakeProfile, ref attributes);
+        }
+        else if (screenshakeProfile.discreteZoomStyle == ScreenshakeSystem.DiscreteType.Animation)
+        {
+            DrawDiscreteZoomAnimationSection(ref screenshakeProfile, ref attributes);
+        }
+    }
+
+    private void DrawDiscreteZoomNoiseSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Noise In Magnitude";
+        attributes.tooltip = "How much the camera will zoom in from this shake event (in orthographic size).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseInMagnitude);
+        screenshakeProfile.discreteZoomNoiseInMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Out Magnitude";
+        attributes.tooltip = "How much the camera will zoom out from this shake event (in orthographic size).";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseOutMagnitude);
+        screenshakeProfile.discreteZoomNoiseOutMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        attributes.text = "Noise Frequency";
+        attributes.tooltip = "How fast the camera zoom will be changed by this shake event.";
+        floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomNoiseFrequency);
+        screenshakeProfile.discreteZoomNoiseFrequency = Mathf.Max(floatFieldResult, 0f);
+
+        EditorGUILayout.Space(10f);
+
+        attributes.text = "Use Custom Curve";
+        attributes.tooltip = "Whether to use a custom curve defined by splines (more expensive but more accurate) or a set of equations describing implicit curves.";
+        screenshakeProfile.discreteZoomNoiseUseCustomCurve = EditorGUILayout.Toggle(attributes, screenshakeProfile.discreteZoomNoiseUseCustomCurve);
+
+        EditorGUILayout.Space(10f);
+
+        if (screenshakeProfile.discreteZoomNoiseUseCustomCurve)
+        {
+            attributes.text = "Noise Curve";
+            attributes.tooltip = "How intense the effect of this shake event is over time, scales using the magnitude value.";
+            screenshakeProfile.discreteZoomNoiseCustomCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteZoomNoiseCustomCurve);
+        }
+        else
+        {
+            attributes.text = "Noise Curve In";
+            attributes.tooltip = "How intense the effect of this shake event is over time, up the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteZoomNoiseFixedCurveIn = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomNoiseFixedCurveIn);
+
+            attributes.text = "Noise Curve Midpoint";
+            attributes.tooltip = "Where the midpoint of this shake is.";
+            InspectorUtilities.MinMaxLabelledSlider(attributes, ref screenshakeProfile.discreteZoomNoiseFixedCurveMidpointIn, ref screenshakeProfile.discreteZoomNoiseFixedCurveMidpointOut, 0f, 1f);
+
+            attributes.text = "Noise Curve Out";
+            attributes.tooltip = "How intense the effect of this shake event is over time, past the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteZoomNoiseFixedCurveOut = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomNoiseFixedCurveOut);
+        }
+    }
+
+    private void DrawDiscreteZoomAnimationSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
+    {
+        attributes.text = "Animation Magnitude";
+        attributes.tooltip = "How much the animation will adjust the camera zoom with a value of 1.0 (in orthographic size).";
+        float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomAnimationMagnitude);
+        screenshakeProfile.discreteZoomAnimationMagnitude = Mathf.Max(floatFieldResult, 0f);
+
+        EditorGUILayout.Space(10f);
+
+        attributes.text = "Use Custom Curve";
+        attributes.tooltip = "Whether to use a custom curve defined by splines (more expensive but more accurate) or a set of equations describing implicit curves.";
+        screenshakeProfile.discreteZoomAnimationUseCustomCurve = EditorGUILayout.Toggle(attributes, screenshakeProfile.discreteZoomAnimationUseCustomCurve);
+
+        EditorGUILayout.Space(10f);
+
+        if (screenshakeProfile.discreteZoomAnimationUseCustomCurve)
+        {
+            attributes.text = "Noise Curve";
+            attributes.tooltip = "How the camera zoom changes over time.";
+            screenshakeProfile.discreteZoomAnimationCustomCurve = EditorGUILayout.CurveField(attributes, screenshakeProfile.discreteZoomAnimationCustomCurve);
+        }
+        else
+        {
+            attributes.text = "Noise Curve In";
+            attributes.tooltip = "How intense the effect of this shake event is over time, up the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteZoomAnimationFixedCurveIn = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomAnimationFixedCurveIn);
+
+            attributes.text = "Noise Curve Midpoint";
+            attributes.tooltip = "Where the midpoint of this shake is.";
+            InspectorUtilities.MinMaxLabelledSlider(attributes, ref screenshakeProfile.discreteZoomAnimationFixedCurveMidpointIn, ref screenshakeProfile.discreteZoomAnimationFixedCurveMidpointOut, 0f, 1f);
+
+            attributes.text = "Noise Curve Out";
+            attributes.tooltip = "How intense the effect of this shake event is over time, past the midpoint, scales using the magnitude value.";
+            screenshakeProfile.discreteZoomAnimationFixedCurveOut = (Curves.CurveStyle)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomAnimationFixedCurveOut);
+        }
     }
 }

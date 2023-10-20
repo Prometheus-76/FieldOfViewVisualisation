@@ -607,6 +607,7 @@ MonoBehaviour:
   paintSystem: {fileID: 963744412}
   screenshakeSystem: {fileID: 358084626}
   testPaint: {fileID: 11400000, guid: c8e088a1ebdac0f469bd77b116364caf, type: 2}
+  testShake: {fileID: 11400000, guid: 35c19cf3a58ce864a9df0c5e372050d7, type: 2}
 --- !u!4 &227755597
 Transform:
   m_ObjectHideFlags: 0

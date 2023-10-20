@@ -8,6 +8,7 @@ public class SystemManager : MonoBehaviour
     public PaintSystem paintSystem;
     public ScreenshakeSystem screenshakeSystem;
     public PaintProfile testPaint;
+    public ScreenshakeProfile testShake;
 
     // Start is called before the first frame update
     void Start()
@@ -17,5 +18,7 @@ public class SystemManager : MonoBehaviour
 
         MaskablePaint paint = paintSystem.GetPaint(transform, testPaint, true);
         paint.Splatter();
+
+        screenshakeSystem.AddShake(testShake);
     }
 }

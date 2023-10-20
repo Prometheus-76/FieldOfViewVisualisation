@@ -25,7 +25,7 @@ public class ScreenshakeEvent
         this.shakeSystem = shakeSystem;
 
         // Save a copy of the profile data at the time the event was created
-        shakeProfile.CopyData(ref profileCopy);
+        shakeProfile.CopyRequiredData(ref profileCopy);
 
         positionOffset = Vector3.zero;
         rotationOffset = Quaternion.identity;

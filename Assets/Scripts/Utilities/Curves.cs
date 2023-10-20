@@ -23,8 +23,7 @@ public static class Curves
     /// <returns>Output of the desired function</returns>
     public static float Evaluate(CurveStyle style, float x)
     {
-        if (x <= 0f) return 0f;
-        if (x >= 1f) return 1f;
+        x = Mathf.Clamp01(x);
 
         switch (style)
         {
@@ -55,42 +54,36 @@ public static class Curves
 
     private static float Linear(float t)
     {
-        return Mathf.Clamp01(t);
+        return t;
     }
 
     private static float Quadratic(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return t01 * t01;
+        return t * t;
     }
 
     private static float SquareRoot(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return Mathf.Sqrt(t01);
+        return Mathf.Sqrt(t);
     }
 
     private static float Sine(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return 1f - ((Mathf.Cos(Mathf.PI * t01) + 1f) / 2f);
+        return 1f - ((Mathf.Cos(Mathf.PI * t) + 1f) / 2f);
     }
 
     private static float InverseSine(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return Mathf.Acos(1f - (t01 * 2f)) / Mathf.PI;
+        return Mathf.Acos(1f - (t * 2f)) / Mathf.PI;
     }
 
     private static float Arc(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return Mathf.Sin(Mathf.Acos(t01 - 1f));
+        return Mathf.Sin(Mathf.Acos(t - 1f));
     }
 
     private static float InverseArc(float t)
     {
-        float t01 = Mathf.Clamp01(t);
-        return 1f - Mathf.Sin(Mathf.Acos(t01));
+        return 1f - Mathf.Sin(Mathf.Acos(t));
     }
 }
