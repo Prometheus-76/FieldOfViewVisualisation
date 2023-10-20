@@ -15,7 +15,7 @@ MonoBehaviour:
   shakeType: 1
   usePosition: 1
   useRotation: 0
-  useZoom: 0
+  useZoom: 1
   continuousPositionNoiseMagnitude: {x: 0, y: 0}
   continuousPositionNoiseFrequency: {x: 0.01, y: 0.01}
   continuousRotationNoiseMagnitude: 0
@@ -23,41 +23,107 @@ MonoBehaviour:
   continuousZoomNoiseInMagnitude: 0
   continuousZoomNoiseOutMagnitude: 0
   continuousZoomNoiseFrequency: 0
-  shakeDuration: 0.01
-  discretePositionStyle: 0
+  shakeDuration: 0.2
+  discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 0, y: 0}
-  discretePositionNoiseFrequency: {x: 0, y: 0}
-  discretePositionNoiseCurve:
+  discretePositionNoiseFrequency: {x: 0.01, y: 0.01}
+  discretePositionNoiseUseCustomCurve: 0
+  discretePositionNoiseCustomCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  discretePositionAnimationMagnitude: 0
-  discretePositionAnimationDirection: {x: 0, y: 0}
-  discretePositionAnimationCurve:
+  discretePositionNoiseFixedCurveIn: 0
+  discretePositionNoiseFixedCurveMidpointIn: 0
+  discretePositionNoiseFixedCurveMidpointOut: 0
+  discretePositionNoiseFixedCurveOut: 0
+  discretePositionAnimationMagnitude: 0.5
+  discretePositionAnimationDirection: {x: 0, y: -1}
+  discretePositionAnimationUseCustomCurve: 0
+  discretePositionAnimationCustomCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  discreteRotationNoiseMagnitude: 0
-  discreteRotationNoiseFrequency: 0
-  discreteRotationNoiseCurve: 0
-  discreteZoomStyle: 0
+  discretePositionAnimationFixedCurveIn: 6
+  discretePositionAnimationFixedCurveMidpointIn: 0.01
+  discretePositionAnimationFixedCurveMidpointOut: 0.81
+  discretePositionAnimationFixedCurveOut: 1
+  discreteRotationNoiseMagnitude: 1.17
+  discreteRotationNoiseFrequency: 3.31
+  discreteRotationNoiseUseCustomCurve: 1
+  discreteRotationNoiseCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -2.0800004
+      outSlope: -2.0800004
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11792451
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  discreteRotationNoiseFixedCurveIn: 0
+  discreteRotationNoiseFixedCurveMidpointIn: 0
+  discreteRotationNoiseFixedCurveMidpointOut: 0
+  discreteRotationNoiseFixedCurveOut: 0
+  discreteZoomStyle: 1
   discreteZoomNoiseInMagnitude: 0
   discreteZoomNoiseOutMagnitude: 0
   discreteZoomNoiseFrequency: 0
-  discreteZoomNoiseCurve:
+  discreteZoomNoiseUseCustomCurve: 0
+  discreteZoomNoiseCustomCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  discreteZoomAnimationMagnitude: 0
-  discreteZoomAnimationCurve:
+  discreteZoomNoiseFixedCurveIn: 0
+  discreteZoomNoiseFixedCurveMidpointIn: 0
+  discreteZoomNoiseFixedCurveMidpointOut: 0
+  discreteZoomNoiseFixedCurveOut: 0
+  discreteZoomAnimationMagnitude: 1.19
+  discreteZoomAnimationUseCustomCurve: 1
+  discreteZoomAnimationCustomCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  discreteZoomAnimationFixedCurveIn: 2
+  discreteZoomAnimationFixedCurveMidpointIn: 0.35
+  discreteZoomAnimationFixedCurveMidpointOut: 0.55
+  discreteZoomAnimationFixedCurveOut: 3

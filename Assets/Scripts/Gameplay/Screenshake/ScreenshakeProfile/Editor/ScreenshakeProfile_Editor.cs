@@ -12,6 +12,8 @@ public class ScreenshakeProfile_Editor : Editor
         ScreenshakeProfile screenshakeProfile = target as ScreenshakeProfile;
         GUIContent attributes = new GUIContent();
 
+        EditorGUI.BeginChangeCheck();
+
         // Basic configuration, should always be shown
         InspectorUtilities.AddHeader("Basic Configuration");
         attributes.text = "Shake Type";
@@ -37,6 +39,9 @@ public class ScreenshakeProfile_Editor : Editor
         InspectorUtilities.DrawDivider(15f);
 
         DrawZoomSection(ref screenshakeProfile, ref attributes);
+
+        // Check if we made changes to the instance, and if so, mark the object as needing to save
+        if(EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(screenshakeProfile);
     }
 
     private bool DrawPositionSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
