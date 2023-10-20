@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ScreenshakeSystem : MonoBehaviour
 {
-    public enum ShakeType { Continuous, Discrete }
+    public enum ShakeType { Discrete, Continuous }
     public enum DiscreteType { Noise, Animation }
 
     // PROPERTIES

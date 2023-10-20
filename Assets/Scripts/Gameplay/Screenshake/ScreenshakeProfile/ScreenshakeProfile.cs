@@ -8,99 +8,99 @@ public class ScreenshakeProfile : ScriptableObject
 {
     // BASIC CONFIGURATION
     // ------
-    public ScreenshakeSystem.ShakeType shakeType;
+    public ScreenshakeSystem.ShakeType shakeType = ScreenshakeSystem.ShakeType.Discrete;
 
-    public bool usePosition;
-    public bool useRotation;
-    public bool useZoom;
+    public bool usePosition = true;
+    public bool useRotation = true;
+    public bool useZoom = true;
 
 
+    // DISCRETE (controlled internally by the ScreenshakeSystem)
+    // --------
+    public float shakeDuration = 0.5f;
+
+    // Position
+    public ScreenshakeSystem.DiscreteType discretePositionStyle = ScreenshakeSystem.DiscreteType.Noise;
+    // --Noise
+    public Vector2 discretePositionNoiseMagnitude = Vector2.one;
+    public Vector2 discretePositionNoiseFrequency = Vector2.one;
+    public bool discretePositionNoiseUseCustomCurve = false;
+    // -->>Custom
+    public AnimationCurve discretePositionNoiseCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+    // -->>Fixed
+    public Curves.CurveStyle discretePositionNoiseFixedCurveIn = Curves.CurveStyle.Linear;
+    public float discretePositionNoiseFixedCurveMidpointMin = 0.45f;
+    public float discretePositionNoiseFixedCurveMidpointMax = 0.55f;
+    public Curves.CurveStyle discretePositionNoiseFixedCurveOut = Curves.CurveStyle.Linear;
+    // --Animation
+    public float discretePositionAnimationMagnitude = 0.5f;
+    public Vector2 discretePositionAnimationDirection = Vector2.up;
+    public bool discretePositionAnimationUseCustomCurve = false;
+    // -->>Custom
+    public AnimationCurve discretePositionAnimationCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+    // -->>Fixed
+    public Curves.CurveStyle discretePositionAnimationFixedCurveIn = Curves.CurveStyle.Linear;
+    public float discretePositionAnimationFixedCurveMidpointMin = 0.45f;
+    public float discretePositionAnimationFixedCurveMidpointMax = 0.55f;
+    public Curves.CurveStyle discretePositionAnimationFixedCurveOut = Curves.CurveStyle.Linear;
+
+    // Rotation
+    // --Noise
+    public float discreteRotationNoiseMagnitude = 5f;
+    public float discreteRotationNoiseFrequency = 2f;
+    public bool discreteRotationNoiseUseCustomCurve = false;
+    // -->>Custom
+    public AnimationCurve discreteRotationNoiseCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+    // -->>Fixed
+    public Curves.CurveStyle discreteRotationNoiseFixedCurveIn = Curves.CurveStyle.Linear;
+    public float discreteRotationNoiseFixedCurveMidpointMin = 0.45f;
+    public float discreteRotationNoiseFixedCurveMidpointMax = 0.55f;
+    public Curves.CurveStyle discreteRotationNoiseFixedCurveOut = Curves.CurveStyle.Linear;
+
+    // Zoom
+    public ScreenshakeSystem.DiscreteType discreteZoomStyle = ScreenshakeSystem.DiscreteType.Noise;
+    // --Noise
+    public float discreteZoomNoiseInMagnitude = 0.5f;
+    public float discreteZoomNoiseOutMagnitude = 0.5f;
+    public float discreteZoomNoiseFrequency = 2f;
+    public bool discreteZoomNoiseUseCustomCurve = false;
+    // -->>Custom
+    public AnimationCurve discreteZoomNoiseCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+    // -->>Fixed
+    public Curves.CurveStyle discreteZoomNoiseFixedCurveIn = Curves.CurveStyle.Linear;
+    public float discreteZoomNoiseFixedCurveMidpointMin = 0.45f;
+    public float discreteZoomNoiseFixedCurveMidpointMax = 0.55f;
+    public Curves.CurveStyle discreteZoomNoiseFixedCurveOut = Curves.CurveStyle.Linear;
+    // --Animation
+    public float discreteZoomAnimationMagnitude = 1f;
+    public bool discreteZoomAnimationUseCustomCurve = false;
+    // -->>Custom
+    public AnimationCurve discreteZoomAnimationCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+    // -->>Fixed
+    public Curves.CurveStyle discreteZoomAnimationFixedCurveIn = Curves.CurveStyle.Linear;
+    public float discreteZoomAnimationFixedCurveMidpointMin = 0.45f;
+    public float discreteZoomAnimationFixedCurveMidpointMax = 0.55f;
+    public Curves.CurveStyle discreteZoomAnimationFixedCurveOut = Curves.CurveStyle.Linear;
+
+    
     // CONTINUOUS (controlled live by an external script using a handle)
     // ----------
 
     // Position
     // --Noise
-    public Vector2 continuousPositionNoiseMagnitude;
-    public Vector2 continuousPositionNoiseFrequency;
+    public Vector2 continuousPositionNoiseMagnitude = Vector2.one;
+    public Vector2 continuousPositionNoiseFrequency = Vector2.one;
 
     // Rotation
     // --Noise
-    public float continuousRotationNoiseMagnitude;
-    public float continuousRotationNoiseFrequency;
+    public float continuousRotationNoiseMagnitude = 5f;
+    public float continuousRotationNoiseFrequency = 2f;
 
     // Zoom
     // --Noise
-    public float continuousZoomNoiseInMagnitude;
-    public float continuousZoomNoiseOutMagnitude;
-    public float continuousZoomNoiseFrequency;
-
-
-    // DISCRETE (controlled internally by the ScreenshakeSystem)
-    // --------
-    public float shakeDuration;
-
-    // Position
-    public ScreenshakeSystem.DiscreteType discretePositionStyle;
-    // --Noise
-    public Vector2 discretePositionNoiseMagnitude;
-    public Vector2 discretePositionNoiseFrequency;
-    public bool discretePositionNoiseUseCustomCurve;
-    // -->>Custom
-    public AnimationCurve discretePositionNoiseCustomCurve;
-    // -->>Fixed
-    public Curves.CurveStyle discretePositionNoiseFixedCurveIn;
-    public float discretePositionNoiseFixedCurveMidpointIn;
-    public float discretePositionNoiseFixedCurveMidpointOut;
-    public Curves.CurveStyle discretePositionNoiseFixedCurveOut;
-    // --Animation
-    public float discretePositionAnimationMagnitude;
-    public Vector2 discretePositionAnimationDirection;
-    public bool discretePositionAnimationUseCustomCurve;
-    // -->>Custom
-    public AnimationCurve discretePositionAnimationCustomCurve;
-    // -->>Fixed
-    public Curves.CurveStyle discretePositionAnimationFixedCurveIn;
-    public float discretePositionAnimationFixedCurveMidpointIn;
-    public float discretePositionAnimationFixedCurveMidpointOut;
-    public Curves.CurveStyle discretePositionAnimationFixedCurveOut;
-
-    // Rotation
-    // --Noise
-    public float discreteRotationNoiseMagnitude;
-    public float discreteRotationNoiseFrequency;
-    public bool discreteRotationNoiseUseCustomCurve;
-    // -->>Custom
-    public AnimationCurve discreteRotationNoiseCustomCurve;
-    // -->>Fixed
-    public Curves.CurveStyle discreteRotationNoiseFixedCurveIn;
-    public float discreteRotationNoiseFixedCurveMidpointIn;
-    public float discreteRotationNoiseFixedCurveMidpointOut;
-    public Curves.CurveStyle discreteRotationNoiseFixedCurveOut;
-
-    // Zoom
-    public ScreenshakeSystem.DiscreteType discreteZoomStyle;
-    // --Noise
-    public float discreteZoomNoiseInMagnitude;
-    public float discreteZoomNoiseOutMagnitude;
-    public float discreteZoomNoiseFrequency;
-    public bool discreteZoomNoiseUseCustomCurve;
-    // -->>Custom
-    public AnimationCurve discreteZoomNoiseCustomCurve;
-    // -->>Fixed
-    public Curves.CurveStyle discreteZoomNoiseFixedCurveIn;
-    public float discreteZoomNoiseFixedCurveMidpointIn;
-    public float discreteZoomNoiseFixedCurveMidpointOut;
-    public Curves.CurveStyle discreteZoomNoiseFixedCurveOut;
-    // --Animation
-    public float discreteZoomAnimationMagnitude;
-    public bool discreteZoomAnimationUseCustomCurve;
-    // -->>Custom
-    public AnimationCurve discreteZoomAnimationCustomCurve;
-    // -->>Fixed
-    public Curves.CurveStyle discreteZoomAnimationFixedCurveIn;
-    public float discreteZoomAnimationFixedCurveMidpointIn;
-    public float discreteZoomAnimationFixedCurveMidpointOut;
-    public Curves.CurveStyle discreteZoomAnimationFixedCurveOut;
+    public float continuousZoomNoiseInMagnitude = 0.5f;
+    public float continuousZoomNoiseOutMagnitude = 0.5f;
+    public float continuousZoomNoiseFrequency = 2f;
 
     /// <summary>
     /// Copy the data which is needed from this profile to the provided instance.
@@ -119,31 +119,7 @@ public class ScreenshakeProfile : ScriptableObject
         target.useRotation = useRotation;
         target.useZoom = useZoom;
 
-        if (target.shakeType == ScreenshakeSystem.ShakeType.Continuous)
-        {
-            if (target.usePosition)
-            {
-                // Continuous position
-                target.continuousPositionNoiseMagnitude = continuousPositionNoiseMagnitude;
-                target.continuousPositionNoiseFrequency = continuousPositionNoiseFrequency;
-            }
-
-            if (target.useRotation)
-            {
-                // Continuous rotation
-                target.continuousRotationNoiseMagnitude = continuousRotationNoiseMagnitude;
-                target.continuousRotationNoiseFrequency = continuousRotationNoiseFrequency;
-            }
-
-            if (target.useZoom)
-            {
-                // Continuous zoom
-                target.continuousZoomNoiseInMagnitude = continuousZoomNoiseInMagnitude;
-                target.continuousZoomNoiseOutMagnitude = continuousZoomNoiseOutMagnitude;
-                target.continuousZoomNoiseFrequency = continuousZoomNoiseFrequency;
-            }
-        }
-        else if (target.shakeType == ScreenshakeSystem.ShakeType.Discrete)
+        if (target.shakeType == ScreenshakeSystem.ShakeType.Discrete)
         {
             // Discrete
             target.shakeDuration = shakeDuration;
@@ -170,8 +146,8 @@ public class ScreenshakeProfile : ScriptableObject
                     {
                         // Discrete position noise with fixed curve
                         target.discretePositionNoiseFixedCurveIn = discretePositionNoiseFixedCurveIn;
-                        target.discretePositionNoiseFixedCurveMidpointIn = discretePositionNoiseFixedCurveMidpointIn;
-                        target.discretePositionNoiseFixedCurveMidpointOut = discretePositionNoiseFixedCurveMidpointOut;
+                        target.discretePositionNoiseFixedCurveMidpointMin = discretePositionNoiseFixedCurveMidpointMin;
+                        target.discretePositionNoiseFixedCurveMidpointMax = discretePositionNoiseFixedCurveMidpointMax;
                         target.discretePositionNoiseFixedCurveOut = discretePositionNoiseFixedCurveOut;
                     }
                 }
@@ -191,8 +167,8 @@ public class ScreenshakeProfile : ScriptableObject
                     {
                         // Discrete position animation with fixed curve
                         target.discretePositionAnimationFixedCurveIn = discretePositionAnimationFixedCurveIn;
-                        target.discretePositionAnimationFixedCurveMidpointIn = discretePositionAnimationFixedCurveMidpointIn;
-                        target.discretePositionAnimationFixedCurveMidpointOut = discretePositionAnimationFixedCurveMidpointOut;
+                        target.discretePositionAnimationFixedCurveMidpointMin = discretePositionAnimationFixedCurveMidpointMin;
+                        target.discretePositionAnimationFixedCurveMidpointMax = discretePositionAnimationFixedCurveMidpointMax;
                         target.discretePositionAnimationFixedCurveOut = discretePositionAnimationFixedCurveOut;
                     }
 
@@ -217,8 +193,8 @@ public class ScreenshakeProfile : ScriptableObject
                 {
                     // Discrete rotation with fixed curve
                     target.discreteRotationNoiseFixedCurveIn = discreteRotationNoiseFixedCurveIn;
-                    target.discreteRotationNoiseFixedCurveMidpointIn = discreteRotationNoiseFixedCurveMidpointIn;
-                    target.discreteRotationNoiseFixedCurveMidpointOut = discreteRotationNoiseFixedCurveMidpointOut;
+                    target.discreteRotationNoiseFixedCurveMidpointMin = discreteRotationNoiseFixedCurveMidpointMin;
+                    target.discreteRotationNoiseFixedCurveMidpointMax = discreteRotationNoiseFixedCurveMidpointMax;
                     target.discreteRotationNoiseFixedCurveOut = discreteRotationNoiseFixedCurveOut;
                 }
             }
@@ -246,8 +222,8 @@ public class ScreenshakeProfile : ScriptableObject
                     {
                         // Discrete zoom noise with fixed curve
                         target.discreteZoomNoiseFixedCurveIn = discreteZoomNoiseFixedCurveIn;
-                        target.discreteZoomNoiseFixedCurveMidpointIn = discreteZoomNoiseFixedCurveMidpointIn;
-                        target.discreteZoomNoiseFixedCurveMidpointOut = discreteZoomNoiseFixedCurveMidpointOut;
+                        target.discreteZoomNoiseFixedCurveMidpointMin = discreteZoomNoiseFixedCurveMidpointMin;
+                        target.discreteZoomNoiseFixedCurveMidpointMax = discreteZoomNoiseFixedCurveMidpointMax;
                         target.discreteZoomNoiseFixedCurveOut = discreteZoomNoiseFixedCurveOut;
                     }
                 }
@@ -267,11 +243,35 @@ public class ScreenshakeProfile : ScriptableObject
                     {
                         // Discrete zoom animation with fixed curve
                         target.discreteZoomAnimationFixedCurveIn = discreteZoomAnimationFixedCurveIn;
-                        target.discreteZoomAnimationFixedCurveMidpointIn = discreteZoomAnimationFixedCurveMidpointIn;
-                        target.discreteZoomAnimationFixedCurveMidpointOut = discreteZoomAnimationFixedCurveMidpointOut;
+                        target.discreteZoomAnimationFixedCurveMidpointMin = discreteZoomAnimationFixedCurveMidpointMin;
+                        target.discreteZoomAnimationFixedCurveMidpointMax = discreteZoomAnimationFixedCurveMidpointMax;
                         target.discreteZoomAnimationFixedCurveOut = discreteZoomAnimationFixedCurveOut;
                     }
                 }
+            }
+        }
+        else if (target.shakeType == ScreenshakeSystem.ShakeType.Continuous)
+        {
+            if (target.usePosition)
+            {
+                // Continuous position
+                target.continuousPositionNoiseMagnitude = continuousPositionNoiseMagnitude;
+                target.continuousPositionNoiseFrequency = continuousPositionNoiseFrequency;
+            }
+
+            if (target.useRotation)
+            {
+                // Continuous rotation
+                target.continuousRotationNoiseMagnitude = continuousRotationNoiseMagnitude;
+                target.continuousRotationNoiseFrequency = continuousRotationNoiseFrequency;
+            }
+
+            if (target.useZoom)
+            {
+                // Continuous zoom
+                target.continuousZoomNoiseInMagnitude = continuousZoomNoiseInMagnitude;
+                target.continuousZoomNoiseOutMagnitude = continuousZoomNoiseOutMagnitude;
+                target.continuousZoomNoiseFrequency = continuousZoomNoiseFrequency;
             }
         }
     }
