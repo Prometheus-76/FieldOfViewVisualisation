@@ -42,10 +42,13 @@ public class ScreenshakeProfile_Editor : Editor
 
         InspectorUtilities.DrawDivider(15f);
 
-        if (GUILayout.Button("Start Screenshake Test", GUILayout.Height(40f))) // TODO: Screenshake test function (in-editor mode?)
+        if (GUILayout.Button("Start Screenshake Test", GUILayout.Height(40f)))
+        {
+            // TODO: Screenshake test function (in editor mode?)
+        }
 
         // Check if we made changes to the instance, and if so, mark the object as needing to save
-        if(EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(screenshakeProfile);
+        if (EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(screenshakeProfile);
     }
 
     private bool DrawPositionSection(ref ScreenshakeProfile screenshakeProfile, ref GUIContent attributes)
