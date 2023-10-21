@@ -17,7 +17,7 @@ MonoBehaviour:
   useRotation: 1
   useZoom: 1
   shakeDuration: 0.5
-  discretePositionStyle: 0
+  discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}
   discretePositionNoiseFrequency: {x: 2, y: 3}
   discretePositionNoiseUseCustomCurve: 0
@@ -44,8 +44,8 @@ MonoBehaviour:
   discretePositionAnimationFixedCurveMidpointMin: 0.45
   discretePositionAnimationFixedCurveMidpointMax: 0.55
   discretePositionAnimationFixedCurveOut: 1
-  discreteRotationNoiseMagnitude: 1.17
-  discreteRotationNoiseFrequency: 3.31
+  discreteRotationNoiseMagnitude: 7.16
+  discreteRotationNoiseFrequency: 10.37
   discreteRotationNoiseUseCustomCurve: 1
   discreteRotationNoiseCustomCurve:
     serializedVersion: 2
@@ -91,6 +91,7 @@ MonoBehaviour:
   discreteZoomNoiseFixedCurveMidpointMax: 0.55
   discreteZoomNoiseFixedCurveOut: 0
   discreteZoomAnimationMagnitude: 1.2
+  discreteZoomAnimationDirection: 0
   discreteZoomAnimationUseCustomCurve: 0
   discreteZoomAnimationCustomCurve:
     serializedVersion: 2

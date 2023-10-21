@@ -377,6 +377,10 @@ public class ScreenshakeProfile_Editor : Editor
         float floatFieldResult = EditorGUILayout.FloatField(attributes, screenshakeProfile.discreteZoomAnimationMagnitude);
         screenshakeProfile.discreteZoomAnimationMagnitude = Mathf.Max(floatFieldResult, 0f);
 
+        attributes.text = "Animation Direction";
+        attributes.tooltip = "Which way the camera will zoom with increasing values of this animation.";
+        screenshakeProfile.discreteZoomAnimationDirection = (ScreenshakeSystem.ZoomDirection)EditorGUILayout.EnumPopup(attributes, screenshakeProfile.discreteZoomAnimationDirection);
+
         EditorGUILayout.Space(10f);
 
         attributes.text = "Use Custom Curve";

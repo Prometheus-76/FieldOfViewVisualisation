@@ -6,6 +6,7 @@ public class ScreenshakeSystem : MonoBehaviour
 {
     public enum ShakeType { Discrete, Continuous }
     public enum DiscreteType { Noise, Animation }
+    public enum ZoomDirection { ZoomIn, ZoomOut }
 
     // PROPERTIES
     public bool isInitialised { get; private set; } = false;

@@ -73,6 +73,7 @@ public class ScreenshakeProfile : ScriptableObject
     public Curves.CurveStyle discreteZoomNoiseFixedCurveOut = Curves.CurveStyle.Linear;
     // --Animation
     public float discreteZoomAnimationMagnitude = 1f;
+    public ScreenshakeSystem.ZoomDirection discreteZoomAnimationDirection = ScreenshakeSystem.ZoomDirection.ZoomIn;
     public bool discreteZoomAnimationUseCustomCurve = false;
     // -->>Custom
     public AnimationCurve discreteZoomAnimationCustomCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
