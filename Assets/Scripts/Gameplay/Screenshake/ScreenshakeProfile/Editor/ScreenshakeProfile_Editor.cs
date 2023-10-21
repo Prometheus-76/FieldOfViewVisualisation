@@ -47,6 +47,11 @@ public class ScreenshakeProfile_Editor : Editor
             // TODO: Screenshake test function (in editor mode?)
         }
 
+        if (GUILayout.Button("Reset Screenshake", GUILayout.Height(40f)))
+        {
+            // TODO: Screenshake reset function (in editor mode?)
+        }
+
         // Check if we made changes to the instance, and if so, mark the object as needing to save
         if (EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(screenshakeProfile);
     }

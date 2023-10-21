@@ -232,6 +232,7 @@ public class ScreenshakeProfile : ScriptableObject
                 {
                     // Discrete zoom animation
                     target.discreteZoomAnimationMagnitude = discreteZoomAnimationMagnitude;
+                    target.discreteZoomAnimationDirection = discreteZoomAnimationDirection;
                     target.discreteZoomAnimationUseCustomCurve = discreteZoomNoiseUseCustomCurve;
 
                     if (target.discreteZoomNoiseUseCustomCurve)

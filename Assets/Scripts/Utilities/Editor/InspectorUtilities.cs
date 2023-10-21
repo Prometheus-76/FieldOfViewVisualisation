@@ -27,6 +27,14 @@ public class InspectorUtilities
         GUI.enabled = isEnabled;
     }
 
+    /// <summary>
+    /// Draws a slider with 2 draggable handles and a text box on either side
+    /// </summary>
+    /// <param name="attributes">The style content of the slider</param>
+    /// <param name="minValue">The current minimum value of the slider</param>
+    /// <param name="maxValue">The current maximum value of the slider</param>
+    /// <param name="minLimit">The lower limit of the minimum value</param>
+    /// <param name="maxLimit">The upper limit of the maximum value</param>
     public static void MinMaxLabelledSlider(GUIContent attributes, ref float minValue, ref float maxValue, float minLimit, float maxLimit)
     {
         // Start drawing horizontally
@@ -49,6 +57,14 @@ public class InspectorUtilities
         EditorGUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws an integer slider with 2 draggable handles and a text box on either side
+    /// </summary>
+    /// <param name="attributes">The style content of the slider</param>
+    /// <param name="minValue">The current minimum value of the slider</param>
+    /// <param name="maxValue">The current maximum value of the slider</param>
+    /// <param name="minLimit">The lower limit of the minimum value</param>
+    /// <param name="maxLimit">The upper limit of the maximum value</param>
     public static void MinMaxLabelledIntSlider(GUIContent attributes, ref int minValue, ref int maxValue, int minLimit, int maxLimit)
     {
         // Start drawing horizontally
@@ -75,6 +91,10 @@ public class InspectorUtilities
         EditorGUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// Draws a section divider in the inspector window
+    /// </summary>
+    /// <param name="halfHeight">The spacing applied to either side of the divider line</param>
     public static void DrawDivider(float halfHeight)
     {
         EditorGUILayout.Space(halfHeight);
