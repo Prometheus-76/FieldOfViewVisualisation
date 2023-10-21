@@ -6,15 +6,11 @@ using UnityEngine.Rendering;
 
 public class MaskablePaint : MonoBehaviour
 {
-    #region Inspector
-
     [Header("Components")]
     public Transform paintTransform;
     [SerializeField]
     private CarvableMesh carvableMesh;
     public MeshRenderer paintMeshRenderer;
-
-    #endregion
 
     // PROPERTIES
     public float removalPercent { get; private set; } = 0f;

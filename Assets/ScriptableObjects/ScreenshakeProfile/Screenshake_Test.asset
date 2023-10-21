@@ -20,10 +20,28 @@ MonoBehaviour:
   discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}
   discretePositionNoiseFrequency: {x: 2, y: 3}
-  discretePositionNoiseUseCustomCurve: 0
+  discretePositionNoiseUseCustomCurve: 1
   discretePositionNoiseCustomCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -2.0800004
+      outSlope: -2.0800004
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11792451
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -44,8 +62,8 @@ MonoBehaviour:
   discretePositionAnimationFixedCurveMidpointMin: 0.45
   discretePositionAnimationFixedCurveMidpointMax: 0.55
   discretePositionAnimationFixedCurveOut: 1
-  discreteRotationNoiseMagnitude: 7.16
-  discreteRotationNoiseFrequency: 10.37
+  discreteRotationNoiseMagnitude: 2.5
+  discreteRotationNoiseFrequency: 5
   discreteRotationNoiseUseCustomCurve: 1
   discreteRotationNoiseCustomCurve:
     serializedVersion: 2

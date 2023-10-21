@@ -6,8 +6,6 @@ using UnityEngine.Rendering;
 
 public class PaintSystem : MonoBehaviour
 {
-    #region Inspector
-
     [Header("Shaders")]
     public ComputeShader pixelCounter;
     public Shader surfacePainter;
@@ -45,8 +43,6 @@ public class PaintSystem : MonoBehaviour
 
     [Header("Events"), Space(5f)]
     public UnityEvent<float, Color> OnErased;
-
-    #endregion
 
     // PROPERTIES
     public const float ERASE_THRESHOLD = 0.99f;

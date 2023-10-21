@@ -4,9 +4,17 @@ using UnityEngine;
 
 public class ScreenshakeSystem : MonoBehaviour
 {
+    #region Data Structures
+
     public enum ShakeType { Discrete, Continuous }
     public enum DiscreteType { Noise, Animation }
     public enum ZoomDirection { ZoomIn, ZoomOut }
+    public enum TimescaleMode { Realtime, Scaled }
+
+    #endregion
+
+    [Header("Configuration")]
+    public TimescaleMode timescaleMode = TimescaleMode.Realtime;
 
     // PROPERTIES
     public bool isInitialised { get; private set; } = false;
