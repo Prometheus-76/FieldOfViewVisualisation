@@ -4,58 +4,89 @@ using UnityEngine;
 
 public class ScreenshakeEvent
 {
-    public ScreenshakeSystem shakeSystem;
-    public ScreenshakeHandle eventHandle;
-
     // PROPERTIES
-    public Vector3 positionOffset { get; private set; } = Vector3.zero;
-    public Quaternion rotationOffset { get; private set; } = Quaternion.identity;
+    public ScreenshakeHandle eventHandle { get; private set; } = null;
+
+    public Vector2 positionOffset { get; private set; } = Vector2.zero;
+    public float rotationOffset { get; private set; } = 0f;
     public float zoomOffset { get; private set; } = 0f;
 
     public bool isComplete { get; private set; } = false;
 
     // PRIVATE
     private float eventLifetimeTimer = 0f;
-    private bool isContinuous = false;
+    private bool isDiscrete = false;
+    private float eventSeed = 0f;
 
     ScreenshakeProfile profileCopy = null;
 
-    public ScreenshakeEvent(ScreenshakeSystem shakeSystem, ScreenshakeProfile shakeProfile)
+    /// <summary>
+    /// Basic constructor, sets the event seed and ensures data is set to a reset state
+    /// </summary>
+    /// <param name="eventIndex">Acts as a unique ID for this event</param>
+    public ScreenshakeEvent(int eventIndex)
     {
-        this.shakeSystem = shakeSystem;
+        // Event seed remains the same regardless of reuse
+        // Generate with randomness within distinct steps to reduce seed collisions
+        eventSeed = ((eventIndex % 100) * 10f) + Random.Range(0f, 10f);
 
-        // Save a copy of the profile data at the time the event was created
-        shakeProfile.CopyRequiredData(ref profileCopy);
+        ResetEvent();
+    }
 
-        positionOffset = Vector3.zero;
-        rotationOffset = Quaternion.identity;
+    #region Public Methods
+    
+    public void MarkAsComplete() => isComplete = true;
+
+    public void ResetEvent()
+    {
+        eventHandle = null;
+
+        positionOffset = Vector2.zero;
+        rotationOffset = 0f;
         zoomOffset = 0f;
 
         isComplete = false;
 
         eventLifetimeTimer = 0f;
-        isContinuous = (profileCopy.shakeType == ScreenshakeSystem.ShakeType.Continuous);
-
-        // Create and assign the handle (this should be done LAST so that the event is fully setup when passed in)
-        eventHandle = new ScreenshakeHandle(this);
     }
 
-    public void UpdateEvent(float deltaTime)
+    public ScreenshakeHandle ConfigureEventAndHandle(ScreenshakeProfile shakeProfile)
+    {
+        // Save a copy of the profile data
+        shakeProfile.CopyRequiredData(ref profileCopy);
+
+        // Cache profile data
+        isDiscrete = (profileCopy.shakeType == ScreenshakeSystem.ShakeType.Discrete);
+
+        // Create and return handle
+        eventHandle = new ScreenshakeHandle(this);
+        return eventHandle;
+    }
+
+    public void UpdateEventLifetime(float deltaTime)
     {
         eventLifetimeTimer += deltaTime;
 
-        // Discrete events should be clamped to not exceed their maximum duration
-        if (isContinuous == false)
+        // Discrete event has expired, still clamp timer just in case
+        if (isDiscrete && eventLifetimeTimer >= profileCopy.shakeDuration)
         {
-            eventLifetimeTimer = Mathf.Clamp(eventLifetimeTimer, 0f, profileCopy.shakeDuration);
+            eventLifetimeTimer = profileCopy.shakeDuration;
+            isComplete = true;
         }
-
-        CalculatePositionOffset();
-
-        CalculateRotationOffset();
-
-        CalculateZoomOffset();
     }
+
+    public void CalculateShakeOffsets()
+    {
+        // Don't update if completed
+        if (isComplete) return;
+
+        // Update all offsets, if enabled
+        if (profileCopy.usePosition) CalculatePositionOffset();
+        if (profileCopy.useRotation) CalculateRotationOffset();
+        if (profileCopy.useZoom) CalculateZoomOffset();
+    }
+
+    #endregion
 
     private void CalculatePositionOffset()
     {
@@ -64,13 +95,11 @@ public class ScreenshakeEvent
 
     private void CalculateRotationOffset()
     {
-
+        
     }
 
     private void CalculateZoomOffset()
     {
 
     }
-
-    public void RemoveEvent() => shakeSystem.RemoveEvent(this);
 }

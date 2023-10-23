@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
     public Transform controllerTransform;
     public Transform playerTransform;
     public RenderingEnvironment renderingEnvironment;
+    public ScreenshakeSystem screenshakeSystem;
 
     [Header("Configuration")]
     [Min(0f)]

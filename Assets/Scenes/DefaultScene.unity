@@ -704,7 +704,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e813b9563405d294ea1ac755233affa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timescaleMode: 0
+  eventTimescaling: 0
+  responseTimescaling: 0
+  positionResponseDelay: 0.05
+  rotationResponseDelay: 0.05
+  zoomResponseDelay: 0.1
 --- !u!1 &390242524
 GameObject:
   m_ObjectHideFlags: 0
@@ -2653,6 +2657,7 @@ MonoBehaviour:
   controllerTransform: {fileID: 1211014896}
   playerTransform: {fileID: 1098244961}
   renderingEnvironment: {fileID: 763894717}
+  screenshakeSystem: {fileID: 358084626}
   followDelay: 0.2
   depthOffset: 10
 --- !u!1 &1225108141
