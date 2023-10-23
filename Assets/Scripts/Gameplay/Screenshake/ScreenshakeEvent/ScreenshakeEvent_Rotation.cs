@@ -8,7 +8,7 @@ public partial class ScreenshakeEvent
 
     private float CalculateDiscreteRotationOffset()
     {
-        // Rotation always uses noise, we can just do the calculations here, no multipliers needed
+        // Rotation always uses noise, we can just do the calculations here
 
         // Find intensity multiplier from curve
         float intensityMultiplier;
