@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Screenshake_Test
   m_EditorClassIdentifier: 
   shakeType: 0
-  usePosition: 1
+  usePosition: 0
   useRotation: 1
-  useZoom: 1
-  shakeDuration: 0.5
-  discretePositionStyle: 1
+  useZoom: 0
+  shakeDuration: 3
+  discretePositionStyle: 0
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}
   discretePositionNoiseFrequency: {x: 2, y: 3}
   discretePositionNoiseUseCustomCurve: 1
@@ -62,9 +62,9 @@ MonoBehaviour:
   discretePositionAnimationFixedCurveMidpointMin: 0.45
   discretePositionAnimationFixedCurveMidpointMax: 0.55
   discretePositionAnimationFixedCurveOut: 1
-  discreteRotationNoiseMagnitude: 2.5
-  discreteRotationNoiseFrequency: 5
-  discreteRotationNoiseUseCustomCurve: 1
+  discreteRotationNoiseMagnitude: 15
+  discreteRotationNoiseFrequency: 10
+  discreteRotationNoiseUseCustomCurve: 0
   discreteRotationNoiseCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -90,9 +90,9 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   discreteRotationNoiseFixedCurveIn: 0
-  discreteRotationNoiseFixedCurveMidpointMin: 0.45
-  discreteRotationNoiseFixedCurveMidpointMax: 0.55
-  discreteRotationNoiseFixedCurveOut: 0
+  discreteRotationNoiseFixedCurveMidpointMin: 0
+  discreteRotationNoiseFixedCurveMidpointMax: 0
+  discreteRotationNoiseFixedCurveOut: 1
   discreteZoomStyle: 1
   discreteZoomNoiseInMagnitude: 0
   discreteZoomNoiseOutMagnitude: 0

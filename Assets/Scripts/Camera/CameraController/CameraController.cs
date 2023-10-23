@@ -6,6 +6,7 @@ public class CameraController : MonoBehaviour
 {
     [Header("Components")]
     public Transform controllerTransform;
+    public Transform cameraTransform;
     public Transform playerTransform;
     public RenderingEnvironment renderingEnvironment;
     public ScreenshakeSystem screenshakeSystem;
@@ -50,5 +51,12 @@ public class CameraController : MonoBehaviour
         Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
         renderingEnvironmentLocalPosition.z = depthOffset;
         renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
+
+        SetCameraShakeProperties();
+    }
+
+    void SetCameraShakeProperties()
+    {
+        cameraTransform.localRotation = Quaternion.Euler(0f, 0f, screenshakeSystem.smoothRotationOffset);
     }
 }

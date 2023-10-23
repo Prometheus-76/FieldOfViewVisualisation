@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScreenshakeEvent
+public partial class ScreenshakeEvent
 {
     // PROPERTIES
     public ScreenshakeHandle eventHandle { get; private set; } = null;
@@ -15,7 +15,14 @@ public class ScreenshakeEvent
 
     // PRIVATE
     private float eventLifetimeTimer = 0f;
+
+    private Vector2 continuousPositionTime = Vector2.zero;
+    private float continuousRotationTime = 0f;
+    private float continuousZoomTime = 0f;
+
     private bool isDiscrete = false;
+    private float discreteCompletion01 = 0f;
+
     private float eventSeed = 0f;
 
     ScreenshakeProfile profileCopy = null;
@@ -63,15 +70,32 @@ public class ScreenshakeEvent
         return eventHandle;
     }
 
-    public void UpdateEventLifetime(float deltaTime)
+    public void UpdateEventTimers(float deltaTime)
     {
         eventLifetimeTimer += deltaTime;
 
-        // Discrete event has expired, still clamp timer just in case
-        if (isDiscrete && eventLifetimeTimer >= profileCopy.shakeDuration)
+        if (isDiscrete)
         {
-            eventLifetimeTimer = profileCopy.shakeDuration;
-            isComplete = true;
+            if (eventLifetimeTimer >= profileCopy.shakeDuration)
+            {
+                // Discrete event has expired, still clamp timer just in case
+                eventLifetimeTimer = profileCopy.shakeDuration;
+                discreteCompletion01 = 1f;
+
+                isComplete = true;
+            }
+            else
+            {
+                // Update completion percent
+                discreteCompletion01 = Mathf.Clamp01(eventLifetimeTimer / profileCopy.shakeDuration);
+            }
+        }
+        else
+        {
+            // Progress separate timers
+            if (profileCopy.usePosition) continuousPositionTime += deltaTime * eventHandle.continuousPositionFrequencyMultiplier;
+            if (profileCopy.useRotation) continuousRotationTime += deltaTime * eventHandle.continuousRotationFrequencyMultiplier;
+            if (profileCopy.useZoom) continuousZoomTime += deltaTime * eventHandle.continuousZoomFrequencyMultiplier;
         }
     }
 
@@ -88,18 +112,32 @@ public class ScreenshakeEvent
 
     #endregion
 
-    private void CalculatePositionOffset()
+    private float EvaluateFixedCurve(Curves.CurveStyle inCurve, float midpointMin, float midpointMax, Curves.CurveStyle outCurve, float t)
     {
+        t = Mathf.Clamp01(t);
 
+        if (t < midpointMin)
+        {
+            // In Curve
+            float inT = Mathf.Clamp01(t / midpointMin);
+            return Curves.Evaluate(inCurve, inT);
+        }
+        else if (t > midpointMax)
+        {
+            // Out Curve
+            float outT = Mathf.Clamp01((t - midpointMax) / (1f - midpointMax));
+            return Curves.Evaluate(outCurve, 1f - outT);
+        }
+        else
+        {
+            // Midpoint
+            return 1f;
+        }
     }
 
-    private void CalculateRotationOffset()
+    private float NoiseRemap(float noiseValue)
     {
-        
-    }
-
-    private void CalculateZoomOffset()
-    {
-
+        // From (0, 1) to (-1, 1)
+        return (noiseValue * 2f) - 1f;
     }
 }

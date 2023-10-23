@@ -6,6 +6,8 @@ using UnityEditor;
 [CustomEditor(typeof(ScreenshakeProfile))]
 public class ScreenshakeProfile_Editor : Editor
 {
+    private ScreenshakeHandle testEventHandle = null;
+
     public override void OnInspectorGUI()
     {
         // The instance we are modifying
@@ -39,18 +41,6 @@ public class ScreenshakeProfile_Editor : Editor
         InspectorUtilities.DrawDivider(15f);
 
         DrawZoomSection(ref screenshakeProfile, ref attributes);
-
-        InspectorUtilities.DrawDivider(15f);
-
-        if (GUILayout.Button("Start Screenshake Test", GUILayout.Height(40f)))
-        {
-            // TODO: Screenshake test function (in editor mode?)
-        }
-
-        if (GUILayout.Button("Reset Screenshake", GUILayout.Height(40f)))
-        {
-            // TODO: Screenshake reset function (in editor mode?)
-        }
 
         // Check if we made changes to the instance, and if so, mark the object as needing to save
         if (EditorGUI.EndChangeCheck()) EditorUtility.SetDirty(screenshakeProfile);

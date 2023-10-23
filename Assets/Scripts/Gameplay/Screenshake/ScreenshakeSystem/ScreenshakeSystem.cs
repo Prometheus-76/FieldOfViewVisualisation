@@ -144,7 +144,7 @@ public class ScreenshakeSystem : MonoBehaviour
             rawZoomOffset += thisEvent.zoomOffset;
 
             // Progress event timer
-            thisEvent.UpdateEventLifetime(eventDeltatime);
+            thisEvent.UpdateEventTimers(eventDeltatime);
         }
 
         // Apply holistic smoothing across all events

@@ -5,11 +5,13 @@ using UnityEngine;
 public class ScreenshakeHandle
 {
     // PROPERTIES
-    public bool isEventAttached { get { return screenshakeEvent == null; } }
+    public bool isEventAttached { get { return screenshakeEvent != null; } }
 
-    // ---------
+    // CONTINUOUS
+    // ----------
+
     // Position
-    // ---------
+    // --Noise
     private Vector2 _continuousPositionMagnitudeMultiplier = Vector2.one;
     public Vector2 continuousPositionMagnitudeMultiplier
     {
@@ -32,9 +34,8 @@ public class ScreenshakeHandle
         }
     }
 
-    // ---------
     // Rotation
-    // ---------
+    // --Noise
     private float _continuousRotationMagnitudeMultiplier = 1f;
     public float continuousRotationMagnitudeMultiplier 
     { 
@@ -55,9 +56,8 @@ public class ScreenshakeHandle
         }
     }
 
-    // -----
     // Zoom
-    // -----
+    // --Noise
     private float _continuousZoomInMagnitudeMultiplier = 1f;
     public float continuousZoomInMagnitudeMultiplier
     {

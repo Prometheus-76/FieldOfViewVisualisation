@@ -256,4 +256,15 @@ public static class MathUtilities
         // Doing this saves a modulo operator call
         return ((rayIntersections & 1) == 1);
     }
+
+    public static float Remap(float value, float inMin, float inMax, float outMin, float outMax)
+    {
+        float inputRange = (inMax - inMin);
+        float outputRange = (outMax - outMin);
+
+        float input01 = (value - inMin) / inputRange;
+        float output = (input01 * outputRange) + outMin;
+
+        return output;
+    }
 }
