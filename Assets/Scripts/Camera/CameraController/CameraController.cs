@@ -6,8 +6,8 @@ public class CameraController : MonoBehaviour
 {
     [Header("Components")]
     public Transform controllerTransform;
-    public Transform cameraTransform;
-    public Transform playerTransform;
+    public Transform targetTransform;
+    public Camera sceneCamera;
     public RenderingEnvironment renderingEnvironment;
     public ScreenshakeSystem screenshakeSystem;
 
@@ -18,6 +18,7 @@ public class CameraController : MonoBehaviour
     public float depthOffset;
 
     // PRIVATE
+    private Transform cameraTransform;
     private Transform renderingEnvironmentTransform;
 
     private Vector2 followPosition = Vector2.zero;
@@ -26,39 +27,35 @@ public class CameraController : MonoBehaviour
     private void Awake()
     {
         // Assign references
+        cameraTransform = sceneCamera.transform;
         renderingEnvironmentTransform = renderingEnvironment.transform;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
+        // Set starting position in scene
         followPosition = controllerTransform.position;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        // Smoothly follow the player
-        followPosition = Vector2.SmoothDamp(followPosition, playerTransform.position, ref followVelocity, followDelay, Mathf.Infinity, Time.deltaTime);
+        FollowCameraTarget();
+
+        // Keep rendering environment z-position at 0 in world-space
+        Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
+        renderingEnvironmentLocalPosition.z = depthOffset;
+        renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
+    }
+
+    private void FollowCameraTarget()
+    {
+        // Smoothly follow the camera target
+        followPosition = Vector2.SmoothDamp(followPosition, targetTransform.position, ref followVelocity, followDelay, Mathf.Infinity, Time.deltaTime);
 
         // Ensure z-position is set
         Vector3 newPosition = followPosition;
         newPosition.z = depthOffset * -1f;
 
         controllerTransform.position = newPosition;
-
-        // Keep rendering environment z-position at 0 in world-space
-        Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
-        renderingEnvironmentLocalPosition.z = depthOffset;
-        renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
-
-        SetCameraShakeProperties();
-    }
-
-    void SetCameraShakeProperties()
-    {
-        cameraTransform.localPosition = screenshakeSystem.smoothPositionOffset;
-        cameraTransform.localRotation = Quaternion.Euler(0f, 0f, screenshakeSystem.smoothRotationOffset);
-        renderingEnvironment.sceneCamera.orthographicSize = Mathf.Clamp(6f + screenshakeSystem.smoothZoomOffset, 1f, 50f);
     }
 }

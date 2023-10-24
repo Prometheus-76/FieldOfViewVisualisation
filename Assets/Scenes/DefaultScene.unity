@@ -2655,8 +2655,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controllerTransform: {fileID: 1211014896}
-  cameraTransform: {fileID: 1549064286}
-  playerTransform: {fileID: 1098244961}
+  targetTransform: {fileID: 1098244961}
+  sceneCamera: {fileID: 1549064285}
   renderingEnvironment: {fileID: 763894717}
   screenshakeSystem: {fileID: 358084626}
   followDelay: 0.2
