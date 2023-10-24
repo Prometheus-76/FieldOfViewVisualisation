@@ -41,10 +41,7 @@ public class CameraController : MonoBehaviour
     {
         FollowCameraTarget();
 
-        // Keep rendering environment z-position at 0 in world-space
-        Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
-        renderingEnvironmentLocalPosition.z = depthOffset;
-        renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
+        EnforceDepthOffset();
     }
 
     private void FollowCameraTarget()
@@ -57,5 +54,13 @@ public class CameraController : MonoBehaviour
         newPosition.z = depthOffset * -1f;
 
         controllerTransform.position = newPosition;
+    }
+
+    private void EnforceDepthOffset()
+    {
+        // Keep rendering environment z-position at 0 in world-space
+        Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
+        renderingEnvironmentLocalPosition.z = depthOffset;
+        renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
     }
 }
