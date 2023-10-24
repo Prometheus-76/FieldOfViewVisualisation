@@ -58,23 +58,13 @@ public class ScreenshakeHandle
 
     // Zoom
     // --Noise
-    private float _continuousZoomInMagnitudeMultiplier = 1f;
-    public float continuousZoomInMagnitudeMultiplier
+    private float _continuousZoomMagnitudeMultiplier = 1f;
+    public float continuousZoomMagnitudeMultiplier
     {
-        get => _continuousZoomInMagnitudeMultiplier;
+        get => _continuousZoomMagnitudeMultiplier;
         set
         {
-            _continuousZoomInMagnitudeMultiplier = Mathf.Max(0f, value);
-        }
-    }
-
-    private float _continuousZoomOutMagnitudeMultiplier = 1f;
-    public float continuousZoomOutMagnitudeMultiplier
-    {
-        get => _continuousZoomOutMagnitudeMultiplier;
-        set
-        {
-            _continuousZoomOutMagnitudeMultiplier = Mathf.Max(0f, value);
+            _continuousZoomMagnitudeMultiplier = Mathf.Max(0f, value);
         }
     }
 

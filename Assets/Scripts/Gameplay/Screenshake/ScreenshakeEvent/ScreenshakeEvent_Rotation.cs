@@ -30,6 +30,8 @@ public partial class ScreenshakeEvent
         // Early out, result will be 0
         if (intensityMultiplier <= 0f) return 0f;
 
+        intensityMultiplier *= intensityMultiplier;
+
         // Noise sample
         return NoiseRemap(Mathf.PerlinNoise(eventSeed, eventLifetimeTimer * profileCopy.discreteRotationNoiseFrequency)) * profileCopy.discreteRotationNoiseMagnitude * intensityMultiplier;
     }
@@ -39,7 +41,8 @@ public partial class ScreenshakeEvent
         // Just do the noise calculations, make sure to apply live multipliers from the handle
 
         // Live parameters
-        float magnitudeMultiplier = (profileCopy.continuousRotationNoiseMagnitude * eventHandle.continuousRotationMagnitudeMultiplier);
+        float liveMagnitudeScalar = eventHandle.continuousRotationMagnitudeMultiplier * eventHandle.continuousRotationMagnitudeMultiplier;
+        float magnitudeMultiplier = (profileCopy.continuousRotationNoiseMagnitude * liveMagnitudeScalar);
 
         // Early out, result will be 0
         if (magnitudeMultiplier <= 0f) return 0f;

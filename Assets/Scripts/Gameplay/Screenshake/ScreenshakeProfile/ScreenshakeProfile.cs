@@ -233,9 +233,9 @@ public class ScreenshakeProfile : ScriptableObject
                     // Discrete zoom animation
                     target.discreteZoomAnimationMagnitude = discreteZoomAnimationMagnitude;
                     target.discreteZoomAnimationDirection = discreteZoomAnimationDirection;
-                    target.discreteZoomAnimationUseCustomCurve = discreteZoomNoiseUseCustomCurve;
+                    target.discreteZoomAnimationUseCustomCurve = discreteZoomAnimationUseCustomCurve;
 
-                    if (target.discreteZoomNoiseUseCustomCurve)
+                    if (target.discreteZoomAnimationUseCustomCurve)
                     {
                         // Discrete zoom animation with custom curve
                         if (target.discreteZoomAnimationCustomCurve == null) target.discreteZoomAnimationCustomCurve = new AnimationCurve();

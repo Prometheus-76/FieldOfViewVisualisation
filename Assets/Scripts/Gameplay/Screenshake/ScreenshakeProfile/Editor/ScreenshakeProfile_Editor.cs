@@ -6,8 +6,6 @@ using UnityEditor;
 [CustomEditor(typeof(ScreenshakeProfile))]
 public class ScreenshakeProfile_Editor : Editor
 {
-    private ScreenshakeHandle testEventHandle = null;
-
     public override void OnInspectorGUI()
     {
         // The instance we are modifying
