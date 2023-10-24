@@ -57,6 +57,7 @@ public class CameraController : MonoBehaviour
 
     void SetCameraShakeProperties()
     {
+        cameraTransform.localPosition = screenshakeSystem.smoothPositionOffset;
         cameraTransform.localRotation = Quaternion.Euler(0f, 0f, screenshakeSystem.smoothRotationOffset);
         renderingEnvironment.sceneCamera.orthographicSize = Mathf.Clamp(6f + screenshakeSystem.smoothZoomOffset, 1f, 50f);
     }

@@ -29,11 +29,11 @@ public partial class ScreenshakeEvent
 
         // Early out, result will be 0
         if (intensityMultiplier <= 0f) return 0f;
-
-        intensityMultiplier *= intensityMultiplier;
+        intensityMultiplier *= Mathf.Abs(intensityMultiplier);
 
         // Noise sample
-        return NoiseRemap(Mathf.PerlinNoise(eventSeed, eventLifetimeTimer * profileCopy.discreteRotationNoiseFrequency)) * profileCopy.discreteRotationNoiseMagnitude * intensityMultiplier;
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventSeed, eventLifetimeTimer * profileCopy.discreteRotationNoiseFrequency));
+        return noiseSample * (profileCopy.discreteRotationNoiseMagnitude * intensityMultiplier);
     }
 
     private float CalculateContinuousRotationOffset()
@@ -48,6 +48,7 @@ public partial class ScreenshakeEvent
         if (magnitudeMultiplier <= 0f) return 0f;
 
         // Noise sample
-        return NoiseRemap(Mathf.PerlinNoise(eventSeed, continuousRotationTime * profileCopy.continuousRotationNoiseFrequency)) * magnitudeMultiplier;
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventSeed, continuousRotationTime * profileCopy.continuousRotationNoiseFrequency));
+        return noiseSample * magnitudeMultiplier;
     }
 }

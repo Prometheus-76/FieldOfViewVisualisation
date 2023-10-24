@@ -173,7 +173,17 @@ public class ScreenshakeProfile : ScriptableObject
                         target.discretePositionAnimationFixedCurveOut = discretePositionAnimationFixedCurveOut;
                     }
 
-                    target.discretePositionAnimationDirection = discretePositionAnimationDirection;
+                    if (discretePositionAnimationDirection.sqrMagnitude > 0f)
+                    {
+                        target.discretePositionAnimationDirection = discretePositionAnimationDirection.normalized;
+                    }
+                    else
+                    {
+                        // Randomise direction when supplied vector is (0, 0)
+                        float angleRadians = Random.Range(0f, Mathf.PI * 2f);
+                        target.discretePositionAnimationDirection.x = Mathf.Cos(angleRadians);
+                        target.discretePositionAnimationDirection.y = Mathf.Sin(angleRadians);
+                    }
                 }
             }
 

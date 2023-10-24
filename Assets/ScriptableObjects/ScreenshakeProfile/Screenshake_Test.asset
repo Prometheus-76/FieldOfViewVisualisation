@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Screenshake_Test
   m_EditorClassIdentifier: 
   shakeType: 0
-  usePosition: 0
-  useRotation: 0
+  usePosition: 1
+  useRotation: 1
   useZoom: 1
-  shakeDuration: 3
-  discretePositionStyle: 0
+  shakeDuration: 0.2
+  discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}
   discretePositionNoiseFrequency: {x: 2, y: 3}
   discretePositionNoiseUseCustomCurve: 1
@@ -50,7 +50,7 @@ MonoBehaviour:
   discretePositionNoiseFixedCurveMidpointMax: 0.5
   discretePositionNoiseFixedCurveOut: 3
   discretePositionAnimationMagnitude: 0.5
-  discretePositionAnimationDirection: {x: 0, y: 1}
+  discretePositionAnimationDirection: {x: 0, y: -1}
   discretePositionAnimationUseCustomCurve: 0
   discretePositionAnimationCustomCurve:
     serializedVersion: 2
@@ -58,11 +58,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  discretePositionAnimationFixedCurveIn: 6
-  discretePositionAnimationFixedCurveMidpointMin: 0.45
-  discretePositionAnimationFixedCurveMidpointMax: 0.55
-  discretePositionAnimationFixedCurveOut: 1
-  discreteRotationNoiseMagnitude: 15
+  discretePositionAnimationFixedCurveIn: 3
+  discretePositionAnimationFixedCurveMidpointMin: 0.05
+  discretePositionAnimationFixedCurveMidpointMax: 0.05
+  discretePositionAnimationFixedCurveOut: 2
+  discreteRotationNoiseMagnitude: 5
   discreteRotationNoiseFrequency: 10
   discreteRotationNoiseUseCustomCurve: 0
   discreteRotationNoiseCustomCurve:
@@ -108,9 +108,9 @@ MonoBehaviour:
   discreteZoomNoiseFixedCurveMidpointMin: 0.45
   discreteZoomNoiseFixedCurveMidpointMax: 0.55
   discreteZoomNoiseFixedCurveOut: 0
-  discreteZoomAnimationMagnitude: 1.2
-  discreteZoomAnimationDirection: 0
-  discreteZoomAnimationUseCustomCurve: 1
+  discreteZoomAnimationMagnitude: 0.2
+  discreteZoomAnimationDirection: 1
+  discreteZoomAnimationUseCustomCurve: 0
   discreteZoomAnimationCustomCurve:
     serializedVersion: 2
     m_Curve:
@@ -126,23 +126,23 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -2.0800004
+      outSlope: -2.0800004
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.11792451
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  discreteZoomAnimationFixedCurveIn: 2
-  discreteZoomAnimationFixedCurveMidpointMin: 0.45
-  discreteZoomAnimationFixedCurveMidpointMax: 0.55
+  discreteZoomAnimationFixedCurveIn: 0
+  discreteZoomAnimationFixedCurveMidpointMin: 0
+  discreteZoomAnimationFixedCurveMidpointMax: 0
   discreteZoomAnimationFixedCurveOut: 3
-  continuousPositionNoiseMagnitude: {x: 0, y: 0}
-  continuousPositionNoiseFrequency: {x: 0.01, y: 0.01}
+  continuousPositionNoiseMagnitude: {x: 2, y: 1}
+  continuousPositionNoiseFrequency: {x: 5, y: 3}
   continuousRotationNoiseMagnitude: 5
   continuousRotationNoiseFrequency: 10
   continuousZoomNoiseInMagnitude: 1
-  continuousZoomNoiseOutMagnitude: 5
+  continuousZoomNoiseOutMagnitude: 1
   continuousZoomNoiseFrequency: 2

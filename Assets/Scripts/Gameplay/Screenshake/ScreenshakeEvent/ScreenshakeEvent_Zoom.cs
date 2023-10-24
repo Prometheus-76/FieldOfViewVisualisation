@@ -42,8 +42,7 @@ public partial class ScreenshakeEvent
 
         // Early out, result will be 0
         if (intensityMultiplier <= 0f) return 0f;
-
-        intensityMultiplier *= intensityMultiplier;
+        intensityMultiplier *= Mathf.Abs(intensityMultiplier);
 
         float inMagnitudeMultiplier = profileCopy.discreteZoomNoiseInMagnitude * intensityMultiplier;
         float outMagnitudeMultiplier = profileCopy.discreteZoomNoiseOutMagnitude * intensityMultiplier;
@@ -74,6 +73,10 @@ public partial class ScreenshakeEvent
 
             intensityMultiplier = EvaluateFixedCurve(curveIn, midpointMin, midpointMax, curveOut, discreteCompletion01);
         }
+
+        // Early out, result will be 0
+        if (intensityMultiplier <= 0f) return 0f;
+        intensityMultiplier *= Mathf.Abs(intensityMultiplier);
 
         // Maximum extent of the animation, scaled by the intensity curve
         float maxMagnitude = profileCopy.discreteZoomAnimationMagnitude * ((profileCopy.discreteZoomAnimationDirection == ScreenshakeSystem.ZoomDirection.ZoomIn) ? -1f : 1f);

@@ -35,6 +35,7 @@ public partial class ScreenshakeEvent
     {
         // Event seed remains the same regardless of reuse
         // Generate with randomness within distinct steps to reduce seed collisions
+        // Seed is within range (0, 1000)
         eventSeed = ((eventIndex % 100) * 10f) + Random.Range(0f, 10f);
 
         ResetEvent();
