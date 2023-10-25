@@ -706,9 +706,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventTimescaling: 0
   responseTimescaling: 0
-  positionResponseDelay: 0.05
-  rotationResponseDelay: 0.05
-  zoomResponseDelay: 0.1
+  positionResponseDelay: 0.1
+  rotationResponseDelay: 0.1
+  zoomResponseDelay: 0.2
 --- !u!1 &390242524
 GameObject:
   m_ObjectHideFlags: 0
@@ -2659,8 +2659,21 @@ MonoBehaviour:
   sceneCamera: {fileID: 1549064285}
   renderingEnvironment: {fileID: 763894717}
   screenshakeSystem: {fileID: 358084626}
-  followDelay: 0.2
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 512
   depthOffset: 10
+  positionFollowDelay: 0.15
+  positionOffsetDelay: 0.25
+  positionRange: {x: 3, y: 3}
+  positionDampingGradient: 1
+  rotationRange: 45
+  rotationDampingGradient: 1
+  baseZoomDelay: 0.3
+  zoomMinimumLimit: 3
+  zoomRange: 7
+  zoomDampingMidpoint: 0.4
+  zoomDampingGradient: 1
 --- !u!1 &1225108141
 GameObject:
   m_ObjectHideFlags: 0
@@ -2860,7 +2873,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

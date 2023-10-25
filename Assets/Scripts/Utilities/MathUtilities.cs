@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Transactions;
 using UnityEngine;
 
 public static class MathUtilities
 {
+    public const float E = 2.71828182f;
+
     public static bool IsPointInQuad(Vector2 localPoint, Vector2 halfQuadSize)
     {
         return (Mathf.Abs(localPoint.x) <= halfQuadSize.x && Mathf.Abs(localPoint.y) <= halfQuadSize.y);
@@ -257,14 +258,22 @@ public static class MathUtilities
         return ((rayIntersections & 1) == 1);
     }
 
-    public static float Remap(float value, float inMin, float inMax, float outMin, float outMax)
+    public static float Remap(float input, float inMin, float inMax, float outMin, float outMax)
     {
         float inputRange = (inMax - inMin);
         float outputRange = (outMax - outMin);
 
-        float input01 = (value - inMin) / inputRange;
+        float input01 = (input - inMin) / inputRange;
         float output = (input01 * outputRange) + outMin;
 
         return output;
+    }
+
+    public static float Tanh(float input)
+    {
+        float eulerExponent = Mathf.Pow(E, input);
+        float inverseEulerExponent = 1f / eulerExponent;
+
+        return (eulerExponent - inverseEulerExponent) / (eulerExponent + inverseEulerExponent);
     }
 }
