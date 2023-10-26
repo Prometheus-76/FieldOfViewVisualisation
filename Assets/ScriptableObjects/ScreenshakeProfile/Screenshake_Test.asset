@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cc3d10cd04b264cadcdbbe3cf825c0, type: 3}
   m_Name: Screenshake_Test
   m_EditorClassIdentifier: 
-  shakeType: 0
+  shakeType: 1
   usePosition: 1
-  useRotation: 1
-  useZoom: 1
+  useRotation: 0
+  useZoom: 0
   shakeDuration: 0.2
   discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}
@@ -139,8 +139,8 @@ MonoBehaviour:
   discreteZoomAnimationFixedCurveMidpointMin: 0
   discreteZoomAnimationFixedCurveMidpointMax: 0
   discreteZoomAnimationFixedCurveOut: 1
-  continuousPositionNoiseMagnitude: {x: 0.5, y: 0.5}
-  continuousPositionNoiseFrequency: {x: 10, y: 10}
+  continuousPositionNoiseMagnitude: {x: 2, y: 2}
+  continuousPositionNoiseFrequency: {x: 3, y: 3}
   continuousRotationNoiseMagnitude: 3
   continuousRotationNoiseFrequency: 20
   continuousZoomNoiseInMagnitude: 1

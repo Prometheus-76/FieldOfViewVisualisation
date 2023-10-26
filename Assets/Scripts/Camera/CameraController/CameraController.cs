@@ -13,7 +13,7 @@ public class CameraController : MonoBehaviour
     public ScreenshakeSystem screenshakeSystem;
 
     [Header("Configuration")]
-    public LayerMask blockingLayers;
+    public LayerMask occludingLayers;
     [Min(0f)]
     public float depthOffset;
 
@@ -72,7 +72,8 @@ public class CameraController : MonoBehaviour
         // Set starting position in scene
         followerPosition = controllerTransform.position;
 
-        SetZoom(sceneCamera.orthographicSize, true);
+        // Set remapped zoom value to match initial inspector value
+        SetInitialZoom(sceneCamera.orthographicSize);
     }
 
     private void Update()
@@ -115,20 +116,63 @@ public class CameraController : MonoBehaviour
 
     #endregion
 
+    private void SetInitialZoom(float cameraSize)
+    {
+        // In camera size, not scaled zoom
+        float zoomMidpoint = (zoomRange * zoomDampingMidpoint) + zoomMinimumLimit;
+        float zoomMaximumLimit = zoomMinimumLimit + zoomRange;
+
+        float zoomLowerRange = (zoomMidpoint - zoomMinimumLimit);
+        float zoomUpperRange = (zoomMaximumLimit - zoomMidpoint);
+
+        // Remap zoom to the predefined limit, with damping
+        float dampedZoomValue = zoomMidpoint;
+        if (cameraSize < zoomMidpoint)
+        {
+            // Lower curve
+            dampedZoomValue = EvaluateInverseDampingFunction(zoomLowerRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
+        }
+        else if (cameraSize > zoomMidpoint)
+        {
+            // Upper curve
+            dampedZoomValue = EvaluateInverseDampingFunction(zoomUpperRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
+        }
+
+        // Apply scaled value
+        SetZoom(dampedZoomValue, true);
+    }
+
     private void UpdateFollowerPosition(float deltaTime)
     {
         // Smoothly follow the camera target
         followerPosition = Vector2.SmoothDamp(followerPosition, targetTransform.position, ref followerVelocity, positionFollowDelay, Mathf.Infinity, deltaTime);
 
-        // Ensure the follower position isn't inside a wall
-        RaycastHit2D blockingHit = Physics2D.Linecast(targetTransform.position, followerPosition, blockingLayers);
-        followerPosition = blockingHit.collider != null ? blockingHit.point : followerPosition;
+        // Ensure the follower isn't stuck inside geometry
+        followerPosition = FindUnoccludedPoint(targetTransform.position, followerPosition);
 
         // Ensure z-position is set
         Vector3 newPosition = followerPosition;
         newPosition.z = depthOffset * -1f;
 
         controllerTransform.position = newPosition;
+    }
+
+    private Vector2 FindUnoccludedPoint(Vector2 originPoint, Vector2 targetPoint)
+    {
+        // Point is not inside occluding geometry
+        if (Physics2D.OverlapPoint(targetPoint, occludingLayers) == null) return targetPoint;
+
+        // Try to push target point out of occluding geometry
+        RaycastHit2D occludingHit = Physics2D.Linecast(originPoint, targetPoint, occludingLayers);
+        if (occludingHit.collider != null)
+        {
+            // Found a point on the edge of occluding geometry
+            Vector2 targetToOrigin = (originPoint - targetPoint).normalized;
+            return occludingHit.point + (targetToOrigin * 0.01f);
+        }
+
+        // Failed to resolve to an unoccluded position, return the original point
+        return targetPoint;
     }
 
     private void EnforceDepthOffset()
@@ -154,7 +198,11 @@ public class CameraController : MonoBehaviour
         dampedPositionOffset.x = EvaluateDampingFunction(positionRange.x, positionDampingGradient, combinedPositionOffset.x);
         dampedPositionOffset.y = EvaluateDampingFunction(positionRange.y, positionDampingGradient, combinedPositionOffset.y);
 
-        sceneCameraTransform.localPosition = dampedPositionOffset;
+        // Unsure the shake offset doesn't put the camera inside a wall
+        Vector2 shakeWorldPosition = sceneCameraTransform.TransformPoint(dampedPositionOffset);
+        Vector2 unoccludedPositionOffset = sceneCameraTransform.InverseTransformPoint(FindUnoccludedPoint(followerPosition, shakeWorldPosition));
+
+        sceneCameraTransform.localPosition = unoccludedPositionOffset;
     }
 
     private void UpdateOffsetRotation()
@@ -183,23 +231,35 @@ public class CameraController : MonoBehaviour
         float zoomUpperRange = (zoomMaximumLimit - zoomMidpoint);
 
         // Remap zoom to the predefined limit, with damping
-        float dampedZoomValue = zoomMidpoint;
+        float dampedSizeValue = zoomMidpoint;
         if (combinedZoomValue < zoomMidpoint)
         {
             // Lower curve
-            dampedZoomValue = EvaluateDampingFunction(zoomLowerRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
+            dampedSizeValue = EvaluateDampingFunction(zoomLowerRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
         }
         else if (combinedZoomValue > zoomMidpoint)
         {
             // Upper curve
-            dampedZoomValue = EvaluateDampingFunction(zoomUpperRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
+            dampedSizeValue = EvaluateDampingFunction(zoomUpperRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
         }
 
-        sceneCamera.orthographicSize = dampedZoomValue;
+        sceneCamera.orthographicSize = dampedSizeValue;
     }
 
+    // For converting linear input to output damped within the specified range
     private float EvaluateDampingFunction(float range, float gradient, float input)
     {
         return range * MathUtilities.Tanh((gradient * input) / range);
+    }
+
+    // For converting damped input within the specified range to a linear output
+    private float EvaluateInverseDampingFunction(float range, float gradient, float input)
+    {
+        input = Mathf.Clamp(input, -range + 0.1f, range - 0.1f);
+
+        float scaledInput = input / range;
+        float rangeScalar = range / (2f * gradient);
+
+        return rangeScalar * Mathf.Log((1f + scaledInput) / (1f - scaledInput));
     }
 }
