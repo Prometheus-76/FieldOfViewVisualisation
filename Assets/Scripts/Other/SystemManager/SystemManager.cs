@@ -11,6 +11,7 @@ public class SystemManager : MonoBehaviour
     public ScreenshakeProfile testShake;
 
     private bool testShakePlayed = false;
+    private ScreenshakeHandle testEventHandle = null;
 
     // Start is called before the first frame update
     void Start()
@@ -26,8 +27,10 @@ public class SystemManager : MonoBehaviour
     {
         if (testShakePlayed == false && InputManager.GetPhaseButton())
         {
+            if (testEventHandle != null && testEventHandle.isEventAttached) testEventHandle.RemoveEvent();
+
+            testEventHandle = screenshakeSystem.AddShake(testShake);
             testShakePlayed = true;
-            screenshakeSystem.AddShake(testShake);
         }
 
         if (testShakePlayed && InputManager.GetPhaseButton() == false) testShakePlayed = false;
