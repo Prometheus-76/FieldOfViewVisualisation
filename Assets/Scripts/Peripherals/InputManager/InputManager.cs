@@ -235,20 +235,24 @@ public static class InputManager
     }
 
     /// <summary>
-    /// Return the position of the mouse cursor, in screen-space (NOTE: only valid with mouse and keyboard)
+    /// Return the position of the mouse cursor, in the range (-1, 1) on the x and y axes. (NOTE: only valid with mouse and keyboard)
     /// </summary>
-    /// <returns>The position of the mouse cursor in screen-space, null if not using mouse and keyboard</returns>
+    /// <returns>The position of the mouse cursor in the range (-1, 1) on the x and y axes, null if not using mouse and keyboard</returns>
     public static Vector2? GetAimPosition()
     {
-        Vector2? aimPosition = null;
-
         // Only returns a valid value if the player is using mouse and keyboard
         if (currentControlScheme == ControlScheme.MouseAndKeyboard)
         {
-            aimPosition = Instance.Gameplay.AimPosition.ReadValue<Vector2>();
+            Vector2 aimPositionValue = Instance.Gameplay.AimPosition.ReadValue<Vector2>();
+            aimPositionValue.x /= Screen.width;
+            aimPositionValue.y /= Screen.height;
+
+            // Remap from range (0, 1) to (-1, 1)
+            return (aimPositionValue - (Vector2.one * 0.5f)) * 2f;
         }
 
-        return aimPosition;
+        // Not using mouse and keyboard
+        return null;
     }
 
     /// <summary>

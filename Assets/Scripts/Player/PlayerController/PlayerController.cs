@@ -11,6 +11,7 @@ public partial class PlayerController : MonoBehaviour
 
     public PaintSystem paintSystem;
     public Camera mainCamera;
+    public CameraController cameraController;
 
     // Start is called before the first frame update
     private void Start()
@@ -23,9 +24,11 @@ public partial class PlayerController : MonoBehaviour
     {
         InputUpdate(Time.deltaTime);
 
-        GameplayUpdate(Time.deltaTime);
+        PaintUpdate(Time.deltaTime);
 
         CombatUpdate(Time.deltaTime);
+
+        CameraUpdate(Time.deltaTime);
     }
 
     // FixedUpdate is called once per physics iteration

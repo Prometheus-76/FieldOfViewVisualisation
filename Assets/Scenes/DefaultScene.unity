@@ -2567,13 +2567,15 @@ MonoBehaviour:
   playerRigidbody: {fileID: 1098244963}
   paintSystem: {fileID: 963744412}
   mainCamera: {fileID: 1549064285}
+  cameraController: {fileID: 1211014897}
+  lookAheadDistance: 1
   playerWeapons:
   - {fileID: 152990815}
   startingWeapon: 0
-  playerBrushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
-  magazinePaintCapacity: 10
   movementSpeed: 5
   movementAcceleration: 12
+  playerBrushProfile: {fileID: 11400000, guid: bcde2244e1f08f84fb8baa13eb103a24, type: 2}
+  magazineCapacity: 25
 --- !u!1 &1147365566
 GameObject:
   m_ObjectHideFlags: 0

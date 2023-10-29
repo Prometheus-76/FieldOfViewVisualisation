@@ -4,14 +4,14 @@ using UnityEngine;
 
 public partial class PlayerController : MonoBehaviour
 {
-    [Header("Gameplay")]
+    [Header("Paint")]
     public BrushProfile playerBrushProfile;
-    public float magazinePaintCapacity;
+    public float magazineCapacity;
 
     // PROPERTIES
     public float currentPaint { get; private set; } = 1f;
 
-    private void GameplayUpdate(float deltaTime)
+    private void PaintUpdate(float deltaTime)
     {
         SuctionPaint();
     }
@@ -22,13 +22,11 @@ public partial class PlayerController : MonoBehaviour
         paintSystem.EraseFromAll(playerTransform.position, playerBrushProfile);
     }
 
-    #region Paint
-
     // Called from PaintSystem event
     public void OnPaintErased(float paintAmount, Color paintColour)
     {
         // Called when paint is removed, by the PaintSystem
-        AddPaint(paintAmount / magazinePaintCapacity);
+        AddPaint(paintAmount / magazineCapacity);
     }
 
     public float RemovePaint(float amount)
@@ -61,18 +59,4 @@ public partial class PlayerController : MonoBehaviour
     {
         currentPaint = Mathf.Clamp01(amount);
     }
-
-    #endregion
-
-    #region Health
-
-
-
-    #endregion
-
-    #region Levelling
-
-
-
-    #endregion
 }
