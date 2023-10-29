@@ -29,5 +29,7 @@ public class SystemManager : MonoBehaviour
             testShakePlayed = true;
             screenshakeSystem.AddShake(testShake);
         }
+
+        if (testShakePlayed && InputManager.GetPhaseButton() == false) testShakePlayed = false;
     }
 }

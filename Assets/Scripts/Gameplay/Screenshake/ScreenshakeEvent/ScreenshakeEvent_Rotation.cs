@@ -32,7 +32,7 @@ public partial class ScreenshakeEvent
         intensityMultiplier *= Mathf.Abs(intensityMultiplier);
 
         // Noise sample
-        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventSeed, eventLifetimeTimer * profileCopy.discreteRotationNoiseFrequency));
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(playbackSeed, eventLifetimeTimer * profileCopy.discreteRotationNoiseFrequency));
         return noiseSample * (profileCopy.discreteRotationNoiseMagnitude * intensityMultiplier);
     }
 
@@ -48,7 +48,7 @@ public partial class ScreenshakeEvent
         if (magnitudeMultiplier <= 0f) return 0f;
 
         // Noise sample
-        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventSeed, continuousRotationTime * profileCopy.continuousRotationNoiseFrequency));
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(playbackSeed, continuousRotationTime * profileCopy.continuousRotationNoiseFrequency));
         return noiseSample * magnitudeMultiplier;
     }
 }

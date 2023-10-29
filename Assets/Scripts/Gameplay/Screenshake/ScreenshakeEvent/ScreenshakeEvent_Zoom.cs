@@ -51,7 +51,7 @@ public partial class ScreenshakeEvent
         float magnitudeOffset = (outMagnitudeMultiplier - inMagnitudeMultiplier) / 2f;
 
         // Noise sample
-        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventLifetimeTimer * profileCopy.discreteZoomNoiseFrequency, eventSeed));
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(eventLifetimeTimer * profileCopy.discreteZoomNoiseFrequency, playbackSeed));
         return (noiseSample * magnitudeRange) + magnitudeOffset;
     }
 
@@ -99,7 +99,7 @@ public partial class ScreenshakeEvent
         if (inMagnitudeMultiplier + outMagnitudeMultiplier <= 0f) return 0f;
 
         // Noise sample
-        float noiseSample = NoiseRemap(Mathf.PerlinNoise(continuousZoomTime * profileCopy.continuousZoomNoiseFrequency, eventSeed));
+        float noiseSample = NoiseRemap(Mathf.PerlinNoise(continuousZoomTime * profileCopy.continuousZoomNoiseFrequency, playbackSeed));
         return (noiseSample * magnitudeRange) + magnitudeOffset;
     }
 }

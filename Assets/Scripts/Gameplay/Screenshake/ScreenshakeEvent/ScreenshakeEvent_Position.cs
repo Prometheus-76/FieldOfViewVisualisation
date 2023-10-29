@@ -46,8 +46,8 @@ public partial class ScreenshakeEvent
 
         // Noise samples
         Vector2 noiseSamples;
-        noiseSamples.x = NoiseRemap(Mathf.PerlinNoise(-eventSeed, continuousPositionTime.x * profileCopy.continuousPositionNoiseFrequency.x));
-        noiseSamples.y = NoiseRemap(Mathf.PerlinNoise(continuousPositionTime.y * profileCopy.continuousPositionNoiseFrequency.y, -eventSeed));
+        noiseSamples.x = NoiseRemap(Mathf.PerlinNoise(-playbackSeed, continuousPositionTime.x * profileCopy.continuousPositionNoiseFrequency.x));
+        noiseSamples.y = NoiseRemap(Mathf.PerlinNoise(continuousPositionTime.y * profileCopy.continuousPositionNoiseFrequency.y, -playbackSeed));
         return noiseSamples * intensityMultiplier;
     }
 
@@ -92,8 +92,8 @@ public partial class ScreenshakeEvent
 
         // Noise samples
         Vector2 noiseSamples;
-        noiseSamples.x = NoiseRemap(Mathf.PerlinNoise(-eventSeed, continuousPositionTime.x * profileCopy.continuousPositionNoiseFrequency.x));
-        noiseSamples.y = NoiseRemap(Mathf.PerlinNoise(continuousPositionTime.y * profileCopy.continuousPositionNoiseFrequency.y, -eventSeed));
+        noiseSamples.x = NoiseRemap(Mathf.PerlinNoise(-playbackSeed, continuousPositionTime.x * profileCopy.continuousPositionNoiseFrequency.x));
+        noiseSamples.y = NoiseRemap(Mathf.PerlinNoise(continuousPositionTime.y * profileCopy.continuousPositionNoiseFrequency.y, -playbackSeed));
         return noiseSamples * magnitudeMultiplier;
     }
 }

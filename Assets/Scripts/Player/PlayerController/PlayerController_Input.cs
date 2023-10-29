@@ -13,7 +13,7 @@ public partial class PlayerController : MonoBehaviour
 
     private bool phaseInputHeld = false;
 
-    private void InputUpdate(float deltaTime)
+    private void InputUpdate()
     {
         ReadMovementInput();
 

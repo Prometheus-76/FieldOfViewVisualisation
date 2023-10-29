@@ -244,8 +244,12 @@ public static class InputManager
         if (currentControlScheme == ControlScheme.MouseAndKeyboard)
         {
             Vector2 aimPositionValue = Instance.Gameplay.AimPosition.ReadValue<Vector2>();
+
             aimPositionValue.x /= Screen.width;
             aimPositionValue.y /= Screen.height;
+
+            aimPositionValue.x = Mathf.Clamp01(aimPositionValue.x);
+            aimPositionValue.y = Mathf.Clamp01(aimPositionValue.y);
 
             // Remap from range (0, 1) to (-1, 1)
             return (aimPositionValue - (Vector2.one * 0.5f)) * 2f;

@@ -6,12 +6,13 @@ public partial class PlayerController : MonoBehaviour
 {
     [Header("Paint")]
     public BrushProfile playerBrushProfile;
+    [Min(0.01f)]
     public float magazineCapacity;
 
     // PROPERTIES
     public float currentPaint { get; private set; } = 1f;
 
-    private void PaintUpdate(float deltaTime)
+    private void PaintUpdate()
     {
         SuctionPaint();
     }

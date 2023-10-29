@@ -5,13 +5,15 @@ using UnityEngine;
 public partial class PlayerController : MonoBehaviour
 {
     [Header("Camera")]
+    [Min(0f)]
     public float lookAheadDistance;
 
-    private void CameraUpdate(float deltaTime)
+    private void CameraUpdate()
     {
         // Make the camera look ahead of the player's aim direction
         if (InputManager.GetControlScheme() == InputManager.ControlScheme.MouseAndKeyboard)
         {
+            // Vector from player to mouse cursor
             Vector2 playerScreenPosition = CalculatePlayerPositionOnScreen();
             cameraController.SetPositionOffset((fireInputPosition.Value - playerScreenPosition) * lookAheadDistance);
         }

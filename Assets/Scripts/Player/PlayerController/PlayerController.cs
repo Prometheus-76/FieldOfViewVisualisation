@@ -22,13 +22,13 @@ public partial class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        InputUpdate(Time.deltaTime);
+        InputUpdate();
 
-        PaintUpdate(Time.deltaTime);
+        PaintUpdate();
 
         CombatUpdate(Time.deltaTime);
 
-        CameraUpdate(Time.deltaTime);
+        CameraUpdate();
     }
 
     // FixedUpdate is called once per physics iteration

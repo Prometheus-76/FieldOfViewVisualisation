@@ -24,6 +24,7 @@ public partial class ScreenshakeEvent
     private float discreteCompletion01 = 0f;
 
     private float eventSeed = 0f;
+    private float playbackSeed = 0f;
 
     ScreenshakeProfile profileCopy = null;
 
@@ -34,9 +35,7 @@ public partial class ScreenshakeEvent
     public ScreenshakeEvent(int eventIndex)
     {
         // Event seed remains the same regardless of reuse
-        // Generate with randomness within distinct steps to reduce seed collisions
-        // Seed is within range (0, 1000)
-        eventSeed = ((eventIndex % 100) * 10f) + Random.Range(0f, 10f);
+        eventSeed = GenerateSeed(eventIndex);
 
         ResetEvent();
     }
@@ -58,8 +57,11 @@ public partial class ScreenshakeEvent
         eventLifetimeTimer = 0f;
     }
 
-    public ScreenshakeHandle ConfigureEventAndHandle(ScreenshakeProfile shakeProfile)
+    public ScreenshakeHandle ConfigureEventAndHandle(ScreenshakeProfile shakeProfile, int playbackIndex)
     {
+        // Create a separate seed variant only for the instance of this playback
+        playbackSeed = eventSeed + GenerateSeed(playbackIndex);
+
         // Save a copy of the profile data
         shakeProfile.CopyRequiredData(ref profileCopy);
 
@@ -139,6 +141,13 @@ public partial class ScreenshakeEvent
     private float NoiseRemap(float noiseValue)
     {
         // From (0, 1) to (-1, 1)
-        return (noiseValue * 2f) - 1f;
+        return (noiseValue - 0.5f) * 2f;
+    }
+
+    private float GenerateSeed(int input)
+    {
+        // Seed is within range (0, 500)
+        // Generate with randomness within distinct steps to reduce seed collisions
+        return ((input % 100) * 5f) + Random.Range(0f, 5f);
     }
 }

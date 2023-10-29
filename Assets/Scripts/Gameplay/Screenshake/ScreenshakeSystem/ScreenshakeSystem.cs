@@ -46,6 +46,7 @@ public class ScreenshakeSystem : MonoBehaviour
     private float zoomVelocity = 0f;
 
     private int eventsCreatedSoFar = 0;
+    private int eventsPlayedSoFar = 0;
 
     #region Public Methods
 
@@ -173,8 +174,10 @@ public class ScreenshakeSystem : MonoBehaviour
             eventsCreatedSoFar += 1;
         }
 
-        // Configure new event and return it
-        eventInstance.ConfigureEventAndHandle(shakeProfile);
+        // Configure new event
+        eventInstance.ConfigureEventAndHandle(shakeProfile, eventsPlayedSoFar);
+        eventsPlayedSoFar += 1;
+
         return eventInstance;
     }
 }

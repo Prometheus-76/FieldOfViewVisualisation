@@ -5,7 +5,9 @@ using UnityEngine;
 public partial class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
+    [Min(0f)]
     public float movementSpeed;
+    [Min(0f)]
     public float movementAcceleration;
 
     // PRIVATE
