@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cc3d10cd04b264cadcdbbe3cf825c0, type: 3}
   m_Name: Screenshake_Test
   m_EditorClassIdentifier: 
-  shakeType: 1
+  shakeType: 0
   usePosition: 1
-  useRotation: 0
-  useZoom: 0
+  useRotation: 1
+  useZoom: 1
   shakeDuration: 0.2
   discretePositionStyle: 1
   discretePositionNoiseMagnitude: {x: 1, y: 0.5}

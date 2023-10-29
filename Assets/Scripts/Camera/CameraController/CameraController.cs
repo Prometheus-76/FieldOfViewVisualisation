@@ -9,11 +9,9 @@ public class CameraController : MonoBehaviour
     public Transform controllerTransform;
     public Transform targetTransform;
     public Camera sceneCamera;
-    public RenderingEnvironment renderingEnvironment;
     public ScreenshakeSystem screenshakeSystem;
 
     [Header("Configuration")]
-    public LayerMask occludingLayers;
     [Min(0f)]
     public float depthOffset;
 
@@ -47,7 +45,6 @@ public class CameraController : MonoBehaviour
 
     // PRIVATE
     private Transform sceneCameraTransform;
-    private Transform renderingEnvironmentTransform;
 
     private Vector2 followerPosition = Vector2.zero;
     private Vector2 followerVelocity = Vector2.zero;
@@ -64,7 +61,6 @@ public class CameraController : MonoBehaviour
     {
         // Assign references
         sceneCameraTransform = sceneCamera.transform;
-        renderingEnvironmentTransform = renderingEnvironment.transform;
     }
 
     private void Start()
@@ -79,7 +75,6 @@ public class CameraController : MonoBehaviour
     private void Update()
     {
         UpdateFollowerPosition(Time.deltaTime);
-        EnforceDepthOffset();
 
         UpdateBasePosition(Time.deltaTime);
         UpdateOffsetPosition();
@@ -147,40 +142,11 @@ public class CameraController : MonoBehaviour
         // Smoothly follow the camera target
         followerPosition = Vector2.SmoothDamp(followerPosition, targetTransform.position, ref followerVelocity, positionFollowDelay, Mathf.Infinity, deltaTime);
 
-        // Ensure the follower isn't stuck inside geometry
-        followerPosition = FindUnoccludedPoint(targetTransform.position, followerPosition);
-
         // Ensure z-position is set
         Vector3 newPosition = followerPosition;
         newPosition.z = depthOffset * -1f;
 
         controllerTransform.position = newPosition;
-    }
-
-    private Vector2 FindUnoccludedPoint(Vector2 originPoint, Vector2 targetPoint)
-    {
-        // Point is not inside occluding geometry
-        if (Physics2D.OverlapPoint(targetPoint, occludingLayers) == null) return targetPoint;
-
-        // Try to push target point out of occluding geometry
-        RaycastHit2D occludingHit = Physics2D.Linecast(originPoint, targetPoint, occludingLayers);
-        if (occludingHit.collider != null)
-        {
-            // Found a point on the edge of occluding geometry
-            Vector2 targetToOrigin = (originPoint - targetPoint).normalized;
-            return occludingHit.point + (targetToOrigin * 0.01f);
-        }
-
-        // Failed to resolve to an unoccluded position, return the original point
-        return targetPoint;
-    }
-
-    private void EnforceDepthOffset()
-    {
-        // Keep rendering environment z-position at 0 in world-space
-        Vector3 renderingEnvironmentLocalPosition = renderingEnvironmentTransform.localPosition;
-        renderingEnvironmentLocalPosition.z = depthOffset;
-        renderingEnvironmentTransform.localPosition = renderingEnvironmentLocalPosition;
     }
     
     public void UpdateBasePosition(float deltaTime)
@@ -191,18 +157,12 @@ public class CameraController : MonoBehaviour
 
     private void UpdateOffsetPosition()
     {
-        Vector2 combinedPositionOffset = currentBasePositionOffset + screenshakeSystem.smoothPositionOffset;
-
         // Remap position to the predefined limit, with damping
-        Vector2 dampedPositionOffset;
-        dampedPositionOffset.x = EvaluateDampingFunction(positionRange.x, positionDampingGradient, combinedPositionOffset.x);
-        dampedPositionOffset.y = EvaluateDampingFunction(positionRange.y, positionDampingGradient, combinedPositionOffset.y);
+        Vector2 dampedShakeOffset;
+        dampedShakeOffset.x = EvaluateDampingFunction(positionRange.x, positionDampingGradient, screenshakeSystem.smoothPositionOffset.x);
+        dampedShakeOffset.y = EvaluateDampingFunction(positionRange.y, positionDampingGradient, screenshakeSystem.smoothPositionOffset.y);
 
-        // Unsure the shake offset doesn't put the camera inside a wall
-        Vector2 shakeWorldPosition = sceneCameraTransform.TransformPoint(dampedPositionOffset);
-        Vector2 unoccludedPositionOffset = sceneCameraTransform.InverseTransformPoint(FindUnoccludedPoint(followerPosition, shakeWorldPosition));
-
-        sceneCameraTransform.localPosition = unoccludedPositionOffset;
+        sceneCameraTransform.localPosition = currentBasePositionOffset + dampedShakeOffset;
     }
 
     private void UpdateOffsetRotation()

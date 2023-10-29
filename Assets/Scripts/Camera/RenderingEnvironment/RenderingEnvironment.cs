@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class RenderingEnvironment : MonoBehaviour
 {
-    [Header("Camera")]
+    [Header("Configuration")]
     public Camera sceneCamera;
+    public Transform targetTransform;
 
     [Header("Rendering Mask")]
     public Shader renderingMaskShader;
@@ -26,8 +27,6 @@ public class RenderingEnvironment : MonoBehaviour
     public MeshRenderer maskForegroundRenderer;
 
     // PRIVATE
-    private float previousCameraSize;
-
     private Mesh maskBoundsMesh;
     private Vector3[] maskBoundsVertices;
     private int[] maskBoundsTriangles;
@@ -37,9 +36,16 @@ public class RenderingEnvironment : MonoBehaviour
     private Material backgroundMaterialInstance = null;
     private Material foregroundMaterialInstance = null;
 
+    private Transform environmentTransform = null;
+    private Transform cameraTransform = null;
+
     // Start is called before the first frame update
     private void Start()
     {
+        // Get references
+        environmentTransform = transform;
+        cameraTransform = sceneCamera.transform;
+
         // Lock transforms
         ConstrainEnvironmentTransforms();
 
@@ -48,7 +54,7 @@ public class RenderingEnvironment : MonoBehaviour
 
         // Configure mask
         renderingMaskScript.Initialise();
-        renderingMaskScript.halfMeshSize = CalculateHalfScreenBounds();
+        renderingMaskScript.halfMeshSize = CalculateHalfEnvironmentBounds(sceneCamera.orthographicSize, cameraTransform.eulerAngles.z, cameraTransform.position - targetTransform.position);
         renderingMaskMaterialInstance = new Material(renderingMaskShader);
         renderingMaskRenderer.material = renderingMaskMaterialInstance;
 
@@ -63,19 +69,18 @@ public class RenderingEnvironment : MonoBehaviour
         // Keep transforms locked into place
         ConstrainEnvironmentTransforms();
 
-        // Find screen size
-        Vector2 halfBoundsSize = CalculateHalfScreenBounds();
-        renderingMaskScript.halfMeshSize = halfBoundsSize;
-
-        // Update bounds meshes when the camera changes size
-        if (sceneCamera.orthographicSize != previousCameraSize) UpdateBoundsMeshes(halfBoundsSize);
+        // Find bounding box for camera projection
+        Vector2 halfEnvironmentBounds = CalculateHalfEnvironmentBounds(sceneCamera.orthographicSize, cameraTransform.eulerAngles.z, cameraTransform.position - targetTransform.position);
 
         // Regenerate rendering mask
-        renderingMaskScript.halfMeshSize = halfBoundsSize;
+        renderingMaskScript.halfMeshSize = halfEnvironmentBounds;
         renderingMaskScript.GenerateMesh();
+
+        // Update bounds meshes
+        UpdateBoundsMeshes(halfEnvironmentBounds);
     }
 
-    public void SetBackgroundMaterial(Material newMaterial)
+    private void SetBackgroundMaterial(Material newMaterial)
     {
         backgroundMaterial = newMaterial;
         backgroundMaterialInstance = new Material(newMaterial);
@@ -84,7 +89,7 @@ public class RenderingEnvironment : MonoBehaviour
         maskBackgroundRenderer.material = backgroundMaterialInstance;
     }
 
-    public void SetForegroundMaterial(Material newMaterial)
+    private void SetForegroundMaterial(Material newMaterial)
     {
         foregroundMaterial = newMaterial;
         foregroundMaterialInstance = new Material(newMaterial);
@@ -93,14 +98,28 @@ public class RenderingEnvironment : MonoBehaviour
         maskForegroundRenderer.material = foregroundMaterialInstance;
     }
 
-    private Vector2 CalculateHalfScreenBounds()
+    private Vector2 CalculateHalfEnvironmentBounds(float orthographicSize, float zRotationEuler, Vector2 positionOffset)
     {
+        // Calculate the size of the camera window in world-space
         float aspectRatio = (float)Screen.width / Screen.height;
 
-        float halfScreenWidth = aspectRatio * sceneCamera.orthographicSize;
-        float halfScreenHeight = sceneCamera.orthographicSize;
+        Vector2 halfCameraDimensions;
+        halfCameraDimensions.x = aspectRatio * orthographicSize;
+        halfCameraDimensions.y = orthographicSize;
 
-        return new Vector2(halfScreenWidth, halfScreenHeight);
+        // Create bounding box for the camera, including its rotation
+        float zRotationRadians = zRotationEuler * Mathf.Deg2Rad;
+        float horizontalScalar = Mathf.Abs(Mathf.Cos(zRotationRadians));
+        float verticalScalar = Mathf.Abs(Mathf.Sin(zRotationRadians));
+
+        Vector2 halfCameraBoundsDimensions;
+        halfCameraBoundsDimensions.x = (halfCameraDimensions.x * horizontalScalar) + (halfCameraDimensions.y * verticalScalar);
+        halfCameraBoundsDimensions.y = (halfCameraDimensions.x * verticalScalar) + (halfCameraDimensions.y * horizontalScalar);
+
+        // Return bounding box for the camera like above, except the origin of the box must be at (0, 0)
+        positionOffset.x = Mathf.Abs(positionOffset.x);
+        positionOffset.y = Mathf.Abs(positionOffset.y);
+        return halfCameraBoundsDimensions + positionOffset;
     }
 
     private void InitialiseBoundsMeshes()
@@ -139,13 +158,13 @@ public class RenderingEnvironment : MonoBehaviour
         maskBoundsMesh.uv = maskBoundsUVs;
     }
 
-    private void UpdateBoundsMeshes(Vector2 boundsSize)
+    private void UpdateBoundsMeshes(Vector2 halfBoundsSize)
     {
         // Calculate vertex positions
-        Vector2 topLeft = new Vector2(-boundsSize.x, boundsSize.y);
-        Vector2 topRight = new Vector2(boundsSize.x, boundsSize.y);
-        Vector2 bottomRight = new Vector2(boundsSize.x, -boundsSize.y);
-        Vector2 bottomLeft = new Vector2(-boundsSize.x, -boundsSize.y);
+        Vector2 topLeft = new Vector2(-halfBoundsSize.x, halfBoundsSize.y);
+        Vector2 topRight = new Vector2(halfBoundsSize.x, halfBoundsSize.y);
+        Vector2 bottomRight = new Vector2(halfBoundsSize.x, -halfBoundsSize.y);
+        Vector2 bottomLeft = new Vector2(-halfBoundsSize.x, -halfBoundsSize.y);
 
         // Set vertex positions
         maskBoundsVertices[0] = topLeft;
@@ -158,13 +177,13 @@ public class RenderingEnvironment : MonoBehaviour
         // Apply updated mesh to filters
         maskBackgroundFilter.mesh = maskBoundsMesh;
         maskForegroundFilter.mesh = maskBoundsMesh;
-
-        // Update camera size to match
-        previousCameraSize = sceneCamera.orthographicSize;
     }
 
     private void ConstrainEnvironmentTransforms()
     {
+        // Lock world transform to player position in the world
+        environmentTransform.position = targetTransform.position;
+
         // Lock local transforms of rendering mask and bounds meshes
         renderingMaskTransform.localPosition = Vector3.zero;
         maskBackgroundTransform.localPosition = Vector3.zero;

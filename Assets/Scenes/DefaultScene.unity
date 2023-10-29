@@ -1372,15 +1372,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 763894715}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 482399315}
   - {fileID: 390242525}
   - {fileID: 2010995546}
-  m_Father: {fileID: 1549064286}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &763894717
 MonoBehaviour:
@@ -1395,6 +1395,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneCamera: {fileID: 1549064285}
+  targetTransform: {fileID: 1098244961}
   renderingMaskShader: {fileID: 4800000, guid: 063c7ad912702b14788729f0efcf6889, type: 3}
   renderingMaskScript: {fileID: 482399312}
   renderingMaskTransform: {fileID: 482399315}
@@ -2480,7 +2481,7 @@ Transform:
   m_GameObject: {fileID: 1098244959}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5900002, y: -0.96000004, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2635,7 +2636,7 @@ Transform:
   m_GameObject: {fileID: 1211014894}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5900002, y: -0.96000004, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -2657,14 +2658,10 @@ MonoBehaviour:
   controllerTransform: {fileID: 1211014896}
   targetTransform: {fileID: 1098244961}
   sceneCamera: {fileID: 1549064285}
-  renderingEnvironment: {fileID: 763894717}
   screenshakeSystem: {fileID: 358084626}
-  occludingLayers:
-    serializedVersion: 2
-    m_Bits: 512
   depthOffset: 10
-  positionFollowDelay: 0.15
-  positionOffsetDelay: 0.25
+  positionFollowDelay: 0.1
+  positionOffsetDelay: 0.2
   positionRange: {x: 3, y: 3}
   positionDampingGradient: 1
   rotationRange: 45
@@ -2901,8 +2898,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 763894716}
+  m_Children: []
   m_Father: {fileID: 1211014896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1549064287
@@ -3550,5 +3546,6 @@ SceneRoots:
   - {fileID: 227755597}
   - {fileID: 245436930}
   - {fileID: 1539771162}
+  - {fileID: 763894716}
   - {fileID: 1211014896}
   - {fileID: 1098244961}
