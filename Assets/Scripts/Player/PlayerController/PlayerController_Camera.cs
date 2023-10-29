@@ -12,11 +12,22 @@ public partial class PlayerController : MonoBehaviour
         // Make the camera look ahead of the player's aim direction
         if (InputManager.GetControlScheme() == InputManager.ControlScheme.MouseAndKeyboard)
         {
-            cameraController.SetPositionOffset(fireInputPosition.Value * lookAheadDistance);
+            Vector2 playerScreenPosition = CalculatePlayerPositionOnScreen();
+            cameraController.SetPositionOffset((fireInputPosition.Value - playerScreenPosition) * lookAheadDistance);
         }
         else
         {
             cameraController.SetPositionOffset(fireInputDirection * lookAheadDistance);
         }
+    }
+
+    private Vector2 CalculatePlayerPositionOnScreen()
+    {
+        Vector2 screenPosition = mainCamera.WorldToScreenPoint(playerTransform.position);
+        screenPosition.x /= Screen.width;
+        screenPosition.y /= Screen.height;
+
+        // Remap from range (0, 1) to (-1, 1)
+        return (screenPosition - (Vector2.one * 0.5f)) * 2f;
     }
 }
