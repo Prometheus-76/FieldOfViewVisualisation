@@ -706,9 +706,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventTimescaling: 0
   responseTimescaling: 0
-  positionResponseDelay: 0.1
-  rotationResponseDelay: 0.1
-  zoomResponseDelay: 0.2
+  positionResponseDelay: 0.05
+  rotationResponseDelay: 0.05
+  zoomResponseDelay: 0.1
 --- !u!1 &390242524
 GameObject:
   m_ObjectHideFlags: 0
@@ -3293,6 +3293,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35d6ae257a162d342b2847ddf2a3116a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minimumHitstopTime: 0
+  maximumHitstopTime: 0.5
+  hitstopScalingGradient: 1
+  minimumIntermittenceTime: 0
 --- !u!1 &2010995545
 GameObject:
   m_ObjectHideFlags: 0

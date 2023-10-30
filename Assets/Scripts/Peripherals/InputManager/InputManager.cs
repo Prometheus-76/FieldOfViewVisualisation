@@ -187,47 +187,46 @@ public static class InputManager
     /// <summary>
     /// Calculate the direction from the player to the mouse cursor, normalized
     /// </summary>
-    /// <param name="playerScreenPosition">The player's position on the screen</param>
+    /// <param name="playerScreenPosition">The player's position on the screen, in the range (-1, 1)</param>
     /// <returns>The normalized vector from the player to the mouse cursor</returns>
-    public static Vector2 GetAimDirection(Vector2 playerScreenPosition)
+    public static Vector2 GetAimDirection(Vector3 playerPosition, Camera sceneCamera)
     {
-        InputAction action = null;
-        
-        // Getting cursor position polls every frame, overriding the controller scheme
         if (currentControlScheme == ControlScheme.MouseAndKeyboard)
         {
-            // Check for controller aim input
-            if (DeadzoneRemap(Instance.Gameplay.AimDirection.ReadValue<Vector2>()).sqrMagnitude > 0f)
+            // Getting cursor position polls every frame, which overrides the controller control scheme
+            // So here we check controller first to see if it should be used instead
+
+            // Check for controller aim input regardless to see if we should switch input methods
+            Vector2 remappedControllerInput = DeadzoneRemap(Instance.Gameplay.AimDirection.ReadValue<Vector2>());
+            if (remappedControllerInput.sqrMagnitude > 0f)
             {
                 // Controller is aiming!
                 currentControlScheme = ControlScheme.Controller;
+                return remappedControllerInput.normalized;
             }
-        }
 
-        // Make sure we read from the correct event
-        switch (currentControlScheme)
-        {
-            case ControlScheme.MouseAndKeyboard:
-                action = Instance.Gameplay.AimPosition;
-                break;
+            // Controller wasn't detected, continue with mouse input
 
-            case ControlScheme.Controller:
-                action = Instance.Gameplay.AimDirection;
-                break;
-        }
+            // Where is the player on-screen?
+            Vector2 playerScreenPosition = sceneCamera.WorldToScreenPoint(playerPosition);
 
-        Vector2 actionValue = action.ReadValue<Vector2>();
+            playerScreenPosition.x /= Screen.width;
+            playerScreenPosition.y /= Screen.height;
 
-        if (currentControlScheme == ControlScheme.MouseAndKeyboard)
-        {
+            playerScreenPosition.x = Mathf.Clamp01(playerScreenPosition.x);
+            playerScreenPosition.y = Mathf.Clamp01(playerScreenPosition.y);
+
+            // Remap from range (0, 1) to (-1, 1)
+            playerScreenPosition = (playerScreenPosition - (Vector2.one * 0.5f)) * 2f;
+
             // Create player -> mouse cursor vector
-            Vector2 playerToCursor = actionValue - playerScreenPosition;
+            Vector2 playerToCursor = GetAimPosition().Value - playerScreenPosition;
             return playerToCursor.normalized;
         }
         else if (currentControlScheme == ControlScheme.Controller)
         {
             // Deadzone for control sticks
-            return DeadzoneRemap(actionValue).normalized;
+            return DeadzoneRemap(Instance.Gameplay.AimDirection.ReadValue<Vector2>()).normalized;
         }
 
         // Fallback, should never reach
@@ -247,6 +246,9 @@ public static class InputManager
 
             aimPositionValue.x /= Screen.width;
             aimPositionValue.y /= Screen.height;
+
+            // Cursor is outside the window, default position to the center of the screen
+            if (Instance.Gameplay.AimPosition.inProgress == false) aimPositionValue = Vector2.one * 0.5f;
 
             aimPositionValue.x = Mathf.Clamp01(aimPositionValue.x);
             aimPositionValue.y = Mathf.Clamp01(aimPositionValue.y);

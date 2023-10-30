@@ -43,8 +43,7 @@ public partial class PlayerController : MonoBehaviour
         fireInputHeld = InputManager.GetFireButton();
 
         // Directional input
-        Vector2 playerScreenPosition = mainCamera.WorldToScreenPoint(playerTransform.position);
-        fireInputDirection = InputManager.GetAimDirection(playerScreenPosition);
+        fireInputDirection = InputManager.GetAimDirection(playerTransform.position, mainCamera);
 
         if (InputManager.GetControlScheme() == InputManager.ControlScheme.Controller)
         {
