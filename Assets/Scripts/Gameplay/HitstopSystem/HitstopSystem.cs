@@ -49,9 +49,10 @@ public class HitstopSystem : MonoBehaviour
 
         // Find how much time we're adding onto the hitstop this frame
         float maximumHitstopSeconds = ((minimumHitstopMilliseconds + hitstopRangeMilliseconds) / 1000f);
-        float addedScaledDuration = MathUtilities.DampValueToRange(maximumHitstopSeconds, hitstopScalingGradient, currentLinearHitstop) - currentScaledHitstop;
+        float combinedScaledDuration = MathUtilities.DampValueToRange(maximumHitstopSeconds, hitstopScalingGradient, currentLinearHitstop);
+        float addedScaledDuration = combinedScaledDuration - currentScaledHitstop;
 
-        currentScaledHitstop += addedScaledDuration;
+        currentScaledHitstop = combinedScaledDuration;
         currentHitstopTimer += addedScaledDuration;
     }
 
@@ -60,14 +61,17 @@ public class HitstopSystem : MonoBehaviour
     private void UpdateHitstop(float unscaledDeltaTime)
     {
         // Is the hitstop effect starting or ending at the end of this frame?
-        if (currentHitstopTimer > 0f && previousHitstopTimer <= 0f) OnHitstopStart();
-        if (currentHitstopTimer <= 0f && previousHitstopTimer > 0f) OnHitstopEnd();
+        if (isHitstopHappening == false && currentHitstopTimer > 0f && previousHitstopTimer <= 0f) OnHitstopStart();
+        if (isHitstopHappening && currentHitstopTimer <= 0f && previousHitstopTimer > 0f) OnHitstopEnd();
 
         previousHitstopTimer = currentHitstopTimer;
 
         // Update hitstop timer
         currentHitstopTimer -= unscaledDeltaTime;
-        currentHitstopTimer = Mathf.Max(0f, currentHitstopTimer);
+        if (isHitstopHappening == false)
+        {
+            currentHitstopTimer = Mathf.Max(0f, currentHitstopTimer);
+        }
     }
 
     private void UpdateIntermission(float unscaledDeltaTime)
@@ -78,11 +82,11 @@ public class HitstopSystem : MonoBehaviour
         currentIntermissionTimer -= unscaledDeltaTime;
         currentIntermissionTimer = Mathf.Max(0f, currentIntermissionTimer);
 
-        bool intermittenceLastsOneFrame = (minimumIntermissionMilliseconds <= 0);
-        bool intermittenceEndedThisFrame = (currentIntermissionTimer <= 0f && previousIntermissionTimer > 0f);
+        bool intermissionLastsOneFrame = (minimumIntermissionMilliseconds <= 0);
+        bool intermissionEndedThisFrame = (currentIntermissionTimer <= 0f && previousIntermissionTimer > 0f);
 
         // Is the intermission period ending at the end of this frame?
-        if (intermittenceLastsOneFrame || intermittenceEndedThisFrame) OnIntermissionEnd();
+        if (isIntermissionHappening && intermissionLastsOneFrame || intermissionEndedThisFrame) OnIntermissionEnd();
     }
 
     private void OnHitstopStart()

@@ -385,7 +385,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   rumbleSystem: {fileID: 219133803}
   hitstopSystem: {fileID: 1935867582}
-  appliedHitstop: 236
+  appliedHitstop: 1
 --- !u!4 &152990816
 Transform:
   m_ObjectHideFlags: 0
@@ -3298,7 +3298,7 @@ MonoBehaviour:
   minimumHitstopMilliseconds: 10
   hitstopRangeMilliseconds: 190
   hitstopScalingGradient: 0.8
-  minimumIntermittenceMilliseconds: 10
+  minimumIntermissionMilliseconds: 0
 --- !u!1 &2010995545
 GameObject:
   m_ObjectHideFlags: 0

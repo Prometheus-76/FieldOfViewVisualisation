@@ -84,6 +84,8 @@ public class MachineGun : PlayerWeapon
 
     public override void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection)
     {
+        hitstopSystem.AddHitstop(appliedHitstop);
+
         UpdateBullets(deltaTime);
 
         if (isCurrentlyHeld == false) return;
