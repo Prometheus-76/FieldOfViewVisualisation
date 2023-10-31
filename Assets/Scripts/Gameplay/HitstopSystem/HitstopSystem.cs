@@ -5,52 +5,131 @@ using UnityEngine;
 public class HitstopSystem : MonoBehaviour
 {
     [Header("Hitstop")]
-    public float minimumHitstopTime;
-    public float maximumHitstopTime;
+    [Min(1)]
+    public int minimumHitstopMilliseconds;
+    [Min(1)]
+    public int hitstopRangeMilliseconds;
+    [Range(0.1f, 1f)]
     public float hitstopScalingGradient;
 
-    [Header("Intermittence")]
-    public float minimumIntermittenceTime;
+    [Header("Intermission")]
+    [Min(0)]
+    public int minimumIntermissionMilliseconds;
+
+    // PROPERTIES
+    public bool isHitstopHappening { get; private set; } = false;
+    public bool isIntermissionHappening { get; private set; } = false;
 
     // PRIVATE
-    private float currentStopTimer = 0f;
+    private float previousHitstopTimer = 0f;
+    private float currentHitstopTimer = 0f;
+    private float previousIntermissionTimer = 0f;
     private float currentIntermissionTimer = 0f;
-    private float accumulatedLinearHitstopDuration = 0f;
-    private float accumulatedScaledHitstopDuration = 0f;
+    private float currentLinearHitstop = 0f;
+    private float currentScaledHitstop = 0f;
 
     private void LateUpdate()
     {
-        if (currentStopTimer <= 0f)
-        {
-            // End the hitstop
-            Time.timeScale = 1f;
-        }
-        else
-        {
-            // Start/continue hitstop
-            Time.timeScale = 0f;
-            accumulatedLinearHitstopDuration = 0f;
-            accumulatedScaledHitstopDuration = 0f;
-        }
-
-        currentStopTimer -= Time.unscaledDeltaTime;
-        currentStopTimer = Mathf.Max(0f, currentStopTimer);
+        // Update the intermission period and then the hitstop effect, important it happens in this order each frame since:
+        // - The intermission period can lead directly into another hitstop effect, but it isn't guaranteed
+        // - However the hitstop effect will always lead directly into an intermission period of at least one frame
+        if (isIntermissionHappening && isHitstopHappening == false) UpdateIntermission(Time.unscaledDeltaTime);
+        if (isIntermissionHappening == false) UpdateHitstop(Time.unscaledDeltaTime);
     }
 
-    public void AddHitstop(float addedLinearDuration)
+    #region Public Methods
+
+    /// <summary>
+    /// Apply some hitstop at the end of the next frame, which is not drawn during a hitstop intermission
+    /// </summary>
+    /// <param name="addedMilliseconds">The amount of hitstop to be added, in whole milliseconds</param>
+    public void AddHitstop(int addedMilliseconds)
     {
-        accumulatedLinearHitstopDuration += addedLinearDuration;
+        currentLinearHitstop += (addedMilliseconds / 1000f);
 
         // Find how much time we're adding onto the hitstop this frame
-        float addedScaledDuration = EvaluateDampingFunction(maximumHitstopTime, hitstopScalingGradient, accumulatedLinearHitstopDuration) - accumulatedScaledHitstopDuration;
+        float maximumHitstopSeconds = ((minimumHitstopMilliseconds + hitstopRangeMilliseconds) / 1000f);
+        float addedScaledDuration = MathUtilities.DampValueToRange(maximumHitstopSeconds, hitstopScalingGradient, currentLinearHitstop) - currentScaledHitstop;
 
-        accumulatedScaledHitstopDuration += addedScaledDuration;
-        currentStopTimer += addedScaledDuration;
+        currentScaledHitstop += addedScaledDuration;
+        currentHitstopTimer += addedScaledDuration;
     }
 
-    // For converting linear input to output damped within the specified range
-    private float EvaluateDampingFunction(float range, float gradient, float input)
+    #endregion
+
+    private void UpdateHitstop(float unscaledDeltaTime)
     {
-        return range * MathUtilities.Tanh((gradient * input) / range);
+        // Is the hitstop effect starting or ending at the end of this frame?
+        if (currentHitstopTimer > 0f && previousHitstopTimer <= 0f) OnHitstopStart();
+        if (currentHitstopTimer <= 0f && previousHitstopTimer > 0f) OnHitstopEnd();
+
+        previousHitstopTimer = currentHitstopTimer;
+
+        // Update hitstop timer
+        currentHitstopTimer -= unscaledDeltaTime;
+        currentHitstopTimer = Mathf.Max(0f, currentHitstopTimer);
+    }
+
+    private void UpdateIntermission(float unscaledDeltaTime)
+    {
+        previousIntermissionTimer = currentIntermissionTimer;
+
+        // Update intermission timer
+        currentIntermissionTimer -= unscaledDeltaTime;
+        currentIntermissionTimer = Mathf.Max(0f, currentIntermissionTimer);
+
+        bool intermittenceLastsOneFrame = (minimumIntermissionMilliseconds <= 0);
+        bool intermittenceEndedThisFrame = (currentIntermissionTimer <= 0f && previousIntermissionTimer > 0f);
+
+        // Is the intermission period ending at the end of this frame?
+        if (intermittenceLastsOneFrame || intermittenceEndedThisFrame) OnIntermissionEnd();
+    }
+
+    private void OnHitstopStart()
+    {
+        isHitstopHappening = true;
+
+        // Ensure hitstop is applied for at least the minimum duration
+        currentLinearHitstop = Mathf.Max((minimumHitstopMilliseconds / 1000f), currentLinearHitstop);
+
+        float maximumHitstopSeconds = ((minimumHitstopMilliseconds + hitstopRangeMilliseconds) / 1000f);
+        currentScaledHitstop = MathUtilities.DampValueToRange(maximumHitstopSeconds, hitstopScalingGradient, currentLinearHitstop);
+
+        currentHitstopTimer = currentScaledHitstop;
+
+        // Start hitstop effect
+        Time.timeScale = 0f;
+    }
+
+    private void OnHitstopEnd()
+    {
+        isHitstopHappening = false;
+
+        // Reset trackers for previous hitstop effect duration
+        currentLinearHitstop = 0f;
+        currentScaledHitstop = 0f;
+
+        // End hitstop effect
+        Time.timeScale = 1f;
+
+        // Intermission period starts on the same frame that the hitstop ends
+        OnIntermissionStart();
+    }
+
+    private void OnIntermissionStart()
+    {
+        isIntermissionHappening = true;
+
+        // Start intermission timer
+        currentIntermissionTimer = (minimumIntermissionMilliseconds / 1000f);
+        previousIntermissionTimer = 0f;
+    }
+
+    private void OnIntermissionEnd()
+    {
+        isIntermissionHappening = false;
+
+        // Hitstop has not been running this frame, ensure timer is reset
+        previousHitstopTimer = 0f;
     }
 }

@@ -7,14 +7,14 @@ public class SystemManager : MonoBehaviour
     [Header("Systems")]
     public PaintSystem paintSystem;
     public ScreenshakeSystem screenshakeSystem;
+
+    // TEST VARIABLES, REMOVE LATER
     public PaintProfile testPaint;
     public ScreenshakeProfile testShake;
-
     private bool testShakePlayed = false;
     private ScreenshakeHandle testEventHandle = null;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         if (paintSystem != null) paintSystem.Initialise();
         if (screenshakeSystem != null) screenshakeSystem.Initialise();

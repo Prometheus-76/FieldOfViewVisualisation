@@ -28,6 +28,8 @@ public class RumbleSystem : MonoBehaviour
         totalHighFrequency = 0f;
     }
 
+    #region Public Methods
+
     /// <summary>
     /// Add some rumble to the total which will be applied at the end of this frame, for best results this function should be called from Update()
     /// </summary>
@@ -41,4 +43,6 @@ public class RumbleSystem : MonoBehaviour
         totalLowFrequency += Mathf.Pow(lowFrequency, additivePower);
         totalHighFrequency += Mathf.Pow(highFrequency, additivePower);
     }
+
+    #endregion
 }

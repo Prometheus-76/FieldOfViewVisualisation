@@ -56,6 +56,9 @@ public class MachineGun : PlayerWeapon
     public AnimationCurve highFrequencyRumble;
     public RumbleSystem rumbleSystem;
 
+    public HitstopSystem hitstopSystem;
+    public int appliedHitstop;
+
     // PRIVATE
     private float currentLinearSpin = 0f;
     private float currentRemappedSpin = 0f;
@@ -73,7 +76,7 @@ public class MachineGun : PlayerWeapon
     {
         base.WeaponInitialise(playerController);
 
-        // Calculate and create maximum number of bullets
+        // Calculate and create maximum number of bullets for pool
         // bulletLifetime, maxRPM, etc
 
         WeaponReset(true);
@@ -159,7 +162,7 @@ public class MachineGun : PlayerWeapon
 
     private void FireBullet(Vector2 direction, float initialSimulationStep)
     {
-        
+        hitstopSystem.AddHitstop(appliedHitstop);
     }
 
     private void UpdateSpin(float deltaTime, bool isTriggerHeld)

@@ -276,4 +276,26 @@ public static class MathUtilities
 
         return (eulerExponent - inverseEulerExponent) / (eulerExponent + inverseEulerExponent);
     }
+
+    public static float DampValueToRange(float range, float gradient, float input)
+    {
+        if (range <= 0f || gradient <= 0f || input == 0f) return 0f;
+
+        return range * Tanh((gradient * input) / range);
+    }
+
+    public static float UndampValueFromRange(float range, float gradient, float input)
+    {
+        if (range <= 0f || gradient <= 0f || input == 0f) return 0f;
+
+        const float asymptoteOffset = 0.01f;
+
+        if (asymptoteOffset >= range) return 0f;
+        else input = Mathf.Clamp(input, -range + asymptoteOffset, range - asymptoteOffset);
+
+        float scaledInput = input / range;
+        float rangeScalar = range / (2f * gradient);
+
+        return rangeScalar * Mathf.Log((1f + scaledInput) / (1f - scaledInput));
+    }
 }

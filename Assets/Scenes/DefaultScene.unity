@@ -384,6 +384,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   rumbleSystem: {fileID: 219133803}
+  hitstopSystem: {fileID: 1935867582}
+  appliedHitstop: 236
 --- !u!4 &152990816
 Transform:
   m_ObjectHideFlags: 0
@@ -3293,10 +3295,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35d6ae257a162d342b2847ddf2a3116a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minimumHitstopTime: 0
-  maximumHitstopTime: 0.5
-  hitstopScalingGradient: 1
-  minimumIntermittenceTime: 0
+  minimumHitstopMilliseconds: 10
+  hitstopRangeMilliseconds: 190
+  hitstopScalingGradient: 0.8
+  minimumIntermittenceMilliseconds: 10
 --- !u!1 &2010995545
 GameObject:
   m_ObjectHideFlags: 0

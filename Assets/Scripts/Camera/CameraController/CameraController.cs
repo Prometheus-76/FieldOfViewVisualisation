@@ -87,6 +87,11 @@ public class CameraController : MonoBehaviour
 
     #region Public Methods
 
+    /// <summary>
+    /// Set the position offset target of the scene camera from its follower transform
+    /// </summary>
+    /// <param name="newPositionOffset">Local offset of the scene camera in world units</param>
+    /// <param name="instantly">Should the offset be applied immediately, overriding the default smoothing which is normally applied?</param>
     public void SetPositionOffset(Vector2 newPositionOffset, bool instantly = false)
     {
         targetBasePositionOffset = newPositionOffset;
@@ -98,6 +103,11 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set the base zoom target value of the camera
+    /// </summary>
+    /// <param name="newZoom">The new base zoom value to apply to the camera, is remapped within a safe range, but units should relative to the Camera component's orthographic size property</param>
+    /// <param name="instantly">Should the base zoom value be applied immediately, overriding the default smoothing which is normally applied?</param>
     public void SetZoom(float newZoom, bool instantly = false)
     {
         targetBaseZoom = newZoom;
@@ -125,12 +135,12 @@ public class CameraController : MonoBehaviour
         if (cameraSize < zoomMidpoint)
         {
             // Lower curve
-            dampedZoomValue = EvaluateInverseDampingFunction(zoomLowerRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
+            dampedZoomValue = MathUtilities.UndampValueFromRange(zoomLowerRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
         }
         else if (cameraSize > zoomMidpoint)
         {
             // Upper curve
-            dampedZoomValue = EvaluateInverseDampingFunction(zoomUpperRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
+            dampedZoomValue = MathUtilities.UndampValueFromRange(zoomUpperRange, zoomDampingGradient, cameraSize - zoomMidpoint) + zoomMidpoint;
         }
 
         // Apply scaled value
@@ -159,8 +169,8 @@ public class CameraController : MonoBehaviour
     {
         // Remap position to the predefined limit, with damping
         Vector2 dampedShakeOffset;
-        dampedShakeOffset.x = EvaluateDampingFunction(positionRange.x, positionDampingGradient, screenshakeSystem.smoothPositionOffset.x);
-        dampedShakeOffset.y = EvaluateDampingFunction(positionRange.y, positionDampingGradient, screenshakeSystem.smoothPositionOffset.y);
+        dampedShakeOffset.x = MathUtilities.DampValueToRange(positionRange.x, positionDampingGradient, screenshakeSystem.smoothPositionOffset.x);
+        dampedShakeOffset.y = MathUtilities.DampValueToRange(positionRange.y, positionDampingGradient, screenshakeSystem.smoothPositionOffset.y);
 
         sceneCameraTransform.localPosition = currentBasePositionOffset + dampedShakeOffset;
     }
@@ -168,7 +178,7 @@ public class CameraController : MonoBehaviour
     private void UpdateOffsetRotation()
     {
         // Remap rotation to the predefined limit, with damping
-        float dampedRotationOffset = EvaluateDampingFunction(rotationRange, rotationDampingGradient, screenshakeSystem.smoothRotationOffset);
+        float dampedRotationOffset = MathUtilities.DampValueToRange(rotationRange, rotationDampingGradient, screenshakeSystem.smoothRotationOffset);
 
         sceneCameraTransform.localEulerAngles = Vector3.forward * dampedRotationOffset;
     }
@@ -195,31 +205,14 @@ public class CameraController : MonoBehaviour
         if (combinedZoomValue < zoomMidpoint)
         {
             // Lower curve
-            dampedSizeValue = EvaluateDampingFunction(zoomLowerRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
+            dampedSizeValue = MathUtilities.DampValueToRange(zoomLowerRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
         }
         else if (combinedZoomValue > zoomMidpoint)
         {
             // Upper curve
-            dampedSizeValue = EvaluateDampingFunction(zoomUpperRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
+            dampedSizeValue = MathUtilities.DampValueToRange(zoomUpperRange, zoomDampingGradient, combinedZoomValue - zoomMidpoint) + zoomMidpoint;
         }
 
         sceneCamera.orthographicSize = dampedSizeValue;
-    }
-
-    // For converting linear input to output damped within the specified range
-    private float EvaluateDampingFunction(float range, float gradient, float input)
-    {
-        return range * MathUtilities.Tanh((gradient * input) / range);
-    }
-
-    // For converting damped input within the specified range to a linear output
-    private float EvaluateInverseDampingFunction(float range, float gradient, float input)
-    {
-        input = Mathf.Clamp(input, -range + 0.1f, range - 0.1f);
-
-        float scaledInput = input / range;
-        float rangeScalar = range / (2f * gradient);
-
-        return rangeScalar * Mathf.Log((1f + scaledInput) / (1f - scaledInput));
     }
 }
