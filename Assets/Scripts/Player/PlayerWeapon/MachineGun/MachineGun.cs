@@ -56,9 +56,6 @@ public class MachineGun : PlayerWeapon
     public AnimationCurve highFrequencyRumble;
     public RumbleSystem rumbleSystem;
 
-    public HitstopSystem hitstopSystem;
-    public int appliedHitstop;
-
     // PRIVATE
     private float currentLinearSpin = 0f;
     private float currentRemappedSpin = 0f;
@@ -84,8 +81,6 @@ public class MachineGun : PlayerWeapon
 
     public override void WeaponUpdate(float deltaTime, bool isCurrentlyHeld, bool isTriggerHeld, Vector2 aimDirection)
     {
-        hitstopSystem.AddHitstop(appliedHitstop);
-
         UpdateBullets(deltaTime);
 
         if (isCurrentlyHeld == false) return;
@@ -164,7 +159,7 @@ public class MachineGun : PlayerWeapon
 
     private void FireBullet(Vector2 direction, float initialSimulationStep)
     {
-        hitstopSystem.AddHitstop(appliedHitstop);
+        
     }
 
     private void UpdateSpin(float deltaTime, bool isTriggerHeld)

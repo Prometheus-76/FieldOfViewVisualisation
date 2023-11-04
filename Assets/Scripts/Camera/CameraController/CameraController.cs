@@ -106,7 +106,7 @@ public class CameraController : MonoBehaviour
     /// <summary>
     /// Set the base zoom target value of the camera
     /// </summary>
-    /// <param name="newZoom">The new base zoom value to apply to the camera, is remapped within a safe range, but units should relative to the Camera component's orthographic size property</param>
+    /// <param name="newZoom">The new base zoom value to apply to the camera, is remapped within a safe range, but units should be relative to the Camera component's orthographic size property</param>
     /// <param name="instantly">Should the base zoom value be applied immediately, overriding the default smoothing which is normally applied?</param>
     public void SetZoom(float newZoom, bool instantly = false)
     {

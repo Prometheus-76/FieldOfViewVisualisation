@@ -33,7 +33,7 @@ public class HitstopSystem : MonoBehaviour
         // Update the intermission period and then the hitstop effect, important it happens in this order each frame since:
         // - The intermission period can lead directly into another hitstop effect, but it isn't guaranteed
         // - However the hitstop effect will always lead directly into an intermission period of at least one frame
-        if (isIntermissionHappening && isHitstopHappening == false) UpdateIntermission(Time.unscaledDeltaTime);
+        if (isIntermissionHappening) UpdateIntermission(Time.unscaledDeltaTime);
         if (isIntermissionHappening == false) UpdateHitstop(Time.unscaledDeltaTime);
     }
 
@@ -60,33 +60,43 @@ public class HitstopSystem : MonoBehaviour
 
     private void UpdateHitstop(float unscaledDeltaTime)
     {
-        // Is the hitstop effect starting or ending at the end of this frame?
-        if (isHitstopHappening == false && currentHitstopTimer > 0f && previousHitstopTimer <= 0f) OnHitstopStart();
-        if (isHitstopHappening && currentHitstopTimer <= 0f && previousHitstopTimer > 0f) OnHitstopEnd();
+        // Is the hitstop effect starting at the end of this frame?
+        bool hitstopStartedThisFrame = (currentHitstopTimer > 0f && previousHitstopTimer <= 0f);
+        if (isHitstopHappening == false && hitstopStartedThisFrame) OnHitstopStart();
 
-        previousHitstopTimer = currentHitstopTimer;
+        // Ensure hitstop lock can't happen (during inspector testing)
+        bool hitstopEndedThisFrame = (currentHitstopTimer <= 0f && previousHitstopTimer > 0f);
+        if (isHitstopHappening && currentHitstopTimer <= 0f && previousHitstopTimer <= 0f) hitstopEndedThisFrame = true;
+
+        // Is the hitstop effect ending at the end of this frame?
+        if (isHitstopHappening && hitstopEndedThisFrame) OnHitstopEnd();
 
         // Update hitstop timer
+        previousHitstopTimer = currentHitstopTimer;
         currentHitstopTimer -= unscaledDeltaTime;
-        if (isHitstopHappening == false)
-        {
-            currentHitstopTimer = Mathf.Max(0f, currentHitstopTimer);
-        }
+
+        // Only clamp timer to >= 0 when hitstop is not happening, when hitstop is happening it's important we can record added hitstop which extends the current one.
+        // Letting the timer go to a negative value means that added hitstop may not be sufficient to warrant an additional stopped frame, and instead the hitstop should end.
+        if (isHitstopHappening == false) currentHitstopTimer = Mathf.Max(0f, currentHitstopTimer);
     }
 
     private void UpdateIntermission(float unscaledDeltaTime)
     {
-        previousIntermissionTimer = currentIntermissionTimer;
-
         // Update intermission timer
+        previousIntermissionTimer = currentIntermissionTimer;
         currentIntermissionTimer -= unscaledDeltaTime;
+
+        // Always clamp timer to >= 0
         currentIntermissionTimer = Mathf.Max(0f, currentIntermissionTimer);
 
         bool intermissionLastsOneFrame = (minimumIntermissionMilliseconds <= 0);
         bool intermissionEndedThisFrame = (currentIntermissionTimer <= 0f && previousIntermissionTimer > 0f);
 
+        // Ensure intermission lock can't happen (during inspector testing)
+        if (currentIntermissionTimer <= 0f && previousIntermissionTimer <= 0f) intermissionEndedThisFrame = true;
+
         // Is the intermission period ending at the end of this frame?
-        if (isIntermissionHappening && intermissionLastsOneFrame || intermissionEndedThisFrame) OnIntermissionEnd();
+        if (intermissionLastsOneFrame || intermissionEndedThisFrame) OnIntermissionEnd();
     }
 
     private void OnHitstopStart()
