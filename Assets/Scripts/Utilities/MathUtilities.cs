@@ -233,6 +233,10 @@ public static class MathUtilities
                 {
                     float yRange = upperPoint.y - lowerPoint.y;
                     
+                    // Edge case: Prevents detecting 2 intersections if the tested vertex is within the polygon
+                    // and it's y-value is equal to that of a vertex which is raycasted against (and therefore said vertex is also shared with another edge)
+                    if (upperPoint.y == point.y) continue;
+
                     // Line tangent is +/- (1, 0), ie. parallel and aligned with the ray
                     if (yRange == 0f)
                     {
